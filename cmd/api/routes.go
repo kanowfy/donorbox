@@ -7,8 +7,12 @@ func (app *application) routes() http.Handler {
 
 	router.HandleFunc("GET /healthz", app.healthCheckHandler)
 
+	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
+	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
+	router.HandleFunc("POST /projects", app.createProjectHandler)
+
 	v1 := http.NewServeMux()
-	v1.Handle("GET /v1/", http.StripPrefix("/v1", router))
+	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
 	return v1
 }
