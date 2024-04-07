@@ -6,12 +6,18 @@ import (
 )
 
 type config struct {
-	Host         string `env:"HOST" envDefault:"localhost"`
-	Port         int    `env:"PORT" envDefault:"4000"`
-	Dsn          string `env:"DB_DSN"`
-	MaxOpenConns int    `env:"DB_MAXOPENCONNS" envDefault:"25"`
-	MaxIdleConns int    `env:"DB_MAXIDLECONNS" envDefault:"25"`
-	MaxIdleTime  string `env:"DB_MAXIDLETIME" envDefault:"15m"`
+	Host           string `env:"HOST" envDefault:"localhost"`
+	Port           int    `env:"PORT" envDefault:"4000"`
+	DBDsn          string `env:"DB_DSN"`
+	DBUser         string `env:"DB_USER"`
+	DBPassword     string `env:"DB_PASSWORD"`
+	DBHost         string `env:"DB_HOST"`
+	DBPort         int    `env:"DB_PORT" envDefault:"5432"`
+	DBName         string `env:"DB_NAME"`
+	DBSslMode      string `env:"DB_SSLMODE" envDefault:"disable"`
+	DBMaxOpenConns int    `env:"DB_MAXOPENCONNS" envDefault:"25"`
+	DBMaxIdleConns int    `env:"DB_MAXIDLECONNS" envDefault:"25"`
+	DBMaxIdleTime  string `env:"DB_MAXIDLETIME" envDefault:"15m"`
 }
 
 func loadConfig() (config, error) {

@@ -14,7 +14,7 @@ func (app *application) routes() http.Handler {
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
-	return v1
+	return app.requestLogging(v1)
 }
 
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {

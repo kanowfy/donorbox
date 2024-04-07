@@ -49,7 +49,9 @@ func main() {
 func openDB(cfg config) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 
-	dbpool, err := pgxpool.New(ctx, cfg.Dsn)
+	dbpool, err := pgxpool.New(ctx, fmt.Sprintf(
+		"user=%s password=%s host=%s port=%d dbname=%s sslmode=%s pool_max_conns=%d pool_min_conns=%d pool_max_conn_idle_time=%s",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName, cfg.DBSslMode, cfg.DBMaxIdleConns, cfg.DBMaxIdleConns, cfg.DBMaxIdleTime))
 	if err != nil {
 		return nil, err
 	}
