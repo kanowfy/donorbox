@@ -270,6 +270,37 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	return i, err
 }
 
+const updateProjectByID = `-- name: UpdateProjectByID :exec
+UPDATE projects
+SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8
+WHERE id = $1
+`
+
+type UpdateProjectByIDParams struct {
+	ID           pgtype.UUID
+	Title        string
+	Description  string
+	CoverPicture string
+	GoalAmount   pgtype.Numeric
+	Country      string
+	Province     string
+	EndDate      pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error {
+	_, err := q.db.Exec(ctx, updateProjectByID,
+		arg.ID,
+		arg.Title,
+		arg.Description,
+		arg.CoverPicture,
+		arg.GoalAmount,
+		arg.Country,
+		arg.Province,
+		arg.EndDate,
+	)
+	return err
+}
+
 const updateProjectFund = `-- name: UpdateProjectFund :exec
 UPDATE projects SET current_amount = current_amount + $2
 WHERE id = $1

@@ -39,6 +39,11 @@ SELECT * FROM projects;
 SELECT * FROM projects
 WHERE id = $1;
 
+-- name: UpdateProjectByID :exec
+UPDATE projects
+SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8
+WHERE id = $1;
+
 -- name: UpdateProjectFund :exec
 UPDATE projects SET current_amount = current_amount + $2
 WHERE id = $1;

@@ -7,14 +7,16 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/log"
 )
 
 type application struct {
-	config config
-	db     *db.Queries
+	config     config
+	repository *db.Queries
+	validator  *validator.Validate
 }
 
 func init() {
@@ -36,8 +38,9 @@ func main() {
 	}
 
 	app := &application{
-		config: cfg,
-		db:     db.New(dbpool),
+		config:     cfg,
+		repository: db.New(dbpool),
+		validator:  validator.New(validator.WithRequiredStructEnabled()),
 	}
 
 	err = app.serve()

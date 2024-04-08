@@ -7,6 +7,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (app *application) writeJSON(w http.ResponseWriter, status int, data map[string]interface{}, headers http.Header) error {
@@ -77,4 +80,42 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dest in
 	}
 
 	return nil
+}
+
+func stringToPgxUUID(s string) (pgtype.UUID, error) {
+	var uuid pgtype.UUID
+	err := uuid.Scan(s)
+	if err != nil {
+		return pgtype.UUID{}, err
+	}
+	return uuid, nil
+}
+
+func mustStringToPgxUUID(s string) pgtype.UUID {
+	uuid, err := stringToPgxUUID(s)
+	if err != nil {
+		panic("parsing validated invalid UUID")
+	}
+
+	return uuid
+}
+
+func mustStringToPgxNumeric(s string) pgtype.Numeric {
+	var num pgtype.Numeric
+	err := num.Scan(s)
+	if err != nil {
+		panic("parsing validated invalid numeric")
+	}
+
+	return num
+}
+
+func mustTimeToPgxTimestamp(t time.Time) pgtype.Timestamptz {
+	var time pgtype.Timestamptz
+	err := time.Scan(t)
+	if err != nil {
+		panic("parsing validated invalid timestamp")
+	}
+
+	return time
 }

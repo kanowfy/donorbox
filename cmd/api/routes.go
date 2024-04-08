@@ -10,6 +10,8 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
 	router.HandleFunc("POST /projects", app.createProjectHandler)
+	router.HandleFunc("PATCH /projects/{id}", app.updateProjectHandler)
+	router.HandleFunc("DELETE /projects/{id}", app.deleteProjectHandler)
 
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))

@@ -9,7 +9,7 @@ import (
 )
 
 func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
-	projects, err := app.db.GetAllProjects(r.Context())
+	projects, err := app.repository.GetAllProjects(r.Context())
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -28,14 +28,13 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 
 func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
-	var id pgtype.UUID
-	err := id.Scan(idStr)
+	id, err := stringToPgxUUID(idStr)
 	if err != nil {
-		app.badRequestResponse(w, r, err)
+		app.notFoundResponse(w, r)
 		return
 	}
 
-	project, err := app.db.GetProjectByID(r.Context(), id)
+	project, err := app.repository.GetProjectByID(r.Context(), id)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -57,39 +56,23 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var uid pgtype.UUID
-	err = uid.Scan(req.UserID)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	var goalAmount pgtype.Numeric
-	err = goalAmount.Scan(req.GoalAmount)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	var endDate pgtype.Timestamptz
-	err = endDate.Scan(req.EndDate)
-	if err != nil {
+	if err = app.validator.Struct(req); err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	args := db.CreateProjectParams{
-		UserID:       uid,
+		UserID:       mustStringToPgxUUID(req.UserID),
 		Title:        req.Title,
 		Description:  req.Description,
 		CoverPicture: req.CoverPicture,
-		GoalAmount:   goalAmount,
+		GoalAmount:   mustStringToPgxNumeric(req.GoalAmount),
 		Country:      req.Country,
 		Province:     req.Province,
-		EndDate:      endDate,
+		EndDate:      mustTimeToPgxTimestamp(req.EndDate),
 	}
 
-	project, err := app.db.CreateProject(r.Context(), args)
+	project, err := app.repository.CreateProject(r.Context(), args)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -100,4 +83,110 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := stringToPgxUUID(idStr)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	project, err := app.repository.GetProjectByID(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	var payload models.UpdateProjectRequest
+
+	err = app.readJSON(w, r, &payload)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err = app.validator.Struct(payload); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	var updateParams db.UpdateProjectByIDParams
+	updateParams.ID = project.ID
+
+	if payload.Title != nil {
+		updateParams.Title = *payload.Title
+	} else {
+		updateParams.Title = project.Title
+	}
+
+	if payload.Description != nil {
+		updateParams.Description = *payload.Description
+	} else {
+		updateParams.Description = project.Description
+	}
+
+	if payload.CoverPicture != nil {
+		updateParams.CoverPicture = *payload.CoverPicture
+	} else {
+		updateParams.CoverPicture = project.CoverPicture
+	}
+
+	if payload.GoalAmount != nil {
+		updateParams.GoalAmount = mustStringToPgxNumeric(*payload.GoalAmount)
+	} else {
+		updateParams.GoalAmount = project.GoalAmount
+	}
+
+	if payload.Country != nil {
+		updateParams.Country = *payload.Country
+	} else {
+		updateParams.Country = project.Country
+	}
+
+	if payload.Province != nil {
+		updateParams.Province = *payload.Province
+	} else {
+		updateParams.Province = project.Province
+	}
+
+	if payload.EndDate != nil {
+		updateParams.EndDate = mustTimeToPgxTimestamp(*payload.EndDate)
+	} else {
+		updateParams.EndDate = project.EndDate
+	}
+
+	if err = app.repository.UpdateProjectByID(r.Context(), updateParams); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "project has successfully been updated",
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) deleteProjectHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	var id pgtype.UUID
+	err := id.Scan(idStr)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	if err = app.repository.DeleteProjectByID(r.Context(), id); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "project has successfully been deleted",
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
 }
