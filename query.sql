@@ -34,6 +34,8 @@ RETURNING *;
 
 -- name: GetAllProjects :many
 SELECT * FROM projects
+WHERE category_id = 
+    CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
 ORDER BY
     CASE WHEN @end_date_asc::integer > 0 THEN end_date END ASC,
     CASE WHEN @end_date_desc::integer > 0 THEN end_date END DESC,
@@ -59,8 +61,11 @@ DELETE FROM projects WHERE id = $1;
 
 -- name: CreateProject :one
 INSERT INTO projects (
-    user_id, title, description, cover_picture, goal_amount, country, province, end_date
+    user_id, category_id, title, description, cover_picture, goal_amount, country, province, end_date
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
 RETURNING *;
+
+-- name: GetAllCategories :many
+SELECT * FROM categories;

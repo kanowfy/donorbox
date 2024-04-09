@@ -11,6 +11,49 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type BackingStatus string
+
+const (
+	BackingStatusPending  BackingStatus = "pending"
+	BackingStatusReleased BackingStatus = "released"
+	BackingStatusRefunded BackingStatus = "refunded"
+)
+
+func (e *BackingStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BackingStatus(s)
+	case string:
+		*e = BackingStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BackingStatus: %T", src)
+	}
+	return nil
+}
+
+type NullBackingStatus struct {
+	BackingStatus BackingStatus
+	Valid         bool // Valid is true if BackingStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBackingStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.BackingStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BackingStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBackingStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BackingStatus), nil
+}
+
 type UserType string
 
 const (
@@ -59,11 +102,18 @@ type Backing struct {
 	BackerID    pgtype.UUID
 	Amount      pgtype.Numeric
 	BackingDate pgtype.Timestamptz
+	Status      BackingStatus
+}
+
+type Category struct {
+	ID   int32
+	Name string
 }
 
 type Project struct {
 	ID            pgtype.UUID
 	UserID        pgtype.UUID
+	CategoryID    int32
 	Title         string
 	Description   string
 	CoverPicture  string

@@ -23,15 +23,16 @@ func (q *Queries) ActivateUser(ctx context.Context, id pgtype.UUID) error {
 
 const createProject = `-- name: CreateProject :one
 INSERT INTO projects (
-    user_id, title, description, cover_picture, goal_amount, country, province, end_date
+    user_id, category_id, title, description, cover_picture, goal_amount, country, province, end_date
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, user_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active
+RETURNING id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active
 `
 
 type CreateProjectParams struct {
 	UserID       pgtype.UUID
+	CategoryID   int32
 	Title        string
 	Description  string
 	CoverPicture string
@@ -44,6 +45,7 @@ type CreateProjectParams struct {
 func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
 	row := q.db.QueryRow(ctx, createProject,
 		arg.UserID,
+		arg.CategoryID,
 		arg.Title,
 		arg.Description,
 		arg.CoverPicture,
@@ -56,6 +58,7 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
+		&i.CategoryID,
 		&i.Title,
 		&i.Description,
 		&i.CoverPicture,
@@ -130,21 +133,44 @@ func (q *Queries) DeleteUserByID(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getAllCategories = `-- name: GetAllCategories :many
+SELECT id, name FROM categories
+`
+
+func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.Query(ctx, getAllCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllProjects = `-- name: GetAllProjects :many
-SELECT id, user_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
+WHERE category_id = 
+    CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
 ORDER BY
-    CASE WHEN $1::integer > 0 THEN start_date END ASC,
-    CASE WHEN $2::integer > 0 THEN start_date END DESC,
-    CASE WHEN $3::integer > 0 THEN end_date END ASC,
-    CASE WHEN $4::integer > 0 THEN end_date END DESC,
-    CASE WHEN $5::integer > 0 THEN current_amount END ASC,
-    CASE WHEN $6::integer > 0 THEN current_amount END DESC
-LIMIT $8::integer OFFSET $7::integer
+    CASE WHEN $2::integer > 0 THEN end_date END ASC,
+    CASE WHEN $3::integer > 0 THEN end_date END DESC,
+    CASE WHEN $4::integer > 0 THEN current_amount END ASC,
+    CASE WHEN $5::integer > 0 THEN current_amount END DESC
+LIMIT $7::integer OFFSET $6::integer
 `
 
 type GetAllProjectsParams struct {
-	StartDateAsc      int32
-	StartDateDesc     int32
+	Category          int32
 	EndDateAsc        int32
 	EndDateDesc       int32
 	CurrentAmountAsc  int32
@@ -155,8 +181,7 @@ type GetAllProjectsParams struct {
 
 func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]Project, error) {
 	rows, err := q.db.Query(ctx, getAllProjects,
-		arg.StartDateAsc,
-		arg.StartDateDesc,
+		arg.Category,
 		arg.EndDateAsc,
 		arg.EndDateDesc,
 		arg.CurrentAmountAsc,
@@ -174,6 +199,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
+			&i.CategoryID,
 			&i.Title,
 			&i.Description,
 			&i.CoverPicture,
@@ -230,7 +256,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getProjectByID = `-- name: GetProjectByID :one
-SELECT id, user_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
 WHERE id = $1
 `
 
@@ -240,6 +266,7 @@ func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (Project, 
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
+		&i.CategoryID,
 		&i.Title,
 		&i.Description,
 		&i.CoverPicture,

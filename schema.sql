@@ -3,6 +3,12 @@ CREATE TYPE user_type AS ENUM (
     'escrow'
 );
 
+CREATE TYPE backing_status AS ENUM (
+	'pending',
+	'released',
+	'refunded'
+);
+
 CREATE TABLE IF NOT EXISTS users (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	username varchar(64) UNIQUE NOT NULL,
@@ -15,9 +21,15 @@ CREATE TABLE IF NOT EXISTS users (
 	user_type user_type NOT NULL DEFAULT 'regular'
 );
 
+CREATE TABLE IF NOT EXISTS categories (
+	id SERIAL PRIMARY KEY,
+	name varchar(64) UNIQUE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS projects (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	user_id uuid NOT NULL REFERENCES users(id),
+	category_id integer NOT NULL REFERENCES categories(id),
 	title text NOT NULL,
 	description text NOT NULL,
 	cover_picture text NOT NULL,
@@ -35,7 +47,8 @@ CREATE TABLE IF NOT EXISTS backings (
 	project_id uuid NOT NULL REFERENCES projects(id),
 	backer_id uuid NOT NULL REFERENCES users(id),
 	amount decimal(10,2) NOT NULL,
-	backing_date timestamptz NOT NULL DEFAULT NOW()
+	backing_date timestamptz NOT NULL DEFAULT NOW(),
+	status backing_status NOT NULL DEFAULT 'pending'
 );
 
 CREATE TABLE IF NOT EXISTS project_updates (

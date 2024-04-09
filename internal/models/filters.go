@@ -6,6 +6,7 @@ import (
 )
 
 type Filters struct {
+	Category     int
 	Page         int
 	PageSize     int
 	Sort         string
@@ -46,7 +47,7 @@ func (f Filters) SortDirection() string {
 	return "ASC"
 }
 
-func calculateMetadata(totalRecords, page, pageSize int) Metadata {
+func CalculateMetadata(totalRecords, page, pageSize int) Metadata {
 	if totalRecords == 0 {
 		return Metadata{}
 	}
