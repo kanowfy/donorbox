@@ -9,7 +9,44 @@ import (
 )
 
 func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
-	projects, err := app.repository.GetAllProjects(r.Context())
+	qs := r.URL.Query()
+
+	page, err := readInt(qs, "page", 1)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	pageSize, err := readInt(qs, "page_size", 20)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	sort := readString(qs, "sort", "-end_date")
+
+	filters := models.Filters{
+		Page:         page,
+		PageSize:     pageSize,
+		Sort:         sort,
+		SortSafeList: []string{"end_date", "current_amount", "-end_date", "-current_amount"},
+	}
+
+	var args db.GetAllProjectsParams
+	switch sort {
+	case "end_date":
+		args.EndDateAsc = 1
+	case "current_amount":
+		args.CurrentAmountAsc = 1
+	case "-current_amount":
+		args.CurrentAmountDesc = 1
+	default:
+		args.EndDateDesc = 1
+	}
+
+	args.PageLimit = int32(filters.Limit())
+	args.TotalOffset = int32(filters.Offset())
+
+	projects, err := app.repository.GetAllProjects(r.Context(), args)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

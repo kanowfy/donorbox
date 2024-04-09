@@ -132,10 +132,38 @@ func (q *Queries) DeleteUserByID(ctx context.Context, id pgtype.UUID) error {
 
 const getAllProjects = `-- name: GetAllProjects :many
 SELECT id, user_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
+ORDER BY
+    CASE WHEN $1::integer > 0 THEN start_date END ASC,
+    CASE WHEN $2::integer > 0 THEN start_date END DESC,
+    CASE WHEN $3::integer > 0 THEN end_date END ASC,
+    CASE WHEN $4::integer > 0 THEN end_date END DESC,
+    CASE WHEN $5::integer > 0 THEN current_amount END ASC,
+    CASE WHEN $6::integer > 0 THEN current_amount END DESC
+LIMIT $8::integer OFFSET $7::integer
 `
 
-func (q *Queries) GetAllProjects(ctx context.Context) ([]Project, error) {
-	rows, err := q.db.Query(ctx, getAllProjects)
+type GetAllProjectsParams struct {
+	StartDateAsc      int32
+	StartDateDesc     int32
+	EndDateAsc        int32
+	EndDateDesc       int32
+	CurrentAmountAsc  int32
+	CurrentAmountDesc int32
+	TotalOffset       int32
+	PageLimit         int32
+}
+
+func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]Project, error) {
+	rows, err := q.db.Query(ctx, getAllProjects,
+		arg.StartDateAsc,
+		arg.StartDateDesc,
+		arg.EndDateAsc,
+		arg.EndDateDesc,
+		arg.CurrentAmountAsc,
+		arg.CurrentAmountDesc,
+		arg.TotalOffset,
+		arg.PageLimit,
+	)
 	if err != nil {
 		return nil, err
 	}
