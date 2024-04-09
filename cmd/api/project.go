@@ -11,20 +11,13 @@ import (
 func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 
-	page, err := readInt(qs, "page", 1)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	pageSize, err := readInt(qs, "page_size", 20)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
+	page, _ := readInt(qs, "page", 1)
+	pageSize, _ := readInt(qs, "page_size", 20)
+	category, _ := readInt(qs, "category", 0)
 	sort := readString(qs, "sort", "-end_date")
 
 	filters := models.Filters{
+		Category:     category,
 		Page:         page,
 		PageSize:     pageSize,
 		Sort:         sort,
@@ -43,6 +36,7 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 		args.EndDateDesc = 1
 	}
 
+	args.Category = int32(category)
 	args.PageLimit = int32(filters.Limit())
 	args.TotalOffset = int32(filters.Offset())
 
@@ -52,12 +46,15 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	metadata := models.CalculateMetadata(len(projects), filters.Page, filters.PageSize)
+
 	if projects == nil {
 		projects = []db.Project{}
 	}
 
 	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
 		"projects": projects,
+		"metadata": metadata,
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -100,6 +97,7 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 
 	args := db.CreateProjectParams{
 		UserID:       mustStringToPgxUUID(req.UserID),
+		CategoryID:   int32(req.CategoryID),
 		Title:        req.Title,
 		Description:  req.Description,
 		CoverPicture: req.CoverPicture,
@@ -226,4 +224,18 @@ func (app *application) deleteProjectHandler(w http.ResponseWriter, r *http.Requ
 		app.serverErrorResponse(w, r, err)
 	}
 
+}
+
+func (app *application) getAllCategoriesHandler(w http.ResponseWriter, r *http.Request) {
+	categories, err := app.repository.GetAllCategories(r.Context())
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"categories": categories,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

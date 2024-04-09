@@ -13,6 +13,8 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /projects/{id}", app.updateProjectHandler)
 	router.HandleFunc("DELETE /projects/{id}", app.deleteProjectHandler)
 
+	router.HandleFunc("GET /categories", app.getAllCategoriesHandler)
+
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
