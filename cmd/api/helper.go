@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -118,4 +120,27 @@ func mustTimeToPgxTimestamp(t time.Time) pgtype.Timestamptz {
 	}
 
 	return time
+}
+
+func readString(qs url.Values, key, defaultValue string) string {
+	s := qs.Get(key)
+	if s == "" {
+		return defaultValue
+	}
+
+	return s
+}
+
+func readInt(qs url.Values, key string, defaultValue int) (int, error) {
+	s := qs.Get(key)
+	if s == "" {
+		return defaultValue, nil
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+
+	return i, nil
 }

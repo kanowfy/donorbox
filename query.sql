@@ -33,7 +33,13 @@ INSERT INTO users (
 RETURNING *;
 
 -- name: GetAllProjects :many
-SELECT * FROM projects;
+SELECT * FROM projects
+ORDER BY
+    CASE WHEN @end_date_asc::integer > 0 THEN end_date END ASC,
+    CASE WHEN @end_date_desc::integer > 0 THEN end_date END DESC,
+    CASE WHEN @current_amount_asc::integer > 0 THEN current_amount END ASC,
+    CASE WHEN @current_amount_desc::integer > 0 THEN current_amount END DESC
+LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: GetProjectByID :one
 SELECT * FROM projects
