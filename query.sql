@@ -69,3 +69,35 @@ RETURNING *;
 
 -- name: GetAllCategories :many
 SELECT * FROM categories;
+
+-- name: GetProjectUpdates :many
+SELECT * FROM project_updates
+WHERE project_id = $1;
+
+-- name: DeleteProjectUpdate :exec
+DELETE FROM project_updates
+WHERE id = $1;
+
+-- name: CreateProjectUpdate :one
+INSERT INTO project_updates (
+    project_id, description
+) VALUES (
+    $1, $2
+)
+RETURNING *;
+
+-- name: GetProjectComments :many
+SELECT * FROM project_comments
+WHERE project_id = $1;
+
+-- name: DeleteProjectComment :exec
+DELETE FROM project_comments
+WHERE id = $1;
+
+-- name: CreateProjectComment :one
+INSERT INTO project_comments (
+    project_id, backer_id, parent_comment_id, content
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING *;

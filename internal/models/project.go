@@ -23,3 +23,15 @@ type UpdateProjectRequest struct {
 	Province     *string    `json:"province,omitempty"`
 	EndDate      *time.Time `json:"end_date,omitempty"`
 }
+
+type CreateProjectUpdateRequest struct {
+	ProjectID   string `json:"project_id" validate:"required,uuid4"`
+	Description string `json:"description" validate:"required"`
+}
+
+type CreateProjectCommentRequest struct {
+	ProjectID       string  `json:"project_id" validate:"required,uuid4"`
+	BackerID        string  `json:"backer_id" validate:"required,uuid4"`
+	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,uuid4"`
+	Content         string  `json:"content" validate:"required"`
+}

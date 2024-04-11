@@ -134,6 +134,8 @@ func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	//TODO: check permission of requesting user and whether the current amount is 0
+
 	var payload models.UpdateProjectRequest
 
 	err = app.readJSON(w, r, &payload)
@@ -238,4 +240,101 @@ func (app *application) getAllCategoriesHandler(w http.ResponseWriter, r *http.R
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.CreateProjectUpdateRequest
+
+	err := app.readJSON(w, r, &req)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err = app.validator.Struct(req); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	pid := mustStringToPgxUUID(req.ProjectID)
+
+	// check if projectID is valid
+	_, err = app.repository.GetProjectByID(r.Context(), pid)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	//TODO: Check permission of requesting user
+	/*
+		if project.UserID != currentUserID {
+			app.unauthorizedReponse(w, r)
+			return
+		}
+	*/
+
+	args := db.CreateProjectUpdateParams{
+		ProjectID:   pid,
+		Description: req.Description,
+	}
+
+	update, err := app.repository.CreateProjectUpdate(r.Context(), args)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusCreated, map[string]interface{}{
+		"project_update": update,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) createProjectCommentHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.CreateProjectCommentRequest
+
+	err := app.readJSON(w, r, &req)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err = app.validator.Struct(req); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	pid := mustStringToPgxUUID(req.ProjectID)
+
+	// check if projectID is valid, backerID is validated through middleware
+	if _, err = app.repository.GetProjectByID(r.Context(), pid); err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	//TODO: check permission of requesting user(must be owner or backer of the project)
+
+	args := db.CreateProjectCommentParams{
+		ProjectID: pid,
+		BackerID:  mustStringToPgxUUID(req.BackerID),
+		Content:   req.Content,
+	}
+
+	if req.ParentCommentID != nil {
+		args.ParentCommentID = mustStringToPgxUUID(*req.ParentCommentID)
+	}
+
+	comment, err := app.repository.CreateProjectComment(r.Context(), args)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusCreated, map[string]interface{}{
+		"project_comment": comment,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
 }
