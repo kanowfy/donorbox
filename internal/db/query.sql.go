@@ -73,6 +73,67 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 	return i, err
 }
 
+const createProjectComment = `-- name: CreateProjectComment :one
+INSERT INTO project_comments (
+    project_id, backer_id, parent_comment_id, content
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING id, project_id, backer_id, parent_comment_id, content, commented_at
+`
+
+type CreateProjectCommentParams struct {
+	ProjectID       pgtype.UUID
+	BackerID        pgtype.UUID
+	ParentCommentID pgtype.UUID
+	Content         string
+}
+
+func (q *Queries) CreateProjectComment(ctx context.Context, arg CreateProjectCommentParams) (ProjectComment, error) {
+	row := q.db.QueryRow(ctx, createProjectComment,
+		arg.ProjectID,
+		arg.BackerID,
+		arg.ParentCommentID,
+		arg.Content,
+	)
+	var i ProjectComment
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.BackerID,
+		&i.ParentCommentID,
+		&i.Content,
+		&i.CommentedAt,
+	)
+	return i, err
+}
+
+const createProjectUpdate = `-- name: CreateProjectUpdate :one
+INSERT INTO project_updates (
+    project_id, description
+) VALUES (
+    $1, $2
+)
+RETURNING id, project_id, description, update_date
+`
+
+type CreateProjectUpdateParams struct {
+	ProjectID   pgtype.UUID
+	Description string
+}
+
+func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpdateParams) (ProjectUpdate, error) {
+	row := q.db.QueryRow(ctx, createProjectUpdate, arg.ProjectID, arg.Description)
+	var i ProjectUpdate
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.Description,
+		&i.UpdateDate,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     username, hashed_password, email, first_name, last_name, profile_picture
@@ -121,6 +182,26 @@ DELETE FROM projects WHERE id = $1
 
 func (q *Queries) DeleteProjectByID(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteProjectByID, id)
+	return err
+}
+
+const deleteProjectComment = `-- name: DeleteProjectComment :exec
+DELETE FROM project_comments
+WHERE id = $1
+`
+
+func (q *Queries) DeleteProjectComment(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteProjectComment, id)
+	return err
+}
+
+const deleteProjectUpdate = `-- name: DeleteProjectUpdate :exec
+DELETE FROM project_updates
+WHERE id = $1
+`
+
+func (q *Queries) DeleteProjectUpdate(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteProjectUpdate, id)
 	return err
 }
 
@@ -279,6 +360,68 @@ func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (Project, 
 		&i.IsActive,
 	)
 	return i, err
+}
+
+const getProjectComments = `-- name: GetProjectComments :many
+SELECT id, project_id, backer_id, parent_comment_id, content, commented_at FROM project_comments
+WHERE project_id = $1
+`
+
+func (q *Queries) GetProjectComments(ctx context.Context, projectID pgtype.UUID) ([]ProjectComment, error) {
+	rows, err := q.db.Query(ctx, getProjectComments, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProjectComment
+	for rows.Next() {
+		var i ProjectComment
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.BackerID,
+			&i.ParentCommentID,
+			&i.Content,
+			&i.CommentedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProjectUpdates = `-- name: GetProjectUpdates :many
+SELECT id, project_id, description, update_date FROM project_updates
+WHERE project_id = $1
+`
+
+func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) ([]ProjectUpdate, error) {
+	rows, err := q.db.Query(ctx, getProjectUpdates, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProjectUpdate
+	for rows.Next() {
+		var i ProjectUpdate
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.Description,
+			&i.UpdateDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUserByID = `-- name: GetUserByID :one
