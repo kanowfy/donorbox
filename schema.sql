@@ -11,14 +11,14 @@ CREATE TYPE backing_status AS ENUM (
 
 CREATE TABLE IF NOT EXISTS users (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	username varchar(64) UNIQUE NOT NULL,
-	hashed_password text NOT NULL,
 	email varchar(255) UNIQUE NOT NULL,
-	first_name varchar(64),
-	last_name varchar(64),
+	hashed_password text NOT NULL,
+	first_name varchar(64) NOT NULL,
+	last_name varchar(64) NOT NULL,
 	profile_picture text,
 	activated boolean NOT NULL DEFAULT false,
-	user_type user_type NOT NULL DEFAULT 'regular'
+	user_type user_type NOT NULL DEFAULT 'regular',
+	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS categories (

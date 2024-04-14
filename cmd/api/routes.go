@@ -7,6 +7,11 @@ func (app *application) routes() http.Handler {
 
 	router.HandleFunc("GET /healthz", app.healthCheckHandler)
 
+	router.HandleFunc("GET /users/{id}", app.getOneUserHandler)
+	router.HandleFunc("POST /register", app.registerAccountHandler)
+	router.HandleFunc("PATCH /users", app.updateAccountHandler)
+	router.HandleFunc("PATCH /users/password", app.changePasswordHandler)
+
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
 	router.HandleFunc("POST /projects", app.createProjectHandler)
@@ -23,16 +28,4 @@ func (app *application) routes() http.Handler {
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
 	return app.requestLogging(v1)
-}
-
-func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{
-		"status":  "up",
-		"version": "0.0.1",
-	}
-
-	err := app.writeJSON(w, http.StatusOK, data, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
 }

@@ -11,16 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const activateUser = `-- name: ActivateUser :exec
-UPDATE users SET activated = TRUE
-WHERE id = $1
-`
-
-func (q *Queries) ActivateUser(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, activateUser, id)
-	return err
-}
-
 const createProject = `-- name: CreateProject :one
 INSERT INTO projects (
     user_id, category_id, title, description, cover_picture, goal_amount, country, province, end_date
@@ -136,44 +126,30 @@ func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpda
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-    username, hashed_password, email, first_name, last_name, profile_picture
+    email, hashed_password, first_name, last_name 
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4
 )
-RETURNING id, username, hashed_password, email, first_name, last_name, profile_picture, activated, user_type
+RETURNING id
 `
 
 type CreateUserParams struct {
-	Username       string
-	HashedPassword string
 	Email          string
-	FirstName      pgtype.Text
-	LastName       pgtype.Text
-	ProfilePicture pgtype.Text
+	HashedPassword string
+	FirstName      string
+	LastName       string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.UUID, error) {
 	row := q.db.QueryRow(ctx, createUser,
-		arg.Username,
-		arg.HashedPassword,
 		arg.Email,
+		arg.HashedPassword,
 		arg.FirstName,
 		arg.LastName,
-		arg.ProfilePicture,
 	)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.HashedPassword,
-		&i.Email,
-		&i.FirstName,
-		&i.LastName,
-		&i.ProfilePicture,
-		&i.Activated,
-		&i.UserType,
-	)
-	return i, err
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteProjectByID = `-- name: DeleteProjectByID :exec
@@ -206,7 +182,8 @@ func (q *Queries) DeleteProjectUpdate(ctx context.Context, id pgtype.UUID) error
 }
 
 const deleteUserByID = `-- name: DeleteUserByID :exec
-DELETE FROM users WHERE id = $1
+DELETE FROM users
+WHERE id = $1
 `
 
 func (q *Queries) DeleteUserByID(ctx context.Context, id pgtype.UUID) error {
@@ -303,28 +280,38 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, username, hashed_password, email, first_name, last_name, profile_picture, activated, user_type FROM users
+SELECT id, email, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
 `
 
-func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
+type GetAllUsersRow struct {
+	ID             pgtype.UUID
+	Email          string
+	FirstName      string
+	LastName       string
+	ProfilePicture pgtype.Text
+	Activated      bool
+	UserType       UserType
+	CreatedAt      pgtype.Timestamptz
+}
+
+func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 	rows, err := q.db.Query(ctx, getAllUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []GetAllUsersRow
 	for rows.Next() {
-		var i User
+		var i GetAllUsersRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Username,
-			&i.HashedPassword,
 			&i.Email,
 			&i.FirstName,
 			&i.LastName,
 			&i.ProfilePicture,
 			&i.Activated,
 			&i.UserType,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -425,7 +412,7 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, username, hashed_password, email, first_name, last_name, profile_picture, activated, user_type FROM users
+SELECT id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
 WHERE id = $1
 `
 
@@ -434,36 +421,14 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Username,
-		&i.HashedPassword,
 		&i.Email,
+		&i.HashedPassword,
 		&i.FirstName,
 		&i.LastName,
 		&i.ProfilePicture,
 		&i.Activated,
 		&i.UserType,
-	)
-	return i, err
-}
-
-const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, hashed_password, email, first_name, last_name, profile_picture, activated, user_type FROM users
-WHERE username = $1
-`
-
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByUsername, username)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.HashedPassword,
-		&i.Email,
-		&i.FirstName,
-		&i.LastName,
-		&i.ProfilePicture,
-		&i.Activated,
-		&i.UserType,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -514,8 +479,36 @@ func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundPa
 	return err
 }
 
+const updateUserByID = `-- name: UpdateUserByID :exec
+UPDATE users
+SET email = $2, first_name = $3, last_name = $4, profile_picture = $5, activated = $6
+WHERE id = $1
+`
+
+type UpdateUserByIDParams struct {
+	ID             pgtype.UUID
+	Email          string
+	FirstName      string
+	LastName       string
+	ProfilePicture pgtype.Text
+	Activated      bool
+}
+
+func (q *Queries) UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error {
+	_, err := q.db.Exec(ctx, updateUserByID,
+		arg.ID,
+		arg.Email,
+		arg.FirstName,
+		arg.LastName,
+		arg.ProfilePicture,
+		arg.Activated,
+	)
+	return err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :exec
-UPDATE users SET hashed_password = $2
+UPDATE users
+SET hashed_password = $2
 WHERE id = $1
 `
 
@@ -526,20 +519,5 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.HashedPassword)
-	return err
-}
-
-const updateUserProfilePicture = `-- name: UpdateUserProfilePicture :exec
-UPDATE users SET profile_picture = $2
-WHERE id = $1
-`
-
-type UpdateUserProfilePictureParams struct {
-	ID             pgtype.UUID
-	ProfilePicture pgtype.Text
-}
-
-func (q *Queries) UpdateUserProfilePicture(ctx context.Context, arg UpdateUserProfilePictureParams) error {
-	_, err := q.db.Exec(ctx, updateUserProfilePicture, arg.ID, arg.ProfilePicture)
 	return err
 }

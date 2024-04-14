@@ -144,12 +144,12 @@ type ProjectUpdate struct {
 
 type User struct {
 	ID             pgtype.UUID
-	Username       string
-	HashedPassword string
 	Email          string
-	FirstName      pgtype.Text
-	LastName       pgtype.Text
+	HashedPassword string
+	FirstName      string
+	LastName       string
 	ProfilePicture pgtype.Text
 	Activated      bool
 	UserType       UserType
+	CreatedAt      pgtype.Timestamptz
 }
