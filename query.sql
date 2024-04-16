@@ -75,6 +75,10 @@ SELECT id, email, first_name, last_name, profile_picture, activated, user_type, 
 SELECT * FROM users
 WHERE id = $1;
 
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE email = $1;
+
 -- name: UpdateUserByID :exec
 UPDATE users
 SET email = $2, first_name = $3, last_name = $4, profile_picture = $5, activated = $6

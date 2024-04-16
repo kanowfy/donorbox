@@ -93,6 +93,10 @@ func stringToPgxUUID(s string) (pgtype.UUID, error) {
 	return uuid, nil
 }
 
+func pgxUUIDToString(uuid pgtype.UUID) string {
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid.Bytes[0:4], uuid.Bytes[4:6], uuid.Bytes[6:8], uuid.Bytes[8:10], uuid.Bytes[10:16])
+}
+
 func mustStringToPgxUUID(s string) pgtype.UUID {
 	uuid, err := stringToPgxUUID(s)
 	if err != nil {

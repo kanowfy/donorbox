@@ -1,10 +1,10 @@
 package main
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/kanowfy/donorbox/internal/auth"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
 	"golang.org/x/crypto/bcrypt"
@@ -26,6 +26,46 @@ func (app *application) getOneUserHandler(w http.ResponseWriter, r *http.Request
 
 	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user": user,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.LoginRequest
+
+	err := app.readJSON(w, r, &req)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err = app.validator.Struct(req); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user, err := app.repository.GetUserByEmail(r.Context(), req.Email)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	// validate password
+	if err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password)); err != nil {
+		app.invalidCredentialsResponse(w, r)
+		return
+	}
+
+	token, err := auth.GenerateToken(pgxUUIDToString(user.ID), string(user.UserType))
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// return token
+	if err := app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"token": token,
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -62,7 +102,7 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	if err = app.writeJSON(w, http.StatusCreated, map[string]interface{}{
-		"id": string(id.Bytes[:]),
+		"id": pgxUUIDToString(id),
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -82,21 +122,10 @@ func (app *application) updateAccountHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	id, ok := r.Context().Value("user-id").(pgtype.UUID)
-	if !ok {
-		app.logError(r, errors.New("could not retrieve user id through context"))
-		app.unauthorizedResponse(w, r)
-		return
-	}
-
-	user, err := app.repository.GetUserByID(r.Context(), id)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	user := app.contextGetUser(r)
 
 	var updateParams db.UpdateUserByIDParams
-	updateParams.ID = id
+	updateParams.ID = user.ID
 
 	if req.Email != nil {
 		updateParams.Email = *req.Email
@@ -160,18 +189,7 @@ func (app *application) changePasswordHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	id, ok := r.Context().Value("user-id").(pgtype.UUID)
-	if !ok {
-		app.logError(r, errors.New("could not retrieve user id through context"))
-		app.unauthorizedResponse(w, r)
-		return
-	}
-
-	user, err := app.repository.GetUserByID(r.Context(), id)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	user := app.contextGetUser(r)
 
 	// check password
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.OldPassword))
@@ -183,7 +201,7 @@ func (app *application) changePasswordHandler(w http.ResponseWriter, r *http.Req
 	newHashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 
 	args := db.UpdateUserPasswordParams{
-		ID:             id,
+		ID:             user.ID,
 		HashedPassword: string(newHashedPassword),
 	}
 

@@ -7,6 +7,11 @@ type RegisterAccountRequest struct {
 	LastName  string `json:"last_name" validate:"required"`
 }
 
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
 type UpdateAccountRequest struct {
 	Email          *string `json:"email,omitempty" validate:"omitnil,email"`
 	FirstName      *string `json:"first_name,omitempty"`

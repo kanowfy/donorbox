@@ -21,15 +21,15 @@ RETURNING id, user_id, category_id, title, description, cover_picture, goal_amou
 `
 
 type CreateProjectParams struct {
-	UserID       pgtype.UUID
-	CategoryID   int32
-	Title        string
-	Description  string
-	CoverPicture string
-	GoalAmount   pgtype.Numeric
-	Country      string
-	Province     string
-	EndDate      pgtype.Timestamptz
+	UserID       pgtype.UUID        `json:"user_id"`
+	CategoryID   int32              `json:"category_id"`
+	Title        string             `json:"title"`
+	Description  string             `json:"description"`
+	CoverPicture string             `json:"cover_picture"`
+	GoalAmount   pgtype.Numeric     `json:"goal_amount"`
+	Country      string             `json:"country"`
+	Province     string             `json:"province"`
+	EndDate      pgtype.Timestamptz `json:"end_date"`
 }
 
 func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
@@ -73,10 +73,10 @@ RETURNING id, project_id, backer_id, parent_comment_id, content, commented_at
 `
 
 type CreateProjectCommentParams struct {
-	ProjectID       pgtype.UUID
-	BackerID        pgtype.UUID
-	ParentCommentID pgtype.UUID
-	Content         string
+	ProjectID       pgtype.UUID `json:"project_id"`
+	BackerID        pgtype.UUID `json:"backer_id"`
+	ParentCommentID pgtype.UUID `json:"parent_comment_id"`
+	Content         string      `json:"content"`
 }
 
 func (q *Queries) CreateProjectComment(ctx context.Context, arg CreateProjectCommentParams) (ProjectComment, error) {
@@ -108,8 +108,8 @@ RETURNING id, project_id, description, update_date
 `
 
 type CreateProjectUpdateParams struct {
-	ProjectID   pgtype.UUID
-	Description string
+	ProjectID   pgtype.UUID `json:"project_id"`
+	Description string      `json:"description"`
 }
 
 func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpdateParams) (ProjectUpdate, error) {
@@ -134,10 +134,10 @@ RETURNING id
 `
 
 type CreateUserParams struct {
-	Email          string
-	HashedPassword string
-	FirstName      string
-	LastName       string
+	Email          string `json:"email"`
+	HashedPassword string `json:"hashed_password"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.UUID, error) {
@@ -228,13 +228,13 @@ LIMIT $7::integer OFFSET $6::integer
 `
 
 type GetAllProjectsParams struct {
-	Category          int32
-	EndDateAsc        int32
-	EndDateDesc       int32
-	CurrentAmountAsc  int32
-	CurrentAmountDesc int32
-	TotalOffset       int32
-	PageLimit         int32
+	Category          int32 `json:"category"`
+	EndDateAsc        int32 `json:"end_date_asc"`
+	EndDateDesc       int32 `json:"end_date_desc"`
+	CurrentAmountAsc  int32 `json:"current_amount_asc"`
+	CurrentAmountDesc int32 `json:"current_amount_desc"`
+	TotalOffset       int32 `json:"total_offset"`
+	PageLimit         int32 `json:"page_limit"`
 }
 
 func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]Project, error) {
@@ -284,14 +284,14 @@ SELECT id, email, first_name, last_name, profile_picture, activated, user_type, 
 `
 
 type GetAllUsersRow struct {
-	ID             pgtype.UUID
-	Email          string
-	FirstName      string
-	LastName       string
-	ProfilePicture pgtype.Text
-	Activated      bool
-	UserType       UserType
-	CreatedAt      pgtype.Timestamptz
+	ID             pgtype.UUID        `json:"id"`
+	Email          string             `json:"email"`
+	FirstName      string             `json:"first_name"`
+	LastName       string             `json:"last_name"`
+	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	Activated      bool               `json:"activated"`
+	UserType       UserType           `json:"user_type"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
@@ -411,6 +411,28 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 	return items, nil
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
+WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.Activated,
+		&i.UserType,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
 WHERE id = $1
@@ -440,14 +462,14 @@ WHERE id = $1
 `
 
 type UpdateProjectByIDParams struct {
-	ID           pgtype.UUID
-	Title        string
-	Description  string
-	CoverPicture string
-	GoalAmount   pgtype.Numeric
-	Country      string
-	Province     string
-	EndDate      pgtype.Timestamptz
+	ID           pgtype.UUID        `json:"id"`
+	Title        string             `json:"title"`
+	Description  string             `json:"description"`
+	CoverPicture string             `json:"cover_picture"`
+	GoalAmount   pgtype.Numeric     `json:"goal_amount"`
+	Country      string             `json:"country"`
+	Province     string             `json:"province"`
+	EndDate      pgtype.Timestamptz `json:"end_date"`
 }
 
 func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error {
@@ -470,8 +492,8 @@ WHERE id = $1
 `
 
 type UpdateProjectFundParams struct {
-	ID            pgtype.UUID
-	CurrentAmount pgtype.Numeric
+	ID            pgtype.UUID    `json:"id"`
+	CurrentAmount pgtype.Numeric `json:"current_amount"`
 }
 
 func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error {
@@ -486,12 +508,12 @@ WHERE id = $1
 `
 
 type UpdateUserByIDParams struct {
-	ID             pgtype.UUID
-	Email          string
-	FirstName      string
-	LastName       string
-	ProfilePicture pgtype.Text
-	Activated      bool
+	ID             pgtype.UUID `json:"id"`
+	Email          string      `json:"email"`
+	FirstName      string      `json:"first_name"`
+	LastName       string      `json:"last_name"`
+	ProfilePicture pgtype.Text `json:"profile_picture"`
+	Activated      bool        `json:"activated"`
 }
 
 func (q *Queries) UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error {
@@ -513,8 +535,8 @@ WHERE id = $1
 `
 
 type UpdateUserPasswordParams struct {
-	ID             pgtype.UUID
-	HashedPassword string
+	ID             pgtype.UUID `json:"id"`
+	HashedPassword string      `json:"hashed_password"`
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
