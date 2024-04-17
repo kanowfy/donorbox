@@ -259,19 +259,18 @@ func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *htt
 	pid := mustStringToPgxUUID(req.ProjectID)
 
 	// check if projectID is valid
-	_, err = app.repository.GetProjectByID(r.Context(), pid)
+	project, err := app.repository.GetProjectByID(r.Context(), pid)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	//TODO: Check permission of requesting user
-	/*
-		if project.UserID != currentUserID {
-			app.unauthorizedReponse(w, r)
-			return
-		}
-	*/
+	// Check permission of requesting user
+	user := app.contextGetUser(r)
+	if user.ID != project.UserID {
+		app.authenticationRequiredResponse(w, r)
+		return
+	}
 
 	args := db.CreateProjectUpdateParams{
 		ProjectID:   pid,

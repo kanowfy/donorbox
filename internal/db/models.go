@@ -32,8 +32,8 @@ func (e *BackingStatus) Scan(src interface{}) error {
 }
 
 type NullBackingStatus struct {
-	BackingStatus BackingStatus
-	Valid         bool // Valid is true if BackingStatus is not NULL
+	BackingStatus BackingStatus `json:"backing_status"`
+	Valid         bool          `json:"valid"` // Valid is true if BackingStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -74,8 +74,8 @@ func (e *UserType) Scan(src interface{}) error {
 }
 
 type NullUserType struct {
-	UserType UserType
-	Valid    bool // Valid is true if UserType is not NULL
+	UserType UserType `json:"user_type"`
+	Valid    bool     `json:"valid"` // Valid is true if UserType is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -97,59 +97,59 @@ func (ns NullUserType) Value() (driver.Value, error) {
 }
 
 type Backing struct {
-	ID          pgtype.UUID
-	ProjectID   pgtype.UUID
-	BackerID    pgtype.UUID
-	Amount      pgtype.Numeric
-	BackingDate pgtype.Timestamptz
-	Status      BackingStatus
+	ID          pgtype.UUID        `json:"id"`
+	ProjectID   pgtype.UUID        `json:"project_id"`
+	BackerID    pgtype.UUID        `json:"backer_id"`
+	Amount      pgtype.Numeric     `json:"amount"`
+	BackingDate pgtype.Timestamptz `json:"backing_date"`
+	Status      BackingStatus      `json:"status"`
 }
 
 type Category struct {
-	ID   int32
-	Name string
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
 }
 
 type Project struct {
-	ID            pgtype.UUID
-	UserID        pgtype.UUID
-	CategoryID    int32
-	Title         string
-	Description   string
-	CoverPicture  string
-	GoalAmount    pgtype.Numeric
-	CurrentAmount pgtype.Numeric
-	Country       string
-	Province      string
-	StartDate     pgtype.Timestamptz
-	EndDate       pgtype.Timestamptz
-	IsActive      bool
+	ID            pgtype.UUID        `json:"id"`
+	UserID        pgtype.UUID        `json:"user_id"`
+	CategoryID    int32              `json:"category_id"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverPicture  string             `json:"cover_picture"`
+	GoalAmount    pgtype.Numeric     `json:"goal_amount"`
+	CurrentAmount pgtype.Numeric     `json:"current_amount"`
+	Country       string             `json:"country"`
+	Province      string             `json:"province"`
+	StartDate     pgtype.Timestamptz `json:"start_date"`
+	EndDate       pgtype.Timestamptz `json:"end_date"`
+	IsActive      bool               `json:"is_active"`
 }
 
 type ProjectComment struct {
-	ID              pgtype.UUID
-	ProjectID       pgtype.UUID
-	BackerID        pgtype.UUID
-	ParentCommentID pgtype.UUID
-	Content         string
-	CommentedAt     pgtype.Timestamptz
+	ID              pgtype.UUID        `json:"id"`
+	ProjectID       pgtype.UUID        `json:"project_id"`
+	BackerID        pgtype.UUID        `json:"backer_id"`
+	ParentCommentID pgtype.UUID        `json:"parent_comment_id"`
+	Content         string             `json:"content"`
+	CommentedAt     pgtype.Timestamptz `json:"commented_at"`
 }
 
 type ProjectUpdate struct {
-	ID          pgtype.UUID
-	ProjectID   pgtype.UUID
-	Description string
-	UpdateDate  pgtype.Timestamptz
+	ID          pgtype.UUID        `json:"id"`
+	ProjectID   pgtype.UUID        `json:"project_id"`
+	Description string             `json:"description"`
+	UpdateDate  pgtype.Timestamptz `json:"update_date"`
 }
 
 type User struct {
-	ID             pgtype.UUID
-	Username       string
-	HashedPassword string
-	Email          string
-	FirstName      pgtype.Text
-	LastName       pgtype.Text
-	ProfilePicture pgtype.Text
-	Activated      bool
-	UserType       UserType
+	ID             pgtype.UUID        `json:"id"`
+	Email          string             `json:"email"`
+	HashedPassword string             `json:"hashed_password"`
+	FirstName      string             `json:"first_name"`
+	LastName       string             `json:"last_name"`
+	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	Activated      bool               `json:"activated"`
+	UserType       UserType           `json:"user_type"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
