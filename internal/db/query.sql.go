@@ -17,7 +17,7 @@ INSERT INTO projects (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active
+RETURNING id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active
 `
 
 type CreateProjectParams struct {
@@ -26,7 +26,7 @@ type CreateProjectParams struct {
 	Title        string             `json:"title"`
 	Description  string             `json:"description"`
 	CoverPicture string             `json:"cover_picture"`
-	GoalAmount   pgtype.Numeric     `json:"goal_amount"`
+	GoalAmount   int64              `json:"goal_amount"`
 	Country      string             `json:"country"`
 	Province     string             `json:"province"`
 	EndDate      pgtype.Timestamptz `json:"end_date"`
@@ -58,6 +58,7 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 		&i.Province,
 		&i.StartDate,
 		&i.EndDate,
+		&i.PaymentID,
 		&i.IsActive,
 	)
 	return i, err
@@ -124,6 +125,45 @@ func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpda
 	return i, err
 }
 
+const createTransaction = `-- name: CreateTransaction :one
+INSERT INTO transactions (
+    project_id, transaction_type, amount, initiator_id, recipient_id
+) VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING id, project_id, transaction_type, amount, initiator_id, recipient_id, status, create_at
+`
+
+type CreateTransactionParams struct {
+	ProjectID       pgtype.UUID     `json:"project_id"`
+	TransactionType TransactionType `json:"transaction_type"`
+	Amount          int64           `json:"amount"`
+	InitiatorID     pgtype.UUID     `json:"initiator_id"`
+	RecipientID     pgtype.UUID     `json:"recipient_id"`
+}
+
+func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
+	row := q.db.QueryRow(ctx, createTransaction,
+		arg.ProjectID,
+		arg.TransactionType,
+		arg.Amount,
+		arg.InitiatorID,
+		arg.RecipientID,
+	)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.TransactionType,
+		&i.Amount,
+		&i.InitiatorID,
+		&i.RecipientID,
+		&i.Status,
+		&i.CreateAt,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
     email, hashed_password, first_name, last_name 
@@ -181,16 +221,6 @@ func (q *Queries) DeleteProjectUpdate(ctx context.Context, id pgtype.UUID) error
 	return err
 }
 
-const deleteUserByID = `-- name: DeleteUserByID :exec
-DELETE FROM users
-WHERE id = $1
-`
-
-func (q *Queries) DeleteUserByID(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteUserByID, id)
-	return err
-}
-
 const getAllCategories = `-- name: GetAllCategories :many
 SELECT id, name FROM categories
 `
@@ -216,7 +246,7 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 }
 
 const getAllProjects = `-- name: GetAllProjects :many
-SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
 WHERE category_id = 
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
 ORDER BY
@@ -267,7 +297,41 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 			&i.Province,
 			&i.StartDate,
 			&i.EndDate,
+			&i.PaymentID,
 			&i.IsActive,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllTransactions = `-- name: GetAllTransactions :many
+SELECT id, project_id, transaction_type, amount, initiator_id, recipient_id, status, create_at FROM transactions
+`
+
+func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getAllTransactions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transaction
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.TransactionType,
+			&i.Amount,
+			&i.InitiatorID,
+			&i.RecipientID,
+			&i.Status,
+			&i.CreateAt,
 		); err != nil {
 			return nil, err
 		}
@@ -323,8 +387,46 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 	return items, nil
 }
 
+const getEscrowUserByEmail = `-- name: GetEscrowUserByEmail :one
+SELECT id, email, hashed_password, user_type, payment_id, created_at FROM escrow_users
+WHERE email = $1
+`
+
+func (q *Queries) GetEscrowUserByEmail(ctx context.Context, email string) (EscrowUser, error) {
+	row := q.db.QueryRow(ctx, getEscrowUserByEmail, email)
+	var i EscrowUser
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.UserType,
+		&i.PaymentID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getEscrowUserByID = `-- name: GetEscrowUserByID :one
+SELECT id, email, hashed_password, user_type, payment_id, created_at FROM escrow_users
+WHERE id = $1
+`
+
+func (q *Queries) GetEscrowUserByID(ctx context.Context, id pgtype.UUID) (EscrowUser, error) {
+	row := q.db.QueryRow(ctx, getEscrowUserByID, id)
+	var i EscrowUser
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.UserType,
+		&i.PaymentID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getProjectByID = `-- name: GetProjectByID :one
-SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, is_active FROM projects
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
 WHERE id = $1
 `
 
@@ -344,6 +446,7 @@ func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (Project, 
 		&i.Province,
 		&i.StartDate,
 		&i.EndDate,
+		&i.PaymentID,
 		&i.IsActive,
 	)
 	return i, err
@@ -411,6 +514,27 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 	return items, nil
 }
 
+const getTransactionByID = `-- name: GetTransactionByID :one
+SELECT id, project_id, transaction_type, amount, initiator_id, recipient_id, status, create_at FROM transactions
+WHERE id = $1
+`
+
+func (q *Queries) GetTransactionByID(ctx context.Context, id pgtype.UUID) (Transaction, error) {
+	row := q.db.QueryRow(ctx, getTransactionByID, id)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.TransactionType,
+		&i.Amount,
+		&i.InitiatorID,
+		&i.RecipientID,
+		&i.Status,
+		&i.CreateAt,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
 WHERE email = $1
@@ -455,6 +579,22 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	return i, err
 }
 
+const updateEscrowUserPaymentID = `-- name: UpdateEscrowUserPaymentID :exec
+UPDATE escrow_users
+SET payment_id = $2
+WHERE id = $1
+`
+
+type UpdateEscrowUserPaymentIDParams struct {
+	ID        pgtype.UUID `json:"id"`
+	PaymentID pgtype.Text `json:"payment_id"`
+}
+
+func (q *Queries) UpdateEscrowUserPaymentID(ctx context.Context, arg UpdateEscrowUserPaymentIDParams) error {
+	_, err := q.db.Exec(ctx, updateEscrowUserPaymentID, arg.ID, arg.PaymentID)
+	return err
+}
+
 const updateProjectByID = `-- name: UpdateProjectByID :exec
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8
@@ -466,7 +606,7 @@ type UpdateProjectByIDParams struct {
 	Title        string             `json:"title"`
 	Description  string             `json:"description"`
 	CoverPicture string             `json:"cover_picture"`
-	GoalAmount   pgtype.Numeric     `json:"goal_amount"`
+	GoalAmount   int64              `json:"goal_amount"`
 	Country      string             `json:"country"`
 	Province     string             `json:"province"`
 	EndDate      pgtype.Timestamptz `json:"end_date"`
@@ -492,12 +632,43 @@ WHERE id = $1
 `
 
 type UpdateProjectFundParams struct {
-	ID            pgtype.UUID    `json:"id"`
-	CurrentAmount pgtype.Numeric `json:"current_amount"`
+	ID            pgtype.UUID `json:"id"`
+	CurrentAmount int64       `json:"current_amount"`
 }
 
 func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error {
 	_, err := q.db.Exec(ctx, updateProjectFund, arg.ID, arg.CurrentAmount)
+	return err
+}
+
+const updateProjectPaymentID = `-- name: UpdateProjectPaymentID :exec
+UPDATE projects SET payment_id = $2
+WHERE id = $1
+`
+
+type UpdateProjectPaymentIDParams struct {
+	ID        pgtype.UUID `json:"id"`
+	PaymentID pgtype.Text `json:"payment_id"`
+}
+
+func (q *Queries) UpdateProjectPaymentID(ctx context.Context, arg UpdateProjectPaymentIDParams) error {
+	_, err := q.db.Exec(ctx, updateProjectPaymentID, arg.ID, arg.PaymentID)
+	return err
+}
+
+const updateTransactionStatus = `-- name: UpdateTransactionStatus :exec
+UPDATE transactions
+SET status = $2
+WHERE id = $1
+`
+
+type UpdateTransactionStatusParams struct {
+	ID     pgtype.UUID       `json:"id"`
+	Status TransactionStatus `json:"status"`
+}
+
+func (q *Queries) UpdateTransactionStatus(ctx context.Context, arg UpdateTransactionStatusParams) error {
+	_, err := q.db.Exec(ctx, updateTransactionStatus, arg.ID, arg.Status)
 	return err
 }
 

@@ -9,6 +9,18 @@ CREATE TYPE backing_status AS ENUM (
 	'refunded'
 );
 
+CREATE TYPE transaction_type AS ENUM (
+	'backing',
+	'payout',
+	'refund'
+);
+
+CREATE TYPE transaction_status AS ENUM (
+	'pending',
+	'completed',
+	'failed'
+);
+
 CREATE TABLE IF NOT EXISTS users (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	email varchar(255) UNIQUE NOT NULL,
@@ -18,6 +30,15 @@ CREATE TABLE IF NOT EXISTS users (
 	profile_picture text,
 	activated boolean NOT NULL DEFAULT false,
 	user_type user_type NOT NULL DEFAULT 'regular',
+	created_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS escrow_users (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	email varchar(255) UNIQUE NOT NULL,
+	hashed_password text NOT NULL,
+	user_type user_type NOT NULL DEFAULT 'escrow',
+	payment_id text UNIQUE,
 	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -33,12 +54,13 @@ CREATE TABLE IF NOT EXISTS projects (
 	title text NOT NULL,
 	description text NOT NULL,
 	cover_picture text NOT NULL,
-	goal_amount decimal(10,2) NOT NULL,
-	current_amount decimal(10,2) NOT NULL DEFAULT 0.00,
+	goal_amount bigint NOT NULL,
+	current_amount bigint NOT NULL DEFAULT 0,
 	country varchar(64) NOT NULL,
 	province varchar(64) NOT NULL,
 	start_date timestamptz NOT NULL DEFAULT NOW(),
 	end_date timestamptz NOT NULL,
+	payment_id text UNIQUE,
 	is_active boolean NOT NULL DEFAULT TRUE
 );
 
@@ -46,7 +68,7 @@ CREATE TABLE IF NOT EXISTS backings (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_id uuid NOT NULL REFERENCES projects(id),
 	backer_id uuid NOT NULL REFERENCES users(id),
-	amount decimal(10,2) NOT NULL,
+	amount bigint NOT NULL,
 	backing_date timestamptz NOT NULL DEFAULT NOW(),
 	status backing_status NOT NULL DEFAULT 'pending'
 );
@@ -65,4 +87,15 @@ CREATE TABLE IF NOT EXISTS project_comments (
 	parent_comment_id uuid REFERENCES project_comments(id),
 	content text NOT NULL,
 	commented_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	project_id uuid NOT NULL REFERENCES projects(id),
+	transaction_type transaction_type NOT NULL,
+	amount bigint NOT NULL,
+	initiator_id uuid NOT NULL,
+	recipient_id uuid NOT NULL,
+	status transaction_status NOT NULL DEFAULT 'pending',
+	create_at timestamptz NOT NULL DEFAULT NOW()
 );

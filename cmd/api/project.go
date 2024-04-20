@@ -101,7 +101,7 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 		Title:        req.Title,
 		Description:  req.Description,
 		CoverPicture: req.CoverPicture,
-		GoalAmount:   mustStringToPgxNumeric(req.GoalAmount),
+		GoalAmount:   mustStringToInt64(req.GoalAmount),
 		Country:      req.Country,
 		Province:     req.Province,
 		EndDate:      mustTimeToPgxTimestamp(req.EndDate),
@@ -171,7 +171,7 @@ func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if payload.GoalAmount != nil {
-		updateParams.GoalAmount = mustStringToPgxNumeric(*payload.GoalAmount)
+		updateParams.GoalAmount = mustStringToInt64(*payload.GoalAmount)
 	} else {
 		updateParams.GoalAmount = project.GoalAmount
 	}
