@@ -37,7 +37,7 @@ func (app *application) requestLogging(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) requireAuthentication(next http.HandlerFunc) http.HandlerFunc {
+func (app *application) requireUserAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// extract and verify token
 		val := r.Header.Get("Authorization")

@@ -57,7 +57,7 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(pgxUUIDToString(user.ID), string(user.UserType))
+	token, err := auth.GenerateToken(pgxUUIDToString(user.ID))
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

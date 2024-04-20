@@ -15,7 +15,7 @@ var (
 	ErrInvalidToken         = errors.New("invalid token")
 )
 
-func GenerateToken(userID string, userType string) (string, error) {
+func GenerateToken(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"iss": "donorbox",

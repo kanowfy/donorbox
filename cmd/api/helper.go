@@ -106,11 +106,10 @@ func mustStringToPgxUUID(s string) pgtype.UUID {
 	return uuid
 }
 
-func mustStringToPgxNumeric(s string) pgtype.Numeric {
-	var num pgtype.Numeric
-	err := num.Scan(s)
+func mustStringToInt64(s string) int64 {
+	num, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
-		panic("parsing validated invalid numeric")
+		panic(err)
 	}
 
 	return num

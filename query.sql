@@ -22,6 +22,10 @@ WHERE id = $1;
 UPDATE projects SET current_amount = current_amount + $2
 WHERE id = $1;
 
+-- name: UpdateProjectPaymentID :exec
+UPDATE projects SET payment_id = $2
+WHERE id = $1;
+
 -- name: DeleteProjectByID :exec
 DELETE FROM projects WHERE id = $1;
 
@@ -97,6 +101,35 @@ INSERT INTO users (
 )
 RETURNING id;
 
--- name: DeleteUserByID :exec
-DELETE FROM users
+-- name: GetEscrowUserByID :one
+SELECT * FROM escrow_users
+WHERE id = $1;
+
+-- name: GetEscrowUserByEmail :one
+SELECT * FROM escrow_users
+WHERE email = $1;
+
+-- name: UpdateEscrowUserPaymentID :exec
+UPDATE escrow_users
+SET payment_id = $2
+WHERE id = $1;
+
+-- name: GetAllTransactions :many
+SELECT * FROM transactions;
+
+-- name: GetTransactionByID :one
+SELECT * FROM transactions
+WHERE id = $1;
+
+-- name: CreateTransaction :one
+INSERT INTO transactions (
+    project_id, transaction_type, amount, initiator_id, recipient_id
+) VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING *;
+
+-- name: UpdateTransactionStatus :exec
+UPDATE transactions
+SET status = $2
 WHERE id = $1;
