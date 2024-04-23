@@ -92,6 +92,11 @@ WHERE id = $1;
 UPDATE users
 SET hashed_password = $2
 WHERE id = $1;
+
+-- name: ActivateUser :exec
+UPDATE users
+SET activated = TRUE
+WHERE id = $1;
     
 -- name: CreateUser :one
 INSERT INTO users (
@@ -99,7 +104,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id;
+RETURNING *;
 
 -- name: GetEscrowUserByID :one
 SELECT * FROM escrow_users

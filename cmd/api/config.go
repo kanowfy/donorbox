@@ -6,8 +6,9 @@ import (
 )
 
 type config struct {
-	Host           string `env:"HOST" envDefault:"localhost"`
-	Port           int    `env:"PORT" envDefault:"4000"`
+	Host string `env:"HOST" envDefault:"localhost"`
+	Port int    `env:"PORT" envDefault:"4000"`
+
 	DBDsn          string `env:"DB_DSN"`
 	DBUser         string `env:"DB_USER"`
 	DBPassword     string `env:"DB_PASSWORD"`
@@ -18,6 +19,12 @@ type config struct {
 	DBMaxOpenConns int    `env:"DB_MAXOPENCONNS" envDefault:"25"`
 	DBMaxIdleConns int    `env:"DB_MAXIDLECONNS" envDefault:"25"`
 	DBMaxIdleTime  string `env:"DB_MAXIDLETIME" envDefault:"15m"`
+
+	SmtpHost     string `env:"SMTP_HOST"`
+	SmtpPort     int    `env:"SMTP_PORT" envDefault:"25"`
+	SmtpUsername string `env:"SMTP_USERNAME"`
+	SmtpPassword string `env:"SMTP_PASSWORD"`
+	SmtpSender   string `env:"SMTP_SENDER" envDefault:"DonorBox <no-reply@donorbox.kanowfy.com>"`
 }
 
 func loadConfig() (config, error) {

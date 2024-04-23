@@ -9,6 +9,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandleFunc("GET /users/{id}", app.getOneUserHandler)
 	router.HandleFunc("POST /users/register", app.registerAccountHandler)
+	router.HandleFunc("POST /verify", app.activateUser)
 	router.HandleFunc("POST /users/login", app.loginHandler)
 	router.HandleFunc("PATCH /users", app.requireUserAuthentication(app.updateAccountHandler))
 	router.HandleFunc("PATCH /users/password", app.requireUserAuthentication(app.changePasswordHandler))

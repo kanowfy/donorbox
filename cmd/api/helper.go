@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -146,4 +147,21 @@ func readInt(qs url.Values, key string, defaultValue int) (int, error) {
 	}
 
 	return i, nil
+}
+
+func (app *application) background(fn func()) {
+	app.wg.Add(1)
+	go func() {
+		defer app.wg.Done()
+
+		// recover panic in background goroutine, instead of terminate the app, log the error
+		defer func() {
+			if err := recover(); err != nil {
+				slog.Error(fmt.Sprintf("%s", err))
+			}
+		}()
+
+		fn()
+
+	}()
 }
