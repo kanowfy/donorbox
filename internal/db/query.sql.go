@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const activateUser = `-- name: ActivateUser :exec
+UPDATE users
+SET activated = TRUE
+WHERE id = $1
+`
+
+func (q *Queries) ActivateUser(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, activateUser, id)
+	return err
+}
+
 const createProject = `-- name: CreateProject :one
 INSERT INTO projects (
     user_id, category_id, title, description, cover_picture, goal_amount, country, province, end_date
@@ -170,7 +181,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id
+RETURNING id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at
 `
 
 type CreateUserParams struct {
@@ -180,16 +191,26 @@ type CreateUserParams struct {
 	LastName       string `json:"last_name"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (pgtype.UUID, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Email,
 		arg.HashedPassword,
 		arg.FirstName,
 		arg.LastName,
 	)
-	var id pgtype.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.Activated,
+		&i.UserType,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const deleteProjectByID = `-- name: DeleteProjectByID :exec

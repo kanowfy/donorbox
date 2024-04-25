@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kanowfy/donorbox/internal/auth"
+	"github.com/kanowfy/donorbox/internal/token"
 )
 
 type statusRecorder struct {
@@ -52,9 +52,9 @@ func (app *application) requireUserAuthentication(next http.HandlerFunc) http.Ha
 			return
 		}
 
-		token := parts[1]
+		tokenString := parts[1]
 
-		id, err := auth.VerifyToken(token)
+		id, err := token.VerifyToken(tokenString)
 		if err != nil {
 			app.invalidAuthenticationTokenResponse(w, r)
 			return

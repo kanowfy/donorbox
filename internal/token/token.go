@@ -1,4 +1,4 @@
-package auth
+package token
 
 import (
 	"errors"
@@ -15,12 +15,12 @@ var (
 	ErrInvalidToken         = errors.New("invalid token")
 )
 
-func GenerateToken(userID string) (string, error) {
+func GenerateToken(userID string, ttl time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"iss": "donorbox",
 			"id":  userID,
-			"exp": time.Now().Add(72 * time.Hour),
+			"exp": time.Now().Add(ttl).Unix(),
 		})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))

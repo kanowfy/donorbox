@@ -5,18 +5,22 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/log"
+	"github.com/kanowfy/donorbox/internal/mail"
 )
 
 type application struct {
 	config     config
 	repository *db.Queries
 	validator  *validator.Validate
+	mailer     mail.Mailer
+	wg         sync.WaitGroup
 }
 
 func init() {
@@ -41,6 +45,7 @@ func main() {
 		config:     cfg,
 		repository: db.New(dbpool),
 		validator:  validator.New(validator.WithRequiredStructEnabled()),
+		mailer:     mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
 	}
 
 	err = app.serve()

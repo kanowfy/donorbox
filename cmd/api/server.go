@@ -32,6 +32,10 @@ func (app *application) serve() error {
 	}()
 
 	<-ctx.Done()
+	defer func() {
+		slog.Info("completing background tasks")
+		app.wg.Wait()
+	}()
 	slog.Info("caught interruption signal, shutting down server...")
 	if err := srv.Shutdown(context.Background()); err != nil {
 		return err

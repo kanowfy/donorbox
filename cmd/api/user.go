@@ -1,12 +1,15 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/kanowfy/donorbox/internal/auth"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
+	"github.com/kanowfy/donorbox/internal/token"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -57,7 +60,7 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(pgxUUIDToString(user.ID))
+	token, err := token.GenerateToken(pgxUUIDToString(user.ID), time.Hour*3*24)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -95,14 +98,66 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 		LastName:       req.LastName,
 	}
 
-	id, err := app.repository.CreateUser(r.Context(), args)
+	user, err := app.repository.CreateUser(r.Context(), args)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	if err = app.writeJSON(w, http.StatusCreated, map[string]interface{}{
-		"id": pgxUUIDToString(id),
+	token, err := token.GenerateToken(pgxUUIDToString(user.ID), time.Hour*3*24)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.background(func() {
+		payload := map[string]interface{}{
+			"activationUrl": fmt.Sprintf("%s:%d/verify?token=%s", app.config.Host, app.config.Port, token), // adjust url as needed
+		}
+
+		if err := app.mailer.Send(req.Email, "registration.tmpl", payload); err != nil {
+			app.logError(r, err)
+		}
+	})
+
+	if err = app.writeJSON(w, http.StatusAccepted, map[string]interface{}{
+		"user": user,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) activateUser(w http.ResponseWriter, r *http.Request) {
+	tokenString := readString(r.URL.Query(), "token", "")
+	if tokenString == "" {
+		app.badRequestResponse(w, r, errors.New("missing token"))
+		return
+	}
+
+	userID, err := token.VerifyToken(tokenString)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user, err := app.repository.GetUserByID(r.Context(), mustStringToPgxUUID(userID))
+	if err != nil {
+		app.badRequestResponse(w, r, errors.New("invalid token"))
+		return
+	}
+
+	if user.Activated {
+		app.badRequestResponse(w, r, errors.New("user has already been verified"))
+		return
+	}
+
+	if err = app.repository.ActivateUser(r.Context(), user.ID); err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "profile updated successfully",
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -126,6 +181,7 @@ func (app *application) updateAccountHandler(w http.ResponseWriter, r *http.Requ
 
 	var updateParams db.UpdateUserByIDParams
 	updateParams.ID = user.ID
+	updateParams.Activated = user.Activated
 
 	if req.Email != nil {
 		updateParams.Email = *req.Email
@@ -143,12 +199,6 @@ func (app *application) updateAccountHandler(w http.ResponseWriter, r *http.Requ
 		updateParams.LastName = *req.LastName
 	} else {
 		updateParams.LastName = user.LastName
-	}
-
-	if req.Activated != nil {
-		updateParams.Activated = *req.Activated
-	} else {
-		updateParams.Activated = user.Activated
 	}
 
 	if req.ProfilePicture != nil {
