@@ -22,6 +22,35 @@ func (q *Queries) ActivateUser(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const createBacking = `-- name: CreateBacking :one
+INSERT INTO backings (
+    project_id, backer_id, amount
+) VALUES (
+    $1, $2, $3
+) 
+RETURNING id, project_id, backer_id, amount, backing_date, status
+`
+
+type CreateBackingParams struct {
+	ProjectID pgtype.UUID `json:"project_id"`
+	BackerID  pgtype.UUID `json:"backer_id"`
+	Amount    int64       `json:"amount"`
+}
+
+func (q *Queries) CreateBacking(ctx context.Context, arg CreateBackingParams) (Backing, error) {
+	row := q.db.QueryRow(ctx, createBacking, arg.ProjectID, arg.BackerID, arg.Amount)
+	var i Backing
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.BackerID,
+		&i.Amount,
+		&i.BackingDate,
+		&i.Status,
+	)
+	return i, err
+}
+
 const createProject = `-- name: CreateProject :one
 INSERT INTO projects (
     user_id, category_id, title, description, cover_picture, goal_amount, country, province, end_date
@@ -408,6 +437,90 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 	return items, nil
 }
 
+const getBackingByID = `-- name: GetBackingByID :one
+SELECT id, project_id, backer_id, amount, backing_date, status FROM backings
+WHERE id = $1
+`
+
+func (q *Queries) GetBackingByID(ctx context.Context, id pgtype.UUID) (Backing, error) {
+	row := q.db.QueryRow(ctx, getBackingByID, id)
+	var i Backing
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.BackerID,
+		&i.Amount,
+		&i.BackingDate,
+		&i.Status,
+	)
+	return i, err
+}
+
+const getBackingsForProject = `-- name: GetBackingsForProject :many
+SELECT id, project_id, backer_id, amount, backing_date, status FROM backings
+WHERE project_id = $1
+ORDER BY backing_date DESC
+`
+
+func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UUID) ([]Backing, error) {
+	rows, err := q.db.Query(ctx, getBackingsForProject, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Backing
+	for rows.Next() {
+		var i Backing
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.BackerID,
+			&i.Amount,
+			&i.BackingDate,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getBackingsForUser = `-- name: GetBackingsForUser :many
+SELECT id, project_id, backer_id, amount, backing_date, status FROM backings
+WHERE backer_id = $1
+`
+
+func (q *Queries) GetBackingsForUser(ctx context.Context, backerID pgtype.UUID) ([]Backing, error) {
+	rows, err := q.db.Query(ctx, getBackingsForUser, backerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Backing
+	for rows.Next() {
+		var i Backing
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.BackerID,
+			&i.Amount,
+			&i.BackingDate,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEscrowUserByEmail = `-- name: GetEscrowUserByEmail :one
 SELECT id, email, hashed_password, user_type, payment_id, created_at FROM escrow_users
 WHERE email = $1
@@ -616,6 +729,22 @@ func (q *Queries) UpdateEscrowUserPaymentID(ctx context.Context, arg UpdateEscro
 	return err
 }
 
+const updateProjectBackingStatus = `-- name: UpdateProjectBackingStatus :exec
+UPDATE backings
+SET status = $2
+WHERE project_id = $1
+`
+
+type UpdateProjectBackingStatusParams struct {
+	ProjectID pgtype.UUID   `json:"project_id"`
+	Status    BackingStatus `json:"status"`
+}
+
+func (q *Queries) UpdateProjectBackingStatus(ctx context.Context, arg UpdateProjectBackingStatusParams) error {
+	_, err := q.db.Exec(ctx, updateProjectBackingStatus, arg.ProjectID, arg.Status)
+	return err
+}
+
 const updateProjectByID = `-- name: UpdateProjectByID :exec
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8
@@ -648,17 +777,17 @@ func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDPa
 }
 
 const updateProjectFund = `-- name: UpdateProjectFund :exec
-UPDATE projects SET current_amount = current_amount + $2
+UPDATE projects SET current_amount = current_amount + $2::bigint
 WHERE id = $1
 `
 
 type UpdateProjectFundParams struct {
 	ID            pgtype.UUID `json:"id"`
-	CurrentAmount int64       `json:"current_amount"`
+	BackingAmount int64       `json:"backing_amount"`
 }
 
 func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error {
-	_, err := q.db.Exec(ctx, updateProjectFund, arg.ID, arg.CurrentAmount)
+	_, err := q.db.Exec(ctx, updateProjectFund, arg.ID, arg.BackingAmount)
 	return err
 }
 

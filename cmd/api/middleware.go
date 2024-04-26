@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/token"
 )
 
@@ -60,7 +61,7 @@ func (app *application) requireUserAuthentication(next http.HandlerFunc) http.Ha
 			return
 		}
 
-		user, err := app.repository.GetUserByID(r.Context(), mustStringToPgxUUID(id))
+		user, err := app.repository.GetUserByID(r.Context(), convert.MustStringToPgxUUID(id))
 		if err != nil {
 			app.invalidCredentialsResponse(w, r)
 			return

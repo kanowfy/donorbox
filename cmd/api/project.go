@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
 )
@@ -62,7 +63,7 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 
 func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
-	id, err := stringToPgxUUID(idStr)
+	id, err := convert.StringToPgxUUID(idStr)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -96,15 +97,15 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	args := db.CreateProjectParams{
-		UserID:       mustStringToPgxUUID(req.UserID),
+		UserID:       convert.MustStringToPgxUUID(req.UserID),
 		CategoryID:   int32(req.CategoryID),
 		Title:        req.Title,
 		Description:  req.Description,
 		CoverPicture: req.CoverPicture,
-		GoalAmount:   mustStringToInt64(req.GoalAmount),
+		GoalAmount:   convert.MustStringToInt64(req.GoalAmount),
 		Country:      req.Country,
 		Province:     req.Province,
-		EndDate:      mustTimeToPgxTimestamp(req.EndDate),
+		EndDate:      convert.MustTimeToPgxTimestamp(req.EndDate),
 	}
 
 	project, err := app.repository.CreateProject(r.Context(), args)
@@ -122,7 +123,7 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 
 func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
-	id, err := stringToPgxUUID(idStr)
+	id, err := convert.StringToPgxUUID(idStr)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -171,7 +172,7 @@ func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if payload.GoalAmount != nil {
-		updateParams.GoalAmount = mustStringToInt64(*payload.GoalAmount)
+		updateParams.GoalAmount = convert.MustStringToInt64(*payload.GoalAmount)
 	} else {
 		updateParams.GoalAmount = project.GoalAmount
 	}
@@ -189,7 +190,7 @@ func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if payload.EndDate != nil {
-		updateParams.EndDate = mustTimeToPgxTimestamp(*payload.EndDate)
+		updateParams.EndDate = convert.MustTimeToPgxTimestamp(*payload.EndDate)
 	} else {
 		updateParams.EndDate = project.EndDate
 	}
@@ -256,7 +257,7 @@ func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	pid := mustStringToPgxUUID(req.ProjectID)
+	pid := convert.MustStringToPgxUUID(req.ProjectID)
 
 	// check if projectID is valid
 	project, err := app.repository.GetProjectByID(r.Context(), pid)
@@ -304,7 +305,7 @@ func (app *application) createProjectCommentHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	pid := mustStringToPgxUUID(req.ProjectID)
+	pid := convert.MustStringToPgxUUID(req.ProjectID)
 
 	// check if projectID is valid, backerID is validated through middleware
 	if _, err = app.repository.GetProjectByID(r.Context(), pid); err != nil {
@@ -316,12 +317,12 @@ func (app *application) createProjectCommentHandler(w http.ResponseWriter, r *ht
 
 	args := db.CreateProjectCommentParams{
 		ProjectID: pid,
-		BackerID:  mustStringToPgxUUID(req.BackerID),
+		BackerID:  convert.MustStringToPgxUUID(req.BackerID),
 		Content:   req.Content,
 	}
 
 	if req.ParentCommentID != nil {
-		args.ParentCommentID = mustStringToPgxUUID(*req.ParentCommentID)
+		args.ParentCommentID = convert.MustStringToPgxUUID(*req.ParentCommentID)
 	}
 
 	comment, err := app.repository.CreateProjectComment(r.Context(), args)

@@ -15,9 +15,14 @@ import (
 	"github.com/kanowfy/donorbox/internal/mail"
 )
 
+type repository struct {
+	*db.Queries
+	pool *pgxpool.Pool
+}
+
 type application struct {
 	config     config
-	repository *db.Queries
+	repository repository
 	validator  *validator.Validate
 	mailer     mail.Mailer
 	wg         sync.WaitGroup
@@ -42,10 +47,13 @@ func main() {
 	}
 
 	app := &application{
-		config:     cfg,
-		repository: db.New(dbpool),
-		validator:  validator.New(validator.WithRequiredStructEnabled()),
-		mailer:     mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+		config: cfg,
+		repository: repository{
+			Queries: db.New(dbpool),
+			pool:    dbpool,
+		},
+		validator: validator.New(validator.WithRequiredStructEnabled()),
+		mailer:    mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
 	}
 
 	err = app.serve()
