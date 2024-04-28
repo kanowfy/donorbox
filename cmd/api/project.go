@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
@@ -209,8 +208,7 @@ func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Requ
 
 func (app *application) deleteProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
-	var id pgtype.UUID
-	err := id.Scan(idStr)
+	id, err := convert.StringToPgxUUID(idStr)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

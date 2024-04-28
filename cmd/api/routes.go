@@ -13,13 +13,15 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("POST /users/login", app.loginHandler)
 	router.HandleFunc("PATCH /users", app.requireUserAuthentication(app.updateAccountHandler))
 	router.HandleFunc("PATCH /users/password", app.requireUserAuthentication(app.changePasswordHandler))
+	router.HandleFunc("GET /users/backings", app.requireUserAuthentication(app.getBackingsForUserHandler))
 
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
 	router.HandleFunc("POST /projects", app.requireUserAuthentication(app.createProjectHandler))
 	router.HandleFunc("PATCH /projects/{id}", app.requireUserAuthentication(app.updateProjectHandler))
 	router.HandleFunc("DELETE /projects/{id}", app.requireUserAuthentication(app.deleteProjectHandler))
-	router.HandleFunc("POST /projects/backing", app.requireUserAuthentication(app.projectBackingHandler))
+	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
+	router.HandleFunc("POST /projects/{id}/backings", app.requireUserAuthentication(app.createProjectBackingHandler))
 
 	router.HandleFunc("POST /project-updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
 

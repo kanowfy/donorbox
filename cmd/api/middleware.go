@@ -1,10 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/kanowfy/donorbox/internal/convert"
@@ -41,23 +41,13 @@ func (app *application) requestLogging(next http.Handler) http.Handler {
 func (app *application) requireUserAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// extract and verify token
-		val := r.Header.Get("Authorization")
-		if val == "" {
-			app.authenticationRequiredResponse(w, r)
-			return
-		}
-
-		parts := strings.Split(val, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			app.invalidAuthenticationTokenResponse(w, r)
-			return
-		}
-
-		tokenString := parts[1]
-
-		id, err := token.VerifyToken(tokenString)
+		id, err := token.VerifyRequestToken(r)
 		if err != nil {
-			app.invalidAuthenticationTokenResponse(w, r)
+			if errors.Is(err, token.ErrMissingToken) {
+				app.authenticationRequiredResponse(w, r)
+			} else {
+				app.invalidAuthenticationTokenResponse(w, r)
+			}
 			return
 		}
 
@@ -69,5 +59,29 @@ func (app *application) requireUserAuthentication(next http.HandlerFunc) http.Ha
 
 		r = app.contextSetUser(r, &user)
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requireEscrowAuthentication(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		id, err := token.VerifyRequestToken(r)
+		if err != nil {
+			if errors.Is(err, token.ErrMissingToken) {
+				app.authenticationRequiredResponse(w, r)
+			} else {
+				app.invalidAuthenticationTokenResponse(w, r)
+			}
+			return
+		}
+
+		user, err := app.repository.GetEscrowUserByID(r.Context(), convert.MustStringToPgxUUID(id))
+		if err != nil {
+			app.invalidCredentialsResponse(w, r)
+			return
+		}
+
+		r = app.contextSetEscrowUser(r, &user)
+		next.ServeHTTP(w, r)
+
 	})
 }

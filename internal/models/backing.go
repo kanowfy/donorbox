@@ -9,7 +9,6 @@ type CardInformation struct {
 }
 
 type BackingRequest struct {
-	ProjectID       string          `json:"project_id" validate:"required,uuid4"`
 	Amount          string          `json:"amount" validate:"required,number"`
 	CardInformation CardInformation `json:"card_info" validate:"required"`
 }
