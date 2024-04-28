@@ -24,7 +24,7 @@ func AcceptBacking(ctx context.Context, dbpool *pgxpool.Pool, queries *db.Querie
 	- if err, roll back
 	*/
 
-	_, err = qtx.CreateBacking(ctx, arg)
+	backing, err := qtx.CreateBacking(ctx, arg)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func AcceptBacking(ctx context.Context, dbpool *pgxpool.Pool, queries *db.Querie
 	}
 
 	_, err = queries.CreateTransaction(ctx, db.CreateTransactionParams{
-		ProjectID:       arg.ProjectID,
+		BackingID:       backing.ID,
 		TransactionType: db.TransactionTypeBacking,
 		Amount:          arg.Amount,
 		InitiatorID:     arg.BackerID,

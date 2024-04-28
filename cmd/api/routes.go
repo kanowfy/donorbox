@@ -22,10 +22,12 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("DELETE /projects/{id}", app.requireUserAuthentication(app.deleteProjectHandler))
 	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
 	router.HandleFunc("POST /projects/{id}/backings", app.requireUserAuthentication(app.createProjectBackingHandler))
+	router.HandleFunc("POST /projects/updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
+	router.HandleFunc("POST /projects/comments", app.requireUserAuthentication(app.createProjectCommentHandler))
 
-	router.HandleFunc("POST /project-updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
-
-	router.HandleFunc("POST /project-comments", app.requireUserAuthentication(app.createProjectCommentHandler))
+	router.HandleFunc("GET /transactions", app.requireEscrowAuthentication(app.getAllTransactionsHandler))
+	router.HandleFunc("GET /transactions/{id}", app.requireEscrowAuthentication(app.getOneTransactionHandler))
+	router.HandleFunc("GET /transactions/audit/{id}", app.requireEscrowAuthentication(app.getTransactionAuditHandler))
 
 	router.HandleFunc("GET /categories", app.getAllCategoriesHandler)
 

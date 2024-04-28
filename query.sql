@@ -1,3 +1,5 @@
+--:::::::::: PROJECT ::::::::::--
+
 -- name: GetAllProjects :many
 SELECT * FROM projects
 WHERE category_id = 
@@ -40,6 +42,8 @@ RETURNING *;
 -- name: GetAllCategories :many
 SELECT * FROM categories;
 
+--:::::::::: PROJECT UPDATE ::::::::::--
+
 -- name: GetProjectUpdates :many
 SELECT * FROM project_updates
 WHERE project_id = $1;
@@ -56,6 +60,8 @@ INSERT INTO project_updates (
 )
 RETURNING *;
 
+--:::::::::: PROJECT COMMENT ::::::::::--
+
 -- name: GetProjectComments :many
 SELECT * FROM project_comments
 WHERE project_id = $1;
@@ -71,6 +77,8 @@ INSERT INTO project_comments (
     $1, $2, $3, $4
 )
 RETURNING *;
+
+--:::::::::: USER ::::::::::--
 
 -- name: GetAllUsers :many
 SELECT id, email, first_name, last_name, profile_picture, activated, user_type, created_at FROM users;
@@ -119,30 +127,12 @@ UPDATE escrow_users
 SET payment_id = $2
 WHERE id = $1;
 
--- name: GetAllTransactions :many
-SELECT * FROM transactions;
-
--- name: GetTransactionByID :one
-SELECT * FROM transactions
-WHERE id = $1;
-
--- name: CreateTransaction :one
-INSERT INTO transactions (
-    project_id, transaction_type, amount, initiator_id, recipient_id
-) VALUES (
-    $1, $2, $3, $4, $5
-)
-RETURNING *;
-
--- name: UpdateTransactionStatus :exec
-UPDATE transactions
-SET status = $2
-WHERE id = $1;
+--:::::::::: BACKING ::::::::::--
 
 -- name: GetBackingsForProject :many
 SELECT * FROM backings
 WHERE project_id = $1
-ORDER BY backing_date DESC;
+ORDER BY created_at DESC;
 
 -- name: GetBackingByID :one
 SELECT * FROM backings
@@ -164,3 +154,30 @@ RETURNING *;
 UPDATE backings
 SET status = $2
 WHERE project_id = $1;
+
+--:::::::::: TRANSACTION ::::::::::--
+
+-- name: GetAllTransactions :many
+SELECT * FROM transactions
+ORDER BY created_at DESC;
+
+-- name: GetTransactionByID :one
+SELECT * FROM transactions
+WHERE id = $1;
+
+-- name: GetTransactionAudit :many
+SELECT * FROM transactions
+WHERE backing_id = $1 ORDER BY created_at ASC;
+
+-- name: CreateTransaction :one
+INSERT INTO transactions (
+    backing_id, transaction_type, amount, initiator_id, recipient_id
+) VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING *;
+
+-- name: UpdateTransactionStatus :exec
+UPDATE transactions
+SET status = $2
+WHERE id = $1;

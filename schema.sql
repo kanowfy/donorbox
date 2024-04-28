@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS backings (
 	project_id uuid NOT NULL REFERENCES projects(id),
 	backer_id uuid NOT NULL REFERENCES users(id),
 	amount bigint NOT NULL,
-	backing_date timestamptz NOT NULL DEFAULT NOW(),
+	created_at timestamptz NOT NULL DEFAULT NOW(),
 	status backing_status NOT NULL DEFAULT 'pending'
 );
 
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS project_updates (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_id uuid NOT NULL REFERENCES projects(id),
 	description text NOT NULL,
-	update_date timestamptz NOT NULL DEFAULT NOW()
+	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS project_comments (
@@ -91,11 +91,11 @@ CREATE TABLE IF NOT EXISTS project_comments (
 
 CREATE TABLE IF NOT EXISTS transactions (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	project_id uuid NOT NULL REFERENCES projects(id),
+	backing_id uuid NOT NULL REFERENCES backings(id),
 	transaction_type transaction_type NOT NULL,
 	amount bigint NOT NULL,
 	initiator_id uuid NOT NULL,
 	recipient_id uuid NOT NULL,
 	status transaction_status NOT NULL DEFAULT 'pending',
-	create_at timestamptz NOT NULL DEFAULT NOW()
+	created_at timestamptz NOT NULL DEFAULT NOW()
 );
