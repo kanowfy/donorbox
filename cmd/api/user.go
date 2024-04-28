@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
 	"github.com/kanowfy/donorbox/internal/token"
@@ -15,7 +16,7 @@ import (
 
 func (app *application) getOneUserHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
-	id, err := stringToPgxUUID(idStr)
+	id, err := convert.StringToPgxUUID(idStr)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -60,7 +61,7 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := token.GenerateToken(pgxUUIDToString(user.ID), time.Hour*3*24)
+	token, err := token.GenerateToken(convert.PgxUUIDToString(user.ID), time.Hour*3*24)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -74,7 +75,6 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO: email verification
 func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterAccountRequest
 
@@ -104,7 +104,7 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	token, err := token.GenerateToken(pgxUUIDToString(user.ID), time.Hour*3*24)
+	token, err := token.GenerateToken(convert.PgxUUIDToString(user.ID), time.Hour*3*24)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -127,7 +127,7 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func (app *application) activateUser(w http.ResponseWriter, r *http.Request) {
+func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 	tokenString := readString(r.URL.Query(), "token", "")
 	if tokenString == "" {
 		app.badRequestResponse(w, r, errors.New("missing token"))
@@ -140,7 +140,7 @@ func (app *application) activateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := app.repository.GetUserByID(r.Context(), mustStringToPgxUUID(userID))
+	user, err := app.repository.GetUserByID(r.Context(), convert.MustStringToPgxUUID(userID))
 	if err != nil {
 		app.badRequestResponse(w, r, errors.New("invalid token"))
 		return

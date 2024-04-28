@@ -10,9 +10,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (app *application) writeJSON(w http.ResponseWriter, status int, data map[string]interface{}, headers http.Header) error {
@@ -83,47 +80,6 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dest in
 	}
 
 	return nil
-}
-
-func stringToPgxUUID(s string) (pgtype.UUID, error) {
-	var uuid pgtype.UUID
-	err := uuid.Scan(s)
-	if err != nil {
-		return pgtype.UUID{}, err
-	}
-	return uuid, nil
-}
-
-func pgxUUIDToString(uuid pgtype.UUID) string {
-	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid.Bytes[0:4], uuid.Bytes[4:6], uuid.Bytes[6:8], uuid.Bytes[8:10], uuid.Bytes[10:16])
-}
-
-func mustStringToPgxUUID(s string) pgtype.UUID {
-	uuid, err := stringToPgxUUID(s)
-	if err != nil {
-		panic("parsing validated invalid UUID")
-	}
-
-	return uuid
-}
-
-func mustStringToInt64(s string) int64 {
-	num, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-
-	return num
-}
-
-func mustTimeToPgxTimestamp(t time.Time) pgtype.Timestamptz {
-	var time pgtype.Timestamptz
-	err := time.Scan(t)
-	if err != nil {
-		panic("parsing validated invalid timestamp")
-	}
-
-	return time
 }
 
 func readString(qs url.Values, key, defaultValue string) string {

@@ -4,15 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
-	ErrInvalidSigningMethod = errors.New("invalid signing method")
-	ErrInvalidToken         = errors.New("invalid token")
+	ErrMissingToken = errors.New("missing token")
+	ErrInvalidToken = errors.New("invalid token")
 )
 
 func GenerateToken(userID string, ttl time.Duration) (string, error) {
@@ -36,7 +38,7 @@ func VerifyToken(tokenString string) (string, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			slog.Debug("wrong method")
-			return nil, ErrInvalidSigningMethod
+			return nil, ErrInvalidToken
 		}
 
 		return []byte(os.Getenv("JWT_SECRET")), nil
@@ -63,4 +65,25 @@ func VerifyToken(tokenString string) (string, error) {
 	}
 
 	return id.(string), nil
+}
+
+func VerifyRequestToken(r *http.Request) (string, error) {
+	val := r.Header.Get("Authorization")
+	if val == "" {
+		return "", ErrMissingToken
+	}
+
+	parts := strings.Split(val, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		return "", ErrInvalidToken
+	}
+
+	tokenString := parts[1]
+
+	id, err := VerifyToken(tokenString)
+	if err != nil {
+		return "", ErrInvalidToken
+	}
+
+	return id, nil
 }

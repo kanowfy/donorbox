@@ -19,7 +19,7 @@ SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country 
 WHERE id = $1;
 
 -- name: UpdateProjectFund :exec
-UPDATE projects SET current_amount = current_amount + $2
+UPDATE projects SET current_amount = current_amount + @backing_amount::bigint
 WHERE id = $1;
 
 -- name: UpdateProjectPaymentID :exec
@@ -138,3 +138,29 @@ RETURNING *;
 UPDATE transactions
 SET status = $2
 WHERE id = $1;
+
+-- name: GetBackingsForProject :many
+SELECT * FROM backings
+WHERE project_id = $1
+ORDER BY backing_date DESC;
+
+-- name: GetBackingByID :one
+SELECT * FROM backings
+WHERE id = $1;
+
+-- name: GetBackingsForUser :many
+SELECT * FROM backings
+WHERE backer_id = $1;
+
+-- name: CreateBacking :one
+INSERT INTO backings (
+    project_id, backer_id, amount
+) VALUES (
+    $1, $2, $3
+) 
+RETURNING *;
+
+-- name: UpdateProjectBackingStatus :exec
+UPDATE backings
+SET status = $2
+WHERE project_id = $1;
