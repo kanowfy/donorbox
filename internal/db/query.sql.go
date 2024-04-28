@@ -28,7 +28,7 @@ INSERT INTO backings (
 ) VALUES (
     $1, $2, $3
 ) 
-RETURNING id, project_id, backer_id, amount, backing_date, status
+RETURNING id, project_id, backer_id, amount, created_at, status
 `
 
 type CreateBackingParams struct {
@@ -45,7 +45,7 @@ func (q *Queries) CreateBacking(ctx context.Context, arg CreateBackingParams) (B
 		&i.ProjectID,
 		&i.BackerID,
 		&i.Amount,
-		&i.BackingDate,
+		&i.CreatedAt,
 		&i.Status,
 	)
 	return i, err
@@ -145,7 +145,7 @@ INSERT INTO project_updates (
 ) VALUES (
     $1, $2
 )
-RETURNING id, project_id, description, update_date
+RETURNING id, project_id, description, created_at
 `
 
 type CreateProjectUpdateParams struct {
@@ -160,22 +160,22 @@ func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpda
 		&i.ID,
 		&i.ProjectID,
 		&i.Description,
-		&i.UpdateDate,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
-    project_id, transaction_type, amount, initiator_id, recipient_id
+    backing_id, transaction_type, amount, initiator_id, recipient_id
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, project_id, transaction_type, amount, initiator_id, recipient_id, status, create_at
+RETURNING id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at
 `
 
 type CreateTransactionParams struct {
-	ProjectID       pgtype.UUID     `json:"project_id"`
+	BackingID       pgtype.UUID     `json:"backing_id"`
 	TransactionType TransactionType `json:"transaction_type"`
 	Amount          int64           `json:"amount"`
 	InitiatorID     pgtype.UUID     `json:"initiator_id"`
@@ -184,7 +184,7 @@ type CreateTransactionParams struct {
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
 	row := q.db.QueryRow(ctx, createTransaction,
-		arg.ProjectID,
+		arg.BackingID,
 		arg.TransactionType,
 		arg.Amount,
 		arg.InitiatorID,
@@ -193,13 +193,13 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
-		&i.ProjectID,
+		&i.BackingID,
 		&i.TransactionType,
 		&i.Amount,
 		&i.InitiatorID,
 		&i.RecipientID,
 		&i.Status,
-		&i.CreateAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -296,6 +296,7 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 }
 
 const getAllProjects = `-- name: GetAllProjects :many
+
 SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
 WHERE category_id = 
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
@@ -317,6 +318,7 @@ type GetAllProjectsParams struct {
 	PageLimit         int32 `json:"page_limit"`
 }
 
+// :::::::::: PROJECT ::::::::::--
 func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]Project, error) {
 	rows, err := q.db.Query(ctx, getAllProjects,
 		arg.Category,
@@ -361,9 +363,11 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 }
 
 const getAllTransactions = `-- name: GetAllTransactions :many
-SELECT id, project_id, transaction_type, amount, initiator_id, recipient_id, status, create_at FROM transactions
+
+SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
 `
 
+// :::::::::: TRANSACTION ::::::::::--
 func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error) {
 	rows, err := q.db.Query(ctx, getAllTransactions)
 	if err != nil {
@@ -375,13 +379,13 @@ func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error)
 		var i Transaction
 		if err := rows.Scan(
 			&i.ID,
-			&i.ProjectID,
+			&i.BackingID,
 			&i.TransactionType,
 			&i.Amount,
 			&i.InitiatorID,
 			&i.RecipientID,
 			&i.Status,
-			&i.CreateAt,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -394,6 +398,7 @@ func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error)
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
+
 SELECT id, email, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
 `
 
@@ -408,6 +413,7 @@ type GetAllUsersRow struct {
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
+// :::::::::: USER ::::::::::--
 func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 	rows, err := q.db.Query(ctx, getAllUsers)
 	if err != nil {
@@ -438,7 +444,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 }
 
 const getBackingByID = `-- name: GetBackingByID :one
-SELECT id, project_id, backer_id, amount, backing_date, status FROM backings
+SELECT id, project_id, backer_id, amount, created_at, status FROM backings
 WHERE id = $1
 `
 
@@ -450,18 +456,20 @@ func (q *Queries) GetBackingByID(ctx context.Context, id pgtype.UUID) (Backing, 
 		&i.ProjectID,
 		&i.BackerID,
 		&i.Amount,
-		&i.BackingDate,
+		&i.CreatedAt,
 		&i.Status,
 	)
 	return i, err
 }
 
 const getBackingsForProject = `-- name: GetBackingsForProject :many
-SELECT id, project_id, backer_id, amount, backing_date, status FROM backings
+
+SELECT id, project_id, backer_id, amount, created_at, status FROM backings
 WHERE project_id = $1
-ORDER BY backing_date DESC
+ORDER BY created_at DESC
 `
 
+// :::::::::: BACKING ::::::::::--
 func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UUID) ([]Backing, error) {
 	rows, err := q.db.Query(ctx, getBackingsForProject, projectID)
 	if err != nil {
@@ -476,7 +484,7 @@ func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UU
 			&i.ProjectID,
 			&i.BackerID,
 			&i.Amount,
-			&i.BackingDate,
+			&i.CreatedAt,
 			&i.Status,
 		); err != nil {
 			return nil, err
@@ -490,7 +498,7 @@ func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UU
 }
 
 const getBackingsForUser = `-- name: GetBackingsForUser :many
-SELECT id, project_id, backer_id, amount, backing_date, status FROM backings
+SELECT id, project_id, backer_id, amount, created_at, status FROM backings
 WHERE backer_id = $1
 `
 
@@ -508,7 +516,7 @@ func (q *Queries) GetBackingsForUser(ctx context.Context, backerID pgtype.UUID) 
 			&i.ProjectID,
 			&i.BackerID,
 			&i.Amount,
-			&i.BackingDate,
+			&i.CreatedAt,
 			&i.Status,
 		); err != nil {
 			return nil, err
@@ -587,10 +595,12 @@ func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (Project, 
 }
 
 const getProjectComments = `-- name: GetProjectComments :many
+
 SELECT id, project_id, backer_id, parent_comment_id, content, commented_at FROM project_comments
 WHERE project_id = $1
 `
 
+// :::::::::: PROJECT COMMENT ::::::::::--
 func (q *Queries) GetProjectComments(ctx context.Context, projectID pgtype.UUID) ([]ProjectComment, error) {
 	rows, err := q.db.Query(ctx, getProjectComments, projectID)
 	if err != nil {
@@ -619,10 +629,12 @@ func (q *Queries) GetProjectComments(ctx context.Context, projectID pgtype.UUID)
 }
 
 const getProjectUpdates = `-- name: GetProjectUpdates :many
-SELECT id, project_id, description, update_date FROM project_updates
+
+SELECT id, project_id, description, created_at FROM project_updates
 WHERE project_id = $1
 `
 
+// :::::::::: PROJECT UPDATE ::::::::::--
 func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) ([]ProjectUpdate, error) {
 	rows, err := q.db.Query(ctx, getProjectUpdates, projectID)
 	if err != nil {
@@ -636,7 +648,41 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 			&i.ID,
 			&i.ProjectID,
 			&i.Description,
-			&i.UpdateDate,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactionAudit = `-- name: GetTransactionAudit :many
+SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
+WHERE backing_id = $1 ORDER BY created_at ASC
+`
+
+func (q *Queries) GetTransactionAudit(ctx context.Context, backingID pgtype.UUID) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getTransactionAudit, backingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transaction
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.BackingID,
+			&i.TransactionType,
+			&i.Amount,
+			&i.InitiatorID,
+			&i.RecipientID,
+			&i.Status,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -649,7 +695,7 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 }
 
 const getTransactionByID = `-- name: GetTransactionByID :one
-SELECT id, project_id, transaction_type, amount, initiator_id, recipient_id, status, create_at FROM transactions
+SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
 WHERE id = $1
 `
 
@@ -658,13 +704,13 @@ func (q *Queries) GetTransactionByID(ctx context.Context, id pgtype.UUID) (Trans
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
-		&i.ProjectID,
+		&i.BackingID,
 		&i.TransactionType,
 		&i.Amount,
 		&i.InitiatorID,
 		&i.RecipientID,
 		&i.Status,
-		&i.CreateAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }

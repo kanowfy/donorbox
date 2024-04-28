@@ -183,12 +183,12 @@ func (ns NullUserType) Value() (driver.Value, error) {
 }
 
 type Backing struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProjectID   pgtype.UUID        `json:"project_id"`
-	BackerID    pgtype.UUID        `json:"backer_id"`
-	Amount      int64              `json:"amount"`
-	BackingDate pgtype.Timestamptz `json:"backing_date"`
-	Status      BackingStatus      `json:"status"`
+	ID        pgtype.UUID        `json:"id"`
+	ProjectID pgtype.UUID        `json:"project_id"`
+	BackerID  pgtype.UUID        `json:"backer_id"`
+	Amount    int64              `json:"amount"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	Status    BackingStatus      `json:"status"`
 }
 
 type Category struct {
@@ -235,18 +235,18 @@ type ProjectUpdate struct {
 	ID          pgtype.UUID        `json:"id"`
 	ProjectID   pgtype.UUID        `json:"project_id"`
 	Description string             `json:"description"`
-	UpdateDate  pgtype.Timestamptz `json:"update_date"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 type Transaction struct {
 	ID              pgtype.UUID        `json:"id"`
-	ProjectID       pgtype.UUID        `json:"project_id"`
+	BackingID       pgtype.UUID        `json:"backing_id"`
 	TransactionType TransactionType    `json:"transaction_type"`
 	Amount          int64              `json:"amount"`
 	InitiatorID     pgtype.UUID        `json:"initiator_id"`
 	RecipientID     pgtype.UUID        `json:"recipient_id"`
 	Status          TransactionStatus  `json:"status"`
-	CreateAt        pgtype.Timestamptz `json:"create_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
 type User struct {
