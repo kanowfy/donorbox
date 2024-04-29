@@ -14,6 +14,9 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /users", app.requireUserAuthentication(app.updateAccountHandler))
 	router.HandleFunc("PATCH /users/password", app.requireUserAuthentication(app.changePasswordHandler))
 	router.HandleFunc("GET /users/backings", app.requireUserAuthentication(app.getBackingsForUserHandler))
+	router.HandleFunc("GET /users/auth/google", app.startGoogleAuthHandler)
+	router.HandleFunc("GET /users/auth/google/callback", app.googleAuthCallbackHandler)
+	router.HandleFunc("GET /users/logout/google", app.googleAuthLogoutHandler)
 
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
