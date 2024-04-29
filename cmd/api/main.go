@@ -13,6 +13,8 @@ import (
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/log"
 	"github.com/kanowfy/donorbox/internal/mail"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/google"
 )
 
 type repository struct {
@@ -45,6 +47,14 @@ func main() {
 		slog.Error(fmt.Sprintf("error connecting to database: %v", err))
 		os.Exit(1)
 	}
+
+	goth.UseProviders(
+		google.New(
+			cfg.GoogleClientID,
+			cfg.GoogleClientSecret,
+			fmt.Sprintf("http://%s:%d/users/auth/google/callback", cfg.Host, cfg.Port),
+		),
+	)
 
 	app := &application{
 		config: cfg,

@@ -25,6 +25,9 @@ type config struct {
 	SmtpUsername string `env:"SMTP_USERNAME"`
 	SmtpPassword string `env:"SMTP_PASSWORD"`
 	SmtpSender   string `env:"SMTP_SENDER" envDefault:"DonorBox <no-reply@donorbox.kanowfy.com>"`
+
+	GoogleClientID     string `env:"GOOGLE_CLIENT_ID"`
+	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET"`
 }
 
 func loadConfig() (config, error) {
