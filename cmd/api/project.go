@@ -12,29 +12,16 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 	qs := r.URL.Query()
 
 	page, _ := readInt(qs, "page", 1)
-	pageSize, _ := readInt(qs, "page_size", 20)
+	pageSize, _ := readInt(qs, "page_size", 6)
 	category, _ := readInt(qs, "category", 0)
-	sort := readString(qs, "sort", "-end_date")
 
 	filters := models.Filters{
-		Category:     category,
-		Page:         page,
-		PageSize:     pageSize,
-		Sort:         sort,
-		SortSafeList: []string{"end_date", "current_amount", "-end_date", "-current_amount"},
+		Category: category,
+		Page:     page,
+		PageSize: pageSize,
 	}
 
 	var args db.GetAllProjectsParams
-	switch sort {
-	case "end_date":
-		args.EndDateAsc = 1
-	case "current_amount":
-		args.CurrentAmountAsc = 1
-	case "-current_amount":
-		args.CurrentAmountDesc = 1
-	default:
-		args.EndDateDesc = 1
-	}
 
 	args.Category = int32(category)
 	args.PageLimit = int32(filters.Limit())
@@ -49,7 +36,56 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 	metadata := models.CalculateMetadata(len(projects), filters.Page, filters.PageSize)
 
 	if projects == nil {
-		projects = []db.Project{}
+		projects = []db.GetAllProjectsRow{}
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"projects": projects,
+		"metadata": metadata,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+
+	page, _ := readInt(qs, "page", 1)
+	pageSize, _ := readInt(qs, "page_size", 6)
+	category, _ := readInt(qs, "category", 0)
+	searchQuery := readString(qs, "query", "")
+	province := readString(qs, "province", "")
+	country := readString(qs, "country", "")
+	closeToGoal, _ := readInt(qs, "close_to_goal", 0)
+	recent, _ := readInt(qs, "recently_launched", 0)
+
+	filters := models.Filters{
+		Category: category,
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	args := db.SearchProjectsParams{
+		Category:    int32(category),
+		SearchQuery: searchQuery,
+		Province:    province,
+		Country:     country,
+		CloseToGoal: int32(closeToGoal),
+		Recent:      int32(recent),
+		PageLimit:   int32(filters.Limit()),
+		TotalOffset: int32(filters.Offset()),
+	}
+
+	projects, err := app.repository.SearchProjects(r.Context(), args)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	metadata := models.CalculateMetadata(len(projects), filters.Page, filters.PageSize)
+
+	if projects == nil {
+		projects = []db.SearchProjectsRow{}
 	}
 
 	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
