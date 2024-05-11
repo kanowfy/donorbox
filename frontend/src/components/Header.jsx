@@ -14,7 +14,7 @@ const Header = () => {
             className="mr-3 h-6 sm:h-9"
             alt="Flowbite React Logo"
           />
-          <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+          <span className="self-center whitespace-nowrap text-xl font-semibold">
             Donorbox
           </span>
         </Navbar.Brand>
@@ -28,95 +28,52 @@ const Header = () => {
               <ul className="grid grid-cols-3">
                 <div className="space-y-4 p-4">
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
+                    <a href="#" className="hover:text-primary-600">
                       Medical
                     </a>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
+                    <a href="#" className="hover:text-primary-600">
                       Emergency
                     </a>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Charity
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Events
-                    </a>
-                  </li>
-                </div>
-                <div className="space-y-4 p-4">
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Startup
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
+                    <a href="#" className="hover:text-primary-600">
                       Education
                     </a>
                   </li>
+                </div>
+                <div className="space-y-4 p-4">
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Terms
+                    <a href="#" className="hover:text-primary-600">
+                      Animals
                     </a>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Blog
+                    <a href="#" className="hover:text-primary-600">
+                      Competition
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-primary-600">
+                      Event
                     </a>
                   </li>
                 </div>
                 <div className="space-y-4 p-4">
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Newsletter
+                    <a href="#" className="hover:text-primary-600">
+                      Environment
                     </a>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      Playground
+                    <a href="#" className="hover:text-primary-600">
+                      Travel
                     </a>
                   </li>
                   <li>
-                    <a
-                      href="#"
-                      className="hover:text-primary-600 dark:hover:text-primary-500"
-                    >
-                      License
+                    <a href="#" className="hover:text-primary-600">
+                      Business
                     </a>
                   </li>
                 </div>

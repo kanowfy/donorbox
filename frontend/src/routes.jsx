@@ -7,6 +7,7 @@ import Profile from "./pages/Profile";
 import Logout from "./pages/Logout";
 import Search from "./pages/Search";
 import Project from "./pages/Project";
+import Register from "./pages/Register";
 
 const AppRoutes = () => {
   return (
@@ -18,6 +19,7 @@ const AppRoutes = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/fundraiser/:id" element={<Project />} />
       </Route>
+      <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />
     </Routes>

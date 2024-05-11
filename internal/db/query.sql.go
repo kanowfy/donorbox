@@ -272,7 +272,7 @@ func (q *Queries) DeleteProjectUpdate(ctx context.Context, id pgtype.UUID) error
 }
 
 const getAllCategories = `-- name: GetAllCategories :many
-SELECT id, name FROM categories
+SELECT id, name, description, cover_picture FROM categories
 `
 
 func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
@@ -284,7 +284,12 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 	var items []Category
 	for rows.Next() {
 		var i Category
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.CoverPicture,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -365,6 +370,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 const getAllTransactions = `-- name: GetAllTransactions :many
 
 SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
+ORDER BY created_at DESC
 `
 
 // :::::::::: TRANSACTION ::::::::::--

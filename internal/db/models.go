@@ -192,8 +192,10 @@ type Backing struct {
 }
 
 type Category struct {
-	ID   int32  `json:"id"`
-	Name string `json:"name"`
+	ID           int32  `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	CoverPicture string `json:"cover_picture"`
 }
 
 type EscrowUser struct {
