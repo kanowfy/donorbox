@@ -302,45 +302,50 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 
 const getAllProjects = `-- name: GetAllProjects :many
 
-SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
+SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.start_date, projects.end_date, projects.payment_id, projects.is_active, COUNT(backings.project_id) as backing_count
+FROM projects
+LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
-ORDER BY
-    CASE WHEN $2::integer > 0 THEN end_date END ASC,
-    CASE WHEN $3::integer > 0 THEN end_date END DESC,
-    CASE WHEN $4::integer > 0 THEN current_amount END ASC,
-    CASE WHEN $5::integer > 0 THEN current_amount END DESC
-LIMIT $7::integer OFFSET $6::integer
+GROUP BY projects.ID
+ORDER BY backing_count DESC
+LIMIT $3::integer OFFSET $2::integer
 `
 
 type GetAllProjectsParams struct {
-	Category          int32 `json:"category"`
-	EndDateAsc        int32 `json:"end_date_asc"`
-	EndDateDesc       int32 `json:"end_date_desc"`
-	CurrentAmountAsc  int32 `json:"current_amount_asc"`
-	CurrentAmountDesc int32 `json:"current_amount_desc"`
-	TotalOffset       int32 `json:"total_offset"`
-	PageLimit         int32 `json:"page_limit"`
+	Category    int32 `json:"category"`
+	TotalOffset int32 `json:"total_offset"`
+	PageLimit   int32 `json:"page_limit"`
+}
+
+type GetAllProjectsRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	UserID        pgtype.UUID        `json:"user_id"`
+	CategoryID    int32              `json:"category_id"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverPicture  string             `json:"cover_picture"`
+	GoalAmount    int64              `json:"goal_amount"`
+	CurrentAmount int64              `json:"current_amount"`
+	Country       string             `json:"country"`
+	Province      string             `json:"province"`
+	StartDate     pgtype.Timestamptz `json:"start_date"`
+	EndDate       pgtype.Timestamptz `json:"end_date"`
+	PaymentID     pgtype.Text        `json:"payment_id"`
+	IsActive      bool               `json:"is_active"`
+	BackingCount  int64              `json:"backing_count"`
 }
 
 // :::::::::: PROJECT ::::::::::--
-func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]Project, error) {
-	rows, err := q.db.Query(ctx, getAllProjects,
-		arg.Category,
-		arg.EndDateAsc,
-		arg.EndDateDesc,
-		arg.CurrentAmountAsc,
-		arg.CurrentAmountDesc,
-		arg.TotalOffset,
-		arg.PageLimit,
-	)
+func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]GetAllProjectsRow, error) {
+	rows, err := q.db.Query(ctx, getAllProjects, arg.Category, arg.TotalOffset, arg.PageLimit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Project
+	var items []GetAllProjectsRow
 	for rows.Next() {
-		var i Project
+		var i GetAllProjectsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -356,6 +361,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 			&i.EndDate,
 			&i.PaymentID,
 			&i.IsActive,
+			&i.BackingCount,
 		); err != nil {
 			return nil, err
 		}
@@ -638,6 +644,7 @@ const getProjectUpdates = `-- name: GetProjectUpdates :many
 
 SELECT id, project_id, description, created_at FROM project_updates
 WHERE project_id = $1
+ORDER BY created_at DESC
 `
 
 // :::::::::: PROJECT UPDATE ::::::::::--
@@ -763,6 +770,55 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const searchProjects = `-- name: SearchProjects :many
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active
+FROM projects
+WHERE 
+    to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', $1::text)
+LIMIT $3::integer OFFSET $2::integer
+`
+
+type SearchProjectsParams struct {
+	SearchQuery string `json:"search_query"`
+	TotalOffset int32  `json:"total_offset"`
+	PageLimit   int32  `json:"page_limit"`
+}
+
+func (q *Queries) SearchProjects(ctx context.Context, arg SearchProjectsParams) ([]Project, error) {
+	rows, err := q.db.Query(ctx, searchProjects, arg.SearchQuery, arg.TotalOffset, arg.PageLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Project
+	for rows.Next() {
+		var i Project
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CategoryID,
+			&i.Title,
+			&i.Description,
+			&i.CoverPicture,
+			&i.GoalAmount,
+			&i.CurrentAmount,
+			&i.Country,
+			&i.Province,
+			&i.StartDate,
+			&i.EndDate,
+			&i.PaymentID,
+			&i.IsActive,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateEscrowUserPaymentID = `-- name: UpdateEscrowUserPaymentID :exec

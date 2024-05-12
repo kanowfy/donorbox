@@ -1,14 +1,20 @@
 --:::::::::: PROJECT ::::::::::--
 
 -- name: GetAllProjects :many
-SELECT * FROM projects
+SELECT projects.*, COUNT(backings.project_id) as backing_count
+FROM projects
+LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
     CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
-ORDER BY
-    CASE WHEN @end_date_asc::integer > 0 THEN end_date END ASC,
-    CASE WHEN @end_date_desc::integer > 0 THEN end_date END DESC,
-    CASE WHEN @current_amount_asc::integer > 0 THEN current_amount END ASC,
-    CASE WHEN @current_amount_desc::integer > 0 THEN current_amount END DESC
+GROUP BY projects.ID
+ORDER BY backing_count DESC
+LIMIT @page_limit::integer OFFSET @total_offset::integer;
+
+-- name: SearchProjects :many
+SELECT *
+FROM projects
+WHERE 
+    to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: GetProjectByID :one
@@ -46,7 +52,8 @@ SELECT * FROM categories;
 
 -- name: GetProjectUpdates :many
 SELECT * FROM project_updates
-WHERE project_id = $1;
+WHERE project_id = $1
+ORDER BY created_at DESC;
 
 -- name: DeleteProjectUpdate :exec
 DELETE FROM project_updates

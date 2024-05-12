@@ -19,6 +19,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /users/logout/google", app.googleAuthLogoutHandler)
 
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
+	router.HandleFunc("GET /projects/search", app.searchProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
 	router.HandleFunc("POST /projects", app.requireUserAuthentication(app.createProjectHandler))
 	router.HandleFunc("PATCH /projects/{id}", app.requireUserAuthentication(app.updateProjectHandler))
