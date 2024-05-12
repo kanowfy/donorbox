@@ -7,7 +7,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandleFunc("GET /healthz", app.healthCheckHandler)
 
-	router.HandleFunc("GET /users/{id}", app.getOneUserHandler)
+	router.HandleFunc("GET /users", app.requireUserAuthentication(app.getOneUserHandler))
 	router.HandleFunc("POST /users/register", app.registerAccountHandler)
 	router.HandleFunc("POST /verify", app.activateUserHandler) // change when incorporate frontend
 	router.HandleFunc("POST /users/login", app.loginHandler)
@@ -37,5 +37,5 @@ func (app *application) routes() http.Handler {
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
-	return app.requestLogging(v1)
+	return app.enableCors(app.requestLogging(v1))
 }

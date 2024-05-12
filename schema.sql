@@ -44,7 +44,9 @@ CREATE TABLE IF NOT EXISTS escrow_users (
 
 CREATE TABLE IF NOT EXISTS categories (
 	id SERIAL PRIMARY KEY,
-	name varchar(64) UNIQUE NOT NULL
+	name varchar(64) UNIQUE NOT NULL,
+	description text NOT NULL,
+	cover_picture text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS projects (

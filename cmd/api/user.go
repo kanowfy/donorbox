@@ -15,20 +15,9 @@ import (
 )
 
 func (app *application) getOneUserHandler(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := convert.StringToPgxUUID(idStr)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	user := app.contextGetUser(r)
 
-	user, err := app.repository.GetUserByID(r.Context(), id)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+	if err := app.writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user": user,
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
