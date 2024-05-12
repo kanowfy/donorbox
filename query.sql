@@ -11,29 +11,10 @@ ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: SearchProjects :many
-SELECT projects.*, COUNT(backings.project_id) as backing_count
+SELECT *
 FROM projects
-LEFT JOIN backings ON projects.ID = backings.project_id
-WHERE category_id = 
-    CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
-AND 
+WHERE 
     to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
-AND province =
-    CASE WHEN @province::text != '' THEN @province::text ELSE province END
-AND country =
-    CASE WHEN @country::text != '' THEN @country::text ELSE province END
-AND (
-    (@close_to_goal::integer = 1 AND goal_amount - current_amount < 1000000)
-    OR
-    (@close_to_goal::integer != 1)
-)
-AND (
-    (@recent::integer = 1 AND CURRENT_DATE - created_at < 3)
-    OR
-    (@recent::integer != 1)
-)
-GROUP BY projects.ID
-ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: GetProjectByID :one

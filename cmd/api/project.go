@@ -51,6 +51,45 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 	qs := r.URL.Query()
 
 	page, _ := readInt(qs, "page", 1)
+	pageSize, _ := readInt(qs, "page_size", 12)
+	searchQuery := readString(qs, "query", "")
+
+	filters := models.Filters{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	args := db.SearchProjectsParams{
+		SearchQuery: searchQuery,
+		PageLimit:   int32(filters.Limit()),
+		TotalOffset: int32(filters.Offset()),
+	}
+
+	projects, err := app.repository.SearchProjects(r.Context(), args)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	metadata := models.CalculateMetadata(len(projects), filters.Page, filters.PageSize)
+
+	if projects == nil {
+		projects = []db.Project{}
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"projects": projects,
+		"metadata": metadata,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+/* Server side pagination
+func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+
+	page, _ := readInt(qs, "page", 1)
 	pageSize, _ := readInt(qs, "page_size", 6)
 	category, _ := readInt(qs, "category", 0)
 	searchQuery := readString(qs, "query", "")
@@ -95,6 +134,7 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 		app.serverErrorResponse(w, r, err)
 	}
 }
+*/
 
 func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
