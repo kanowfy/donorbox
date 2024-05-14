@@ -32,41 +32,15 @@ const AuthProvider = ({ children }) => {
     token: null,
     user: null,
   });
-
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    const fetchUser = async () => {
-      try {
-        if (token) {
-          const user = await userService.getCurrentUser(
-            localStorage.getItem("token")
-          );
-          console.log(user);
-          dispatch({
-            type: ACTIONS.LOGIN,
-            payload: {
-              token: token,
-              user: user,
-            },
-          });
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   const login = async (email, password) => {
-    const response = await userService.login(email, password);
-    const user = await userService.getCurrentUser(response.token);
+    const loginResponse = await userService.login(email, password);
+    const userResponse = await userService.getCurrent(loginResponse.token);
 
     dispatch({
       type: ACTIONS.LOGIN,
       payload: {
-        token: response.token,
-        user: user,
+        token: loginResponse.token,
+        user: userResponse.user,
       },
     });
   };

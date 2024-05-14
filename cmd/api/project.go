@@ -12,7 +12,7 @@ func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Req
 	qs := r.URL.Query()
 
 	page, _ := readInt(qs, "page", 1)
-	pageSize, _ := readInt(qs, "page_size", 6)
+	pageSize, _ := readInt(qs, "page_size", 10)
 	category, _ := readInt(qs, "category", 0)
 
 	filters := models.Filters{
@@ -52,7 +52,21 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 
 	page, _ := readInt(qs, "page", 1)
 	pageSize, _ := readInt(qs, "page_size", 12)
-	searchQuery := readString(qs, "query", "")
+
+	var req struct {
+		Query string `json:"query" validate:"required"`
+	}
+
+	err := app.readJSON(w, r, &req)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err = app.validator.Struct(req); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
 
 	filters := models.Filters{
 		Page:     page,
@@ -60,7 +74,7 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	args := db.SearchProjectsParams{
-		SearchQuery: searchQuery,
+		SearchQuery: req.Query,
 		PageLimit:   int32(filters.Limit()),
 		TotalOffset: int32(filters.Offset()),
 	}
@@ -74,7 +88,7 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 	metadata := models.CalculateMetadata(len(projects), filters.Page, filters.PageSize)
 
 	if projects == nil {
-		projects = []db.Project{}
+		projects = []db.SearchProjectsRow{}
 	}
 
 	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{

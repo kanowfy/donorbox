@@ -7,7 +7,8 @@ func (app *application) routes() http.Handler {
 
 	router.HandleFunc("GET /healthz", app.healthCheckHandler)
 
-	router.HandleFunc("GET /users", app.requireUserAuthentication(app.getOneUserHandler))
+	router.HandleFunc("GET /users/authenticated", app.requireUserAuthentication(app.getAuthenticatedUserHandler))
+	router.HandleFunc("GET /users/{id}", app.getUserByIDHandler)
 	router.HandleFunc("POST /users/register", app.registerAccountHandler)
 	router.HandleFunc("POST /verify", app.activateUserHandler) // change when incorporate frontend
 	router.HandleFunc("POST /users/login", app.loginHandler)
@@ -19,15 +20,17 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /users/logout/google", app.googleAuthLogoutHandler)
 
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
-	router.HandleFunc("GET /projects/search", app.searchProjectsHandler)
+	router.HandleFunc("POST /projects/search", app.searchProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
 	router.HandleFunc("POST /projects", app.requireUserAuthentication(app.createProjectHandler))
 	router.HandleFunc("PATCH /projects/{id}", app.requireUserAuthentication(app.updateProjectHandler))
 	router.HandleFunc("DELETE /projects/{id}", app.requireUserAuthentication(app.deleteProjectHandler))
-	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
-	router.HandleFunc("POST /projects/{id}/backings", app.requireUserAuthentication(app.createProjectBackingHandler))
 	router.HandleFunc("POST /projects/updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
 	router.HandleFunc("POST /projects/comments", app.requireUserAuthentication(app.createProjectCommentHandler))
+
+	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
+	router.HandleFunc("POST /projects/{id}/backings", app.requireUserAuthentication(app.createProjectBackingHandler))
+	router.HandleFunc("GET /projects/{id}/backings/stats", app.getProjectBackingStats)
 
 	router.HandleFunc("GET /transactions", app.requireEscrowAuthentication(app.getAllTransactionsHandler))
 	router.HandleFunc("GET /transactions/{id}", app.requireEscrowAuthentication(app.getOneTransactionHandler))

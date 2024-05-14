@@ -7,16 +7,26 @@ const login = async (email, password) => {
 }
 
 const register = async (data) => {
-    const response = await axios.post(`${BASE_URL}/users/register`, data);
+    const response = await axios.post(`${BASE_URL}/users/register`, {
+        email: data.email,
+        password: data.password,
+        first_name: data.first_name,
+        last_name: data.last_name
+    });
     return response.data;
 }
 
-const getCurrentUser = async (token) => {
-    const response = await axios.get(`${BASE_URL}/users`, {
+const getCurrent = async (token) => {
+    const response = await axios.get(`${BASE_URL}/users/authenticated`, {
         headers: { Authorization: `Bearer ${token}` }
     });
 
     return response.data;
 }
 
-export default { login, register, getCurrentUser };
+const getOne = async (id) => {
+    const response = await axios.get(`${BASE_URL}/users/${id}`);
+    return response.data;
+}
+
+export default { login, register, getCurrent, getOne };

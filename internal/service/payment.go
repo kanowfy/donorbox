@@ -29,14 +29,14 @@ func AcceptBacking(ctx context.Context, dbpool *pgxpool.Pool, queries *db.Querie
 		return err
 	}
 
-	if err = queries.UpdateProjectFund(ctx, db.UpdateProjectFundParams{
+	if err = qtx.UpdateProjectFund(ctx, db.UpdateProjectFundParams{
 		ID:            arg.ProjectID,
 		BackingAmount: arg.Amount,
 	}); err != nil {
 		return err
 	}
 
-	_, err = queries.CreateTransaction(ctx, db.CreateTransactionParams{
+	_, err = qtx.CreateTransaction(ctx, db.CreateTransactionParams{
 		BackingID:       backing.ID,
 		TransactionType: db.TransactionTypeBacking,
 		Amount:          arg.Amount,

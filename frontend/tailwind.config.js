@@ -8,9 +8,6 @@ export default {
       spacing: {
         '128': '32rem',
       },
-      color: {
-        'graytah': '#eaebed'
-      }
     },
   },
   plugins: [flowbite.plugin()],
