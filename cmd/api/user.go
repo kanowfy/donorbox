@@ -122,7 +122,7 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 
 	app.background(func() {
 		payload := map[string]interface{}{
-			"activationUrl": fmt.Sprintf("%s:%d/verify?token=%s", app.config.Host, 5173, token), // adjust url as needed
+			"activationUrl": fmt.Sprintf("http://%s:%d/verify?token=%s", app.config.Host, 5173, token), // adjust url as needed
 		}
 
 		if err := app.mailer.Send(req.Email, "registration.tmpl", payload); err != nil {

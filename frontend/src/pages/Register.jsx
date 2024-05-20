@@ -16,7 +16,7 @@ const Register = () => {
     const registerAccount = async (data) => {
       try {
         await userService.register(data);
-        navigate("/regiser/success");
+        navigate("/register/success");
       } catch (err) {
         console.error(err);
       }
@@ -73,7 +73,7 @@ const Register = () => {
                     First name
                   </label>
                   <input
-                    {...register("firstName", {
+                    {...register("first_name", {
                       required: true,
                       minLength: 2,
                       maxLength: 50,
@@ -99,7 +99,7 @@ const Register = () => {
                     Last name
                   </label>
                   <input
-                    {...register("lastName", {
+                    {...register("last_name", {
                       required: true,
                       minLength: 2,
                       maxLength: 50,

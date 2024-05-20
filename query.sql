@@ -124,6 +124,14 @@ INSERT INTO users (
 )
 RETURNING *;
 
+-- name: CreateSocialLoginUser :one
+INSERT INTO users (
+    email, hashed_password, first_name, last_name, profile_picture, activated
+) VALUES (
+    $1, 'xxxxxxxx', $2, $3, $4, TRUE
+)
+RETURNING *;
+
 -- name: GetEscrowUserByID :one
 SELECT * FROM escrow_users
 WHERE id = $1;

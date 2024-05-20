@@ -32,6 +32,28 @@ const AuthProvider = ({ children }) => {
     token: null,
     user: null,
   });
+
+  React.useEffect(() => {
+    const fetchUser = async (token) => {
+      try {
+        const userResponse = await userService.getCurrent(token);
+        dispatch({
+          type: ACTIONS.LOGIN,
+          payload: {
+            token: token,
+            user: userResponse.user,
+          },
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUser(token);
+    }
+  }, []);
+
   const login = async (email, password) => {
     const loginResponse = await userService.login(email, password);
     const userResponse = await userService.getCurrent(loginResponse.token);
@@ -45,6 +67,19 @@ const AuthProvider = ({ children }) => {
     });
   };
 
+  const socialLogin = async () => {
+    const response = await userService.getToken();
+    const userResponse = await userService.getCurrent(response.token);
+
+    dispatch({
+      type: ACTIONS.LOGIN,
+      payload: {
+        token: response.token,
+        user: userResponse.user,
+      },
+    });
+  };
+
   const logout = async () => {
     dispatch({
       type: ACTIONS.LOGOUT,
@@ -53,7 +88,7 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, socialLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

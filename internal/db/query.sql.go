@@ -165,6 +165,44 @@ func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpda
 	return i, err
 }
 
+const createSocialLoginUser = `-- name: CreateSocialLoginUser :one
+INSERT INTO users (
+    email, hashed_password, first_name, last_name, profile_picture, activated
+) VALUES (
+    $1, 'xxxxxxxx', $2, $3, $4, TRUE
+)
+RETURNING id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at
+`
+
+type CreateSocialLoginUserParams struct {
+	Email          string      `json:"email"`
+	FirstName      string      `json:"first_name"`
+	LastName       string      `json:"last_name"`
+	ProfilePicture pgtype.Text `json:"profile_picture"`
+}
+
+func (q *Queries) CreateSocialLoginUser(ctx context.Context, arg CreateSocialLoginUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createSocialLoginUser,
+		arg.Email,
+		arg.FirstName,
+		arg.LastName,
+		arg.ProfilePicture,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.Activated,
+		&i.UserType,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
     backing_id, transaction_type, amount, initiator_id, recipient_id

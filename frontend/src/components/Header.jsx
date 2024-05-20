@@ -100,16 +100,23 @@ const Header = () => {
                 label={
                   <Avatar
                     alt="User settings"
-                    img={
-                      user.profile_picture
-                        ? user.profile_picture
-                        : "/avatar.svg"
-                    }
+                    img={(props) => (
+                      <img
+                        alt=""
+                        height="48"
+                        width="48"
+                        referrerPolicy="no-referrer"
+                        src={
+                          user.profile_picture
+                            ? user.profile_picture
+                            : "/avatar.svg"
+                        }
+                        {...props}
+                      />
+                    )}
                     rounded
                   >
-                    <div className="text-sm font-medium">
-                      {user?.first_name}
-                    </div>
+                    <div className="text-sm font-medium">{user.first_name}</div>
                   </Avatar>
                 }
               >

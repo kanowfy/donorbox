@@ -29,4 +29,16 @@ const getOne = async (id) => {
     return response.data;
 }
 
-export default { login, register, getCurrent, getOne };
+const getToken = async () => {
+    const response = await axios.get(`${BASE_URL}/users/auth/google/token`, {
+        withCredentials: true
+    })
+    return response.data;
+}
+
+const verify = async (token) => {
+    const response = await axios.post(`${BASE_URL}/users/verify?token=${token}`)
+    return response.data;
+}
+
+export default { login, register, getCurrent, getOne, getToken, verify };

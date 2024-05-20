@@ -2,6 +2,7 @@ import { Button } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import { BASE_URL } from "../constants";
 
 const Login = () => {
   const { login } = useAuthContext();
@@ -28,6 +29,10 @@ const Login = () => {
     };
 
     loginAccount(data);
+  }
+
+  function handleSSO() {
+    window.location.href = `${BASE_URL}/users/auth/google`;
   }
 
   return (
@@ -93,7 +98,12 @@ const Login = () => {
                 <div className="h-px bg-gray-300 w-full"></div>
               </div>
 
-              <Button color="light" className="w-full" outline>
+              <Button
+                color="light"
+                className="w-full"
+                outline
+                onClick={handleSSO}
+              >
                 <img src="/google.svg" className="h-6 mr-1" />
                 <span className="block">Sign in with Google</span>
               </Button>

@@ -52,7 +52,7 @@ func main() {
 		google.New(
 			cfg.GoogleClientID,
 			cfg.GoogleClientSecret,
-			fmt.Sprintf("http://%s:%d/users/auth/google/callback", cfg.Host, cfg.Port),
+			fmt.Sprintf("http://%s:%d/api/v1/users/auth/google/callback", cfg.Host, cfg.Port),
 		),
 	)
 

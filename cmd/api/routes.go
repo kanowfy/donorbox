@@ -10,14 +10,15 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /users/authenticated", app.requireUserAuthentication(app.getAuthenticatedUserHandler))
 	router.HandleFunc("GET /users/{id}", app.getUserByIDHandler)
 	router.HandleFunc("POST /users/register", app.registerAccountHandler)
-	router.HandleFunc("POST /verify", app.activateUserHandler) // change when incorporate frontend
+	router.HandleFunc("POST /users/verify", app.activateUserHandler) // change when incorporate frontend
 	router.HandleFunc("POST /users/login", app.loginHandler)
 	router.HandleFunc("PATCH /users", app.requireUserAuthentication(app.updateAccountHandler))
 	router.HandleFunc("PATCH /users/password", app.requireUserAuthentication(app.changePasswordHandler))
 	router.HandleFunc("GET /users/backings", app.requireUserAuthentication(app.getBackingsForUserHandler))
-	router.HandleFunc("GET /users/auth/google", app.startGoogleAuthHandler)
-	router.HandleFunc("GET /users/auth/google/callback", app.googleAuthCallbackHandler)
-	router.HandleFunc("GET /users/logout/google", app.googleAuthLogoutHandler)
+	router.HandleFunc("GET /users/auth/{provider}", app.startGoogleAuthHandler)
+	router.HandleFunc("GET /users/auth/{provider}/callback", app.googleAuthCallbackHandler)
+	router.HandleFunc("GET /users/logout/{provider}", app.googleAuthLogoutHandler)
+	router.HandleFunc("GET /users/auth/{provider}/token", app.getAuthenticationTokenHandler)
 
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("POST /projects/search", app.searchProjectsHandler)
