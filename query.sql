@@ -1,14 +1,23 @@
 --:::::::::: PROJECT ::::::::::--
 
 -- name: GetAllProjects :many
-SELECT * FROM projects
+SELECT projects.*, COUNT(backings.project_id) as backing_count
+FROM projects
+LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
     CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
-ORDER BY
-    CASE WHEN @end_date_asc::integer > 0 THEN end_date END ASC,
-    CASE WHEN @end_date_desc::integer > 0 THEN end_date END DESC,
-    CASE WHEN @current_amount_asc::integer > 0 THEN current_amount END ASC,
-    CASE WHEN @current_amount_desc::integer > 0 THEN current_amount END DESC
+GROUP BY projects.ID
+ORDER BY backing_count DESC
+LIMIT @page_limit::integer OFFSET @total_offset::integer;
+
+-- name: SearchProjects :many
+SELECT projects.*, COUNT(backings.project_id) as backing_count
+FROM projects
+LEFT JOIN backings ON projects.ID = backings.project_id
+WHERE 
+    to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
+GROUP BY projects.ID
+ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: GetProjectByID :one
@@ -46,7 +55,8 @@ SELECT * FROM categories;
 
 -- name: GetProjectUpdates :many
 SELECT * FROM project_updates
-WHERE project_id = $1;
+WHERE project_id = $1
+ORDER BY created_at DESC;
 
 -- name: DeleteProjectUpdate :exec
 DELETE FROM project_updates
@@ -81,7 +91,7 @@ RETURNING *;
 --:::::::::: USER ::::::::::--
 
 -- name: GetAllUsers :many
-SELECT id, email, first_name, last_name, profile_picture, activated, user_type, created_at FROM users;
+SELECT id, email, first_name, last_name, profile_picture, created_at FROM users;
 
 -- name: GetUserByID :one
 SELECT * FROM users
@@ -93,7 +103,7 @@ WHERE email = $1;
 
 -- name: UpdateUserByID :exec
 UPDATE users
-SET email = $2, first_name = $3, last_name = $4, profile_picture = $5, activated = $6
+SET email = $2, first_name = $3, last_name = $4, profile_picture = $5
 WHERE id = $1;
 
 -- name: UpdateUserPassword :exec
@@ -111,6 +121,14 @@ INSERT INTO users (
     email, hashed_password, first_name, last_name 
 ) VALUES (
     $1, $2, $3, $4
+)
+RETURNING *;
+
+-- name: CreateSocialLoginUser :one
+INSERT INTO users (
+    email, hashed_password, first_name, last_name, profile_picture, activated
+) VALUES (
+    $1, 'xxxxxxxx', $2, $3, $4, TRUE
 )
 RETURNING *;
 
@@ -141,6 +159,32 @@ WHERE id = $1;
 -- name: GetBackingsForUser :many
 SELECT * FROM backings
 WHERE backer_id = $1;
+
+-- name: GetMostBackingDonor :one
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.amount DESC
+LIMIT 1;
+
+-- name: GetFirstBackingDonor :one
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.created_at
+LIMIT 1;
+
+-- name: GetMostRecentBackingDonor :one
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.created_at DESC
+LIMIT 1;
+
+-- name: GetBackingCountForProject :one
+SELECT COUNT(*) AS backing_count
+FROM backings
+WHERE project_id = $1;
 
 -- name: CreateBacking :one
 INSERT INTO backings (

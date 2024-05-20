@@ -14,8 +14,29 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (app *application) getOneUserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getAuthenticatedUserHandler(w http.ResponseWriter, r *http.Request) {
 	user := app.contextGetUser(r)
+
+	if err := app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"user": user,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := convert.StringToPgxUUID(idStr)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	user, err := app.repository.GetUserByID(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
 
 	if err := app.writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user": user,
@@ -101,7 +122,7 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 
 	app.background(func() {
 		payload := map[string]interface{}{
-			"activationUrl": fmt.Sprintf("%s:%d/verify?token=%s", app.config.Host, app.config.Port, token), // adjust url as needed
+			"activationUrl": fmt.Sprintf("http://%s:%d/verify?token=%s", app.config.Host, 5173, token), // adjust url as needed
 		}
 
 		if err := app.mailer.Send(req.Email, "registration.tmpl", payload); err != nil {
@@ -170,7 +191,6 @@ func (app *application) updateAccountHandler(w http.ResponseWriter, r *http.Requ
 
 	var updateParams db.UpdateUserByIDParams
 	updateParams.ID = user.ID
-	updateParams.Activated = user.Activated
 
 	if req.Email != nil {
 		updateParams.Email = *req.Email

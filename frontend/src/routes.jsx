@@ -8,6 +8,9 @@ import Logout from "./pages/Logout";
 import Search from "./pages/Search";
 import Project from "./pages/Project";
 import Register from "./pages/Register";
+import SocialLogin from "./pages/SocialLogin";
+import RegisterSuccess from "./pages/RegisterSuccess";
+import Verify from "./pages/Verify";
 
 const AppRoutes = () => {
   return (
@@ -20,8 +23,11 @@ const AppRoutes = () => {
         <Route path="/fundraiser/:id" element={<Project />} />
       </Route>
       <Route path="/register" element={<Register />} />
+      <Route path="/register/success" element={<RegisterSuccess />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/login/google" element={<SocialLogin />} />
       <Route path="/logout" element={<Logout />} />
+      <Route path="/verify" element={<Verify />} />
     </Routes>
   );
 };

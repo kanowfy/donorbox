@@ -1,19 +1,38 @@
 import { Button } from "flowbite-react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import { BASE_URL } from "../constants";
 
 const Login = () => {
   const { login } = useAuthContext();
   const navigate = useNavigate();
+  const {
+    register,
+    formState: { errors },
+    setError,
+    handleSubmit,
+  } = useForm();
 
-  // eslint-disable-next-line no-unused-vars
-  async function submitLoginDetails() {
-    try {
-      await login("", "");
-      navigate("/");
-    } catch (err) {
-      console.error(err);
-    }
+  function onSubmit(data) {
+    const loginAccount = async (data) => {
+      try {
+        await login(data.email, data.password);
+        navigate("/");
+      } catch (err) {
+        console.error(err);
+        setError("email", {
+          type: "manual",
+          message: "Invalid email or password",
+        });
+      }
+    };
+
+    loginAccount(data);
+  }
+
+  function handleSSO() {
+    window.location.href = `${BASE_URL}/users/auth/google`;
   }
 
   return (
@@ -31,30 +50,46 @@ const Login = () => {
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
               Sign in to your account
             </h1>
-            <form className="space-y-4 md:space-y-6" action="#">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4 md:space-y-6"
+            >
               <div>
+                {errors.email?.type === "manual" && (
+                  <p className="text-red-600 text-sm">
+                    Invalid email or password
+                  </p>
+                )}
                 <label className="block mb-2 text-sm font-medium text-gray-900">
                   Email
                 </label>
                 <input
+                  {...register("email", {
+                    required: true,
+                  })}
                   type="email"
-                  name="email"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                   placeholder="Your Email"
-                  required=""
                 />
+                {errors.email?.type === "required" && (
+                  <p className="text-red-600 text-sm">Email is required</p>
+                )}
               </div>
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900">
                   Password
                 </label>
                 <input
+                  {...register("password", {
+                    required: true,
+                  })}
                   type="password"
-                  name="password"
                   placeholder="••••••••"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                  required=""
                 />
+                {errors.password?.type === "required" && (
+                  <p className="text-red-600 text-sm">Password is required</p>
+                )}
               </div>
 
               <div className="flex items-center">
@@ -63,7 +98,12 @@ const Login = () => {
                 <div className="h-px bg-gray-300 w-full"></div>
               </div>
 
-              <Button color="light" className="w-full" outline>
+              <Button
+                color="light"
+                className="w-full"
+                outline
+                onClick={handleSSO}
+              >
                 <img src="/google.svg" className="h-6 mr-1" />
                 <span className="block">Sign in with Google</span>
               </Button>
@@ -90,7 +130,11 @@ const Login = () => {
                   Forgot password?
                 </a>
               </div>
-              <Button gradientDuoTone="greenToBlue" className="w-full">
+              <Button
+                gradientDuoTone="greenToBlue"
+                className="w-full"
+                type="submit"
+              >
                 Sign in
               </Button>
               <p className="text-sm font-normal text-gray-500">

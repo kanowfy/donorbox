@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   const { user } = useAuthContext();
+  console.log(user);
 
   return (
     <MegaMenu className="my-3 mx-16">
@@ -19,10 +20,17 @@ const Header = () => {
           </span>
         </Navbar.Brand>
         <Navbar.Collapse>
-          <Navbar.Link href="/" active className="flex flex-col justify-end">
+          <Navbar.Link
+            as={Link}
+            to="/"
+            active
+            className="flex flex-col justify-end"
+          >
             Home
           </Navbar.Link>
-          <Navbar.Link href="/search">Search</Navbar.Link>
+          <Navbar.Link as={Link} to="/search">
+            Search
+          </Navbar.Link>
           <Navbar.Link>
             <MegaMenu.Dropdown toggle={<>Category</>}>
               <ul className="grid grid-cols-3">
@@ -80,7 +88,9 @@ const Header = () => {
               </ul>
             </MegaMenu.Dropdown>
           </Navbar.Link>
-          <Navbar.Link href="/about">About</Navbar.Link>
+          <Navbar.Link as={Link} to="/about">
+            About
+          </Navbar.Link>
         </Navbar.Collapse>
         <div className="flex md:order-2">
           {user ? (
@@ -90,10 +100,23 @@ const Header = () => {
                 label={
                   <Avatar
                     alt="User settings"
-                    img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                    img={(props) => (
+                      <img
+                        alt=""
+                        height="48"
+                        width="48"
+                        referrerPolicy="no-referrer"
+                        src={
+                          user.profile_picture
+                            ? user.profile_picture
+                            : "/avatar.svg"
+                        }
+                        {...props}
+                      />
+                    )}
                     rounded
                   >
-                    <div className="text-sm font-medium">Forsen</div>
+                    <div className="text-sm font-medium">{user.first_name}</div>
                   </Avatar>
                 }
               >
@@ -108,18 +131,18 @@ const Header = () => {
                 </Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item>
-                  <Link to="#">Sign out</Link>
+                  <Link to="/logout">Log out</Link>
                 </Dropdown.Item>
               </Dropdown>
             </>
           ) : (
             <>
               <Navbar.Collapse>
-                <Navbar.Link href="/login">
+                <Navbar.Link as={Link} to="/login">
                   <div className="mt-3">Sign In</div>
                 </Navbar.Link>
-                <Navbar.Link href="#">
-                  <Button outline gradientDuoTone="greenToBlue" pill>
+                <Navbar.Link as={Link} to="#">
+                  <Button pill color="green">
                     Start a Fundraiser
                   </Button>
                 </Navbar.Link>

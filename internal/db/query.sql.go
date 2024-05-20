@@ -165,6 +165,44 @@ func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpda
 	return i, err
 }
 
+const createSocialLoginUser = `-- name: CreateSocialLoginUser :one
+INSERT INTO users (
+    email, hashed_password, first_name, last_name, profile_picture, activated
+) VALUES (
+    $1, 'xxxxxxxx', $2, $3, $4, TRUE
+)
+RETURNING id, email, hashed_password, first_name, last_name, profile_picture, activated, user_type, created_at
+`
+
+type CreateSocialLoginUserParams struct {
+	Email          string      `json:"email"`
+	FirstName      string      `json:"first_name"`
+	LastName       string      `json:"last_name"`
+	ProfilePicture pgtype.Text `json:"profile_picture"`
+}
+
+func (q *Queries) CreateSocialLoginUser(ctx context.Context, arg CreateSocialLoginUserParams) (User, error) {
+	row := q.db.QueryRow(ctx, createSocialLoginUser,
+		arg.Email,
+		arg.FirstName,
+		arg.LastName,
+		arg.ProfilePicture,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.Activated,
+		&i.UserType,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
     backing_id, transaction_type, amount, initiator_id, recipient_id
@@ -302,45 +340,50 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 
 const getAllProjects = `-- name: GetAllProjects :many
 
-SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
+SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.start_date, projects.end_date, projects.payment_id, projects.is_active, COUNT(backings.project_id) as backing_count
+FROM projects
+LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
-ORDER BY
-    CASE WHEN $2::integer > 0 THEN end_date END ASC,
-    CASE WHEN $3::integer > 0 THEN end_date END DESC,
-    CASE WHEN $4::integer > 0 THEN current_amount END ASC,
-    CASE WHEN $5::integer > 0 THEN current_amount END DESC
-LIMIT $7::integer OFFSET $6::integer
+GROUP BY projects.ID
+ORDER BY backing_count DESC
+LIMIT $3::integer OFFSET $2::integer
 `
 
 type GetAllProjectsParams struct {
-	Category          int32 `json:"category"`
-	EndDateAsc        int32 `json:"end_date_asc"`
-	EndDateDesc       int32 `json:"end_date_desc"`
-	CurrentAmountAsc  int32 `json:"current_amount_asc"`
-	CurrentAmountDesc int32 `json:"current_amount_desc"`
-	TotalOffset       int32 `json:"total_offset"`
-	PageLimit         int32 `json:"page_limit"`
+	Category    int32 `json:"category"`
+	TotalOffset int32 `json:"total_offset"`
+	PageLimit   int32 `json:"page_limit"`
+}
+
+type GetAllProjectsRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	UserID        pgtype.UUID        `json:"user_id"`
+	CategoryID    int32              `json:"category_id"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverPicture  string             `json:"cover_picture"`
+	GoalAmount    int64              `json:"goal_amount"`
+	CurrentAmount int64              `json:"current_amount"`
+	Country       string             `json:"country"`
+	Province      string             `json:"province"`
+	StartDate     pgtype.Timestamptz `json:"start_date"`
+	EndDate       pgtype.Timestamptz `json:"end_date"`
+	PaymentID     pgtype.Text        `json:"payment_id"`
+	IsActive      bool               `json:"is_active"`
+	BackingCount  int64              `json:"backing_count"`
 }
 
 // :::::::::: PROJECT ::::::::::--
-func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]Project, error) {
-	rows, err := q.db.Query(ctx, getAllProjects,
-		arg.Category,
-		arg.EndDateAsc,
-		arg.EndDateDesc,
-		arg.CurrentAmountAsc,
-		arg.CurrentAmountDesc,
-		arg.TotalOffset,
-		arg.PageLimit,
-	)
+func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]GetAllProjectsRow, error) {
+	rows, err := q.db.Query(ctx, getAllProjects, arg.Category, arg.TotalOffset, arg.PageLimit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Project
+	var items []GetAllProjectsRow
 	for rows.Next() {
-		var i Project
+		var i GetAllProjectsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -356,6 +399,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 			&i.EndDate,
 			&i.PaymentID,
 			&i.IsActive,
+			&i.BackingCount,
 		); err != nil {
 			return nil, err
 		}
@@ -405,7 +449,7 @@ func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error)
 
 const getAllUsers = `-- name: GetAllUsers :many
 
-SELECT id, email, first_name, last_name, profile_picture, activated, user_type, created_at FROM users
+SELECT id, email, first_name, last_name, profile_picture, created_at FROM users
 `
 
 type GetAllUsersRow struct {
@@ -414,8 +458,6 @@ type GetAllUsersRow struct {
 	FirstName      string             `json:"first_name"`
 	LastName       string             `json:"last_name"`
 	ProfilePicture pgtype.Text        `json:"profile_picture"`
-	Activated      bool               `json:"activated"`
-	UserType       UserType           `json:"user_type"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
@@ -435,8 +477,6 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 			&i.FirstName,
 			&i.LastName,
 			&i.ProfilePicture,
-			&i.Activated,
-			&i.UserType,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -466,6 +506,19 @@ func (q *Queries) GetBackingByID(ctx context.Context, id pgtype.UUID) (Backing, 
 		&i.Status,
 	)
 	return i, err
+}
+
+const getBackingCountForProject = `-- name: GetBackingCountForProject :one
+SELECT COUNT(*) AS backing_count
+FROM backings
+WHERE project_id = $1
+`
+
+func (q *Queries) GetBackingCountForProject(ctx context.Context, projectID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, getBackingCountForProject, projectID)
+	var backing_count int64
+	err := row.Scan(&backing_count)
+	return backing_count, err
 }
 
 const getBackingsForProject = `-- name: GetBackingsForProject :many
@@ -573,6 +626,105 @@ func (q *Queries) GetEscrowUserByID(ctx context.Context, id pgtype.UUID) (Escrow
 	return i, err
 }
 
+const getFirstBackingDonor = `-- name: GetFirstBackingDonor :one
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.created_at
+LIMIT 1
+`
+
+type GetFirstBackingDonorRow struct {
+	UserID         pgtype.UUID        `json:"user_id"`
+	FirstName      string             `json:"first_name"`
+	LastName       string             `json:"last_name"`
+	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	BackingID      pgtype.UUID        `json:"backing_id"`
+	Amount         int64              `json:"amount"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) GetFirstBackingDonor(ctx context.Context, projectID pgtype.UUID) (GetFirstBackingDonorRow, error) {
+	row := q.db.QueryRow(ctx, getFirstBackingDonor, projectID)
+	var i GetFirstBackingDonorRow
+	err := row.Scan(
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.BackingID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getMostBackingDonor = `-- name: GetMostBackingDonor :one
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.amount DESC
+LIMIT 1
+`
+
+type GetMostBackingDonorRow struct {
+	UserID         pgtype.UUID        `json:"user_id"`
+	FirstName      string             `json:"first_name"`
+	LastName       string             `json:"last_name"`
+	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	BackingID      pgtype.UUID        `json:"backing_id"`
+	Amount         int64              `json:"amount"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) GetMostBackingDonor(ctx context.Context, projectID pgtype.UUID) (GetMostBackingDonorRow, error) {
+	row := q.db.QueryRow(ctx, getMostBackingDonor, projectID)
+	var i GetMostBackingDonorRow
+	err := row.Scan(
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.BackingID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getMostRecentBackingDonor = `-- name: GetMostRecentBackingDonor :one
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.created_at DESC
+LIMIT 1
+`
+
+type GetMostRecentBackingDonorRow struct {
+	UserID         pgtype.UUID        `json:"user_id"`
+	FirstName      string             `json:"first_name"`
+	LastName       string             `json:"last_name"`
+	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	BackingID      pgtype.UUID        `json:"backing_id"`
+	Amount         int64              `json:"amount"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) GetMostRecentBackingDonor(ctx context.Context, projectID pgtype.UUID) (GetMostRecentBackingDonorRow, error) {
+	row := q.db.QueryRow(ctx, getMostRecentBackingDonor, projectID)
+	var i GetMostRecentBackingDonorRow
+	err := row.Scan(
+		&i.UserID,
+		&i.FirstName,
+		&i.LastName,
+		&i.ProfilePicture,
+		&i.BackingID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getProjectByID = `-- name: GetProjectByID :one
 SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
 WHERE id = $1
@@ -638,6 +790,7 @@ const getProjectUpdates = `-- name: GetProjectUpdates :many
 
 SELECT id, project_id, description, created_at FROM project_updates
 WHERE project_id = $1
+ORDER BY created_at DESC
 `
 
 // :::::::::: PROJECT UPDATE ::::::::::--
@@ -765,6 +918,77 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 	return i, err
 }
 
+const searchProjects = `-- name: SearchProjects :many
+SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.start_date, projects.end_date, projects.payment_id, projects.is_active, COUNT(backings.project_id) as backing_count
+FROM projects
+LEFT JOIN backings ON projects.ID = backings.project_id
+WHERE 
+    to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', $1::text)
+GROUP BY projects.ID
+ORDER BY backing_count DESC
+LIMIT $3::integer OFFSET $2::integer
+`
+
+type SearchProjectsParams struct {
+	SearchQuery string `json:"search_query"`
+	TotalOffset int32  `json:"total_offset"`
+	PageLimit   int32  `json:"page_limit"`
+}
+
+type SearchProjectsRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	UserID        pgtype.UUID        `json:"user_id"`
+	CategoryID    int32              `json:"category_id"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverPicture  string             `json:"cover_picture"`
+	GoalAmount    int64              `json:"goal_amount"`
+	CurrentAmount int64              `json:"current_amount"`
+	Country       string             `json:"country"`
+	Province      string             `json:"province"`
+	StartDate     pgtype.Timestamptz `json:"start_date"`
+	EndDate       pgtype.Timestamptz `json:"end_date"`
+	PaymentID     pgtype.Text        `json:"payment_id"`
+	IsActive      bool               `json:"is_active"`
+	BackingCount  int64              `json:"backing_count"`
+}
+
+func (q *Queries) SearchProjects(ctx context.Context, arg SearchProjectsParams) ([]SearchProjectsRow, error) {
+	rows, err := q.db.Query(ctx, searchProjects, arg.SearchQuery, arg.TotalOffset, arg.PageLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchProjectsRow
+	for rows.Next() {
+		var i SearchProjectsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CategoryID,
+			&i.Title,
+			&i.Description,
+			&i.CoverPicture,
+			&i.GoalAmount,
+			&i.CurrentAmount,
+			&i.Country,
+			&i.Province,
+			&i.StartDate,
+			&i.EndDate,
+			&i.PaymentID,
+			&i.IsActive,
+			&i.BackingCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateEscrowUserPaymentID = `-- name: UpdateEscrowUserPaymentID :exec
 UPDATE escrow_users
 SET payment_id = $2
@@ -876,7 +1100,7 @@ func (q *Queries) UpdateTransactionStatus(ctx context.Context, arg UpdateTransac
 
 const updateUserByID = `-- name: UpdateUserByID :exec
 UPDATE users
-SET email = $2, first_name = $3, last_name = $4, profile_picture = $5, activated = $6
+SET email = $2, first_name = $3, last_name = $4, profile_picture = $5
 WHERE id = $1
 `
 
@@ -886,7 +1110,6 @@ type UpdateUserByIDParams struct {
 	FirstName      string      `json:"first_name"`
 	LastName       string      `json:"last_name"`
 	ProfilePicture pgtype.Text `json:"profile_picture"`
-	Activated      bool        `json:"activated"`
 }
 
 func (q *Queries) UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error {
@@ -896,7 +1119,6 @@ func (q *Queries) UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) 
 		arg.FirstName,
 		arg.LastName,
 		arg.ProfilePicture,
-		arg.Activated,
 	)
 	return err
 }
