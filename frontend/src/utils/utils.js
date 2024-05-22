@@ -1,3 +1,7 @@
+const formatNumber = (num) => {
+    return num.toLocaleString();
+}
+
 const calculateProgress = (current, goal) => {
     return Math.floor(current / goal * 100);
 }
@@ -14,4 +18,12 @@ const getDaySince = (date) => {
     return calculateDayDifference(Date.now(), parseDateFromRFC3339(date));
 }
 
-export default { calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince }
+const formatDate = (date) => {
+    let year = date.getFullYear();
+    let month = (1 + date.getMonth()).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+
+    return day + '/' + month + '/' + year;
+}
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate }

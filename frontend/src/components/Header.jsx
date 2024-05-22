@@ -121,13 +121,13 @@ const Header = () => {
                 }
               >
                 <Dropdown.Item>
-                  <Link to="#">Your Fundraisers</Link>
+                  <Link to="/fundraisers">Your Fundraisers</Link>
                 </Dropdown.Item>
                 <Dropdown.Item>
-                  <Link to="#">Start a Fundraiser</Link>
+                  <Link to="/start-fundraiser">Start a Fundraiser</Link>
                 </Dropdown.Item>
                 <Dropdown.Item>
-                  <Link to="#">Account Settings</Link>
+                  <Link to="/account/settings">Account Settings</Link>
                 </Dropdown.Item>
                 <Dropdown.Divider />
                 <Dropdown.Item>

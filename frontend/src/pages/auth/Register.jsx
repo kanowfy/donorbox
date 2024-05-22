@@ -1,7 +1,7 @@
 import { Button } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import userService from "../services/user";
+import userService from "../../services/user";
 
 const Register = () => {
   const {

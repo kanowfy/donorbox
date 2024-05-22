@@ -1,11 +1,11 @@
 import { Avatar } from "flowbite-react";
 import { Link, useParams } from "react-router-dom";
-import Support from "../components/Support";
-import DonateBox from "../components/DonateBox";
+import Support from "../../components/Support";
+import DonateBox from "../../components/DonateBox";
 import { useEffect, useState } from "react";
-import projectService from "../services/project";
-import utils from "../utils/utils";
-import userService from "../services/user";
+import projectService from "../../services/project";
+import utils from "../../utils/utils";
+import userService from "../../services/user";
 
 const Project = () => {
   // useparams to get id

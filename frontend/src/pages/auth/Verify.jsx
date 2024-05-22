@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import userService from "../services/user";
+import userService from "../../services/user";
 import { Button } from "flowbite-react";
 
 const Verify = () => {

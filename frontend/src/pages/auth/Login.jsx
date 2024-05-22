@@ -1,8 +1,8 @@
 import { Button } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../context/AuthContext";
-import { BASE_URL } from "../constants";
+import { useAuthContext } from "../../context/AuthContext";
+import { BASE_URL } from "../../constants";
 
 const Login = () => {
   const { login } = useAuthContext();

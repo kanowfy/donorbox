@@ -1,13 +1,14 @@
 import { Button, Dropdown } from "flowbite-react";
 import { useEffect, useState, useReducer } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import projectService from "../services/project";
-import ProjectCard from "../components/ProjectCard";
+import projectService from "../../services/project";
+import ProjectCard from "../../components/ProjectCard";
 import { MdCancel } from "react-icons/md";
-import utils from "../utils/utils";
+import utils from "../../utils/utils";
 import { FaSort } from "react-icons/fa";
 import { ImSortAlphaAsc, ImSortAlphaDesc } from "react-icons/im";
 import sortBy from "sort-by";
+import { CategoryIndexMap } from "../../constants";
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,18 +21,6 @@ const Search = () => {
 
   // eslint-disable-next-line no-unused-vars
   const [_, forceUpdate] = useReducer((x) => x + 1, 0);
-
-  const categoryIndexMap = {
-    Medical: 1,
-    Emergency: 2,
-    Education: 3,
-    Animals: 4,
-    Competition: 5,
-    Event: 6,
-    Environment: 7,
-    Travel: 8,
-    Business: 9,
-  };
 
   function submitSearchQuery(e) {
     e.preventDefault();
@@ -151,7 +140,7 @@ const Search = () => {
                   </Dropdown.Header>
                   <Dropdown.Item>
                     <div className="grid grid-cols-3 max-w-sm gap-2">
-                      {Object.entries(categoryIndexMap).map(([name, num]) => (
+                      {Object.entries(CategoryIndexMap).map(([name, num]) => (
                         <Button
                           size="xs"
                           color="success"
