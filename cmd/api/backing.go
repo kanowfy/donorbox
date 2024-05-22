@@ -84,3 +84,45 @@ func (app *application) createProjectBackingHandler(w http.ResponseWriter, r *ht
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) getProjectBackingStats(w http.ResponseWriter, r *http.Request) {
+	pid, err := convert.StringToPgxUUID(r.PathValue("id"))
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	mostBacking, err := app.repository.GetMostBackingDonor(r.Context(), pid)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	firstBacking, err := app.repository.GetFirstBackingDonor(r.Context(), pid)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	recentBacking, err := app.repository.GetMostRecentBackingDonor(r.Context(), pid)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	count, err := app.repository.GetBackingCountForProject(r.Context(), pid)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err := app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"most_backing":   mostBacking,
+		"first_backing":  firstBacking,
+		"recent_backing": recentBacking,
+		"backing_count":  int32(count),
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+}

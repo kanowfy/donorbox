@@ -34,39 +34,48 @@ const AuthProvider = ({ children }) => {
   });
 
   React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    const fetchUser = async () => {
+    const fetchUser = async (token) => {
       try {
-        if (token) {
-          const user = await userService.getCurrentUser(
-            localStorage.getItem("token")
-          );
-          console.log(user);
-          dispatch({
-            type: ACTIONS.LOGIN,
-            payload: {
-              token: token,
-              user: user,
-            },
-          });
-        }
+        const userResponse = await userService.getCurrent(token);
+        dispatch({
+          type: ACTIONS.LOGIN,
+          payload: {
+            token: token,
+            user: userResponse.user,
+          },
+        });
       } catch (err) {
         console.error(err);
       }
     };
-
-    fetchUser();
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUser(token);
+    }
   }, []);
 
   const login = async (email, password) => {
-    const response = await userService.login(email, password);
-    const user = await userService.getCurrentUser(response.token);
+    const loginResponse = await userService.login(email, password);
+    const userResponse = await userService.getCurrent(loginResponse.token);
+
+    dispatch({
+      type: ACTIONS.LOGIN,
+      payload: {
+        token: loginResponse.token,
+        user: userResponse.user,
+      },
+    });
+  };
+
+  const socialLogin = async () => {
+    const response = await userService.getToken();
+    const userResponse = await userService.getCurrent(response.token);
 
     dispatch({
       type: ACTIONS.LOGIN,
       payload: {
         token: response.token,
-        user: user,
+        user: userResponse.user,
       },
     });
   };
@@ -79,7 +88,7 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, socialLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );
