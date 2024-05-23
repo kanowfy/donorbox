@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
@@ -211,12 +210,7 @@ func (app *application) updateAccountHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if req.ProfilePicture != nil {
-		pp := pgtype.Text{
-			String: *req.ProfilePicture,
-			Valid:  true,
-		}
-
-		updateParams.ProfilePicture = pp
+		updateParams.ProfilePicture = req.ProfilePicture
 	} else {
 		updateParams.ProfilePicture = user.ProfilePicture
 	}

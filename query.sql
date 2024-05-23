@@ -29,12 +29,16 @@ UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8
 WHERE id = $1;
 
+-- name: UpdateProjectCard :exec
+UPDATE projects SET card_id = $2
+WHERE id = $1;
+
 -- name: UpdateProjectFund :exec
 UPDATE projects SET current_amount = current_amount + @backing_amount::bigint
 WHERE id = $1;
 
--- name: UpdateProjectPaymentID :exec
-UPDATE projects SET payment_id = $2
+-- name: UpdateProjectStatus :exec
+UPDATE projects SET status = $2
 WHERE id = $1;
 
 -- name: DeleteProjectByID :exec
@@ -67,24 +71,6 @@ INSERT INTO project_updates (
     project_id, description
 ) VALUES (
     $1, $2
-)
-RETURNING *;
-
---:::::::::: PROJECT COMMENT ::::::::::--
-
--- name: GetProjectComments :many
-SELECT * FROM project_comments
-WHERE project_id = $1;
-
--- name: DeleteProjectComment :exec
-DELETE FROM project_comments
-WHERE id = $1;
-
--- name: CreateProjectComment :one
-INSERT INTO project_comments (
-    project_id, backer_id, parent_comment_id, content
-) VALUES (
-    $1, $2, $3, $4
 )
 RETURNING *;
 
@@ -132,6 +118,7 @@ INSERT INTO users (
 )
 RETURNING *;
 
+--:::::::::: ESCROW USER ::::::::::--
 -- name: GetEscrowUserByID :one
 SELECT * FROM escrow_users
 WHERE id = $1;
@@ -140,17 +127,25 @@ WHERE id = $1;
 SELECT * FROM escrow_users
 WHERE email = $1;
 
--- name: UpdateEscrowUserPaymentID :exec
-UPDATE escrow_users
-SET payment_id = $2
+-- name: GetEscrowUser :one
+SELECT * FROM escrow_users
+LIMIT 1;
+
+-- name: UpdateEscrowUserByID :exec
+UPDATE escrow_users SET email = $2, hashed_password = $3
+WHERE id = $1;
+
+-- name: UpdateEscrowCard :exec
+UPDATE escrow_users SET card_id = $2
 WHERE id = $1;
 
 --:::::::::: BACKING ::::::::::--
 
 -- name: GetBackingsForProject :many
-SELECT * FROM backings
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
 WHERE project_id = $1
-ORDER BY created_at DESC;
+ORDER BY backings.created_at DESC;
 
 -- name: GetBackingByID :one
 SELECT * FROM backings
@@ -188,9 +183,9 @@ WHERE project_id = $1;
 
 -- name: CreateBacking :one
 INSERT INTO backings (
-    project_id, backer_id, amount
+    project_id, backer_id, amount, word_of_support
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4
 ) 
 RETURNING *;
 
@@ -209,13 +204,17 @@ ORDER BY created_at DESC;
 SELECT * FROM transactions
 WHERE id = $1;
 
--- name: GetTransactionAudit :many
+-- name: GetTransactionsForProject :many
 SELECT * FROM transactions
-WHERE backing_id = $1 ORDER BY created_at ASC;
+WHERE project_id = $1 ORDER BY created_at ASC;
+
+-- name: GetBackingTransactionsForProject :many
+SELECT * FROM transactions
+WHERE project_id = $1 AND transaction_type == 'backing';
 
 -- name: CreateTransaction :one
 INSERT INTO transactions (
-    backing_id, transaction_type, amount, initiator_id, recipient_id
+    project_id, transaction_type, amount, initiator_card_id, recipient_card_id
 ) VALUES (
     $1, $2, $3, $4, $5
 )
@@ -225,3 +224,17 @@ RETURNING *;
 UPDATE transactions
 SET status = $2
 WHERE id = $1;
+
+--:::::::::: CARD ::::::::::--
+
+-- name: GetCardByID :one
+SELECT * FROM cards
+WHERE id = $1;
+
+-- name: CreateCard :one
+INSERT INTO cards (
+    token, card_owner_name, last_four_digits, brand
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING *;

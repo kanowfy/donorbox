@@ -47,7 +47,7 @@ func (app *application) getTransactionAuditHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	transactions, err := app.repository.GetTransactionAudit(r.Context(), backingID)
+	transactions, err := app.repository.GetTransactionsForProject(r.Context(), backingID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
