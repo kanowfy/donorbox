@@ -3,6 +3,12 @@ CREATE TYPE user_type AS ENUM (
     'escrow'
 );
 
+CREATE TYPE project_status AS ENUM (
+	'ongoing',
+	'completed_payout',
+	'completed_refund'
+);
+
 CREATE TYPE backing_status AS ENUM (
 	'pending',
 	'released',
@@ -19,6 +25,20 @@ CREATE TYPE transaction_status AS ENUM (
 	'pending',
 	'completed',
 	'failed'
+);
+
+CREATE TYPE card_brand AS ENUM (
+	'VISA',
+	'MASTERCARD'
+);
+
+CREATE TABLE IF NOT EXISTS cards (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	token char(29) UNIQUE NOT NULL,
+	card_owner_name varchar(255) NOT NULL,
+	last_four_digits char(4) NOT NULL,
+	brand card_brand NOT NULL,
+	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -38,7 +58,7 @@ CREATE TABLE IF NOT EXISTS escrow_users (
 	email varchar(255) UNIQUE NOT NULL,
 	hashed_password text NOT NULL,
 	user_type user_type NOT NULL DEFAULT 'escrow',
-	payment_id text UNIQUE,
+	card_id uuid REFERENCES cards(id),
 	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -60,10 +80,10 @@ CREATE TABLE IF NOT EXISTS projects (
 	current_amount bigint NOT NULL DEFAULT 0,
 	country varchar(64) NOT NULL,
 	province varchar(64) NOT NULL,
+	card_id uuid REFERENCES cards(id),
 	start_date timestamptz NOT NULL DEFAULT NOW(),
 	end_date timestamptz NOT NULL,
-	payment_id text UNIQUE,
-	is_active boolean NOT NULL DEFAULT TRUE
+	status project_status NOT NULL DEFAULT 'ongoing'
 );
 
 CREATE TABLE IF NOT EXISTS backings (
@@ -71,8 +91,9 @@ CREATE TABLE IF NOT EXISTS backings (
 	project_id uuid NOT NULL REFERENCES projects(id),
 	backer_id uuid NOT NULL REFERENCES users(id),
 	amount bigint NOT NULL,
-	created_at timestamptz NOT NULL DEFAULT NOW(),
-	status backing_status NOT NULL DEFAULT 'pending'
+	word_of_support text,
+	status backing_status NOT NULL DEFAULT 'pending',
+	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS project_updates (
@@ -82,22 +103,13 @@ CREATE TABLE IF NOT EXISTS project_updates (
 	created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS project_comments (
-	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	project_id uuid NOT NULL REFERENCES projects(id),
-	backer_id uuid NOT NULL REFERENCES users(id),
-	parent_comment_id uuid REFERENCES project_comments(id),
-	content text NOT NULL,
-	commented_at timestamptz NOT NULL DEFAULT NOW()
-);
-
 CREATE TABLE IF NOT EXISTS transactions (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	backing_id uuid NOT NULL REFERENCES backings(id),
+	project_id uuid NOT NULL REFERENCES projects(id),
 	transaction_type transaction_type NOT NULL,
 	amount bigint NOT NULL,
-	initiator_id uuid NOT NULL,
-	recipient_id uuid NOT NULL,
+	initiator_card_id uuid NOT NULL REFERENCES cards(id),
+	recipient_card_id uuid NOT NULL REFERENCES cards(id),
 	status transaction_status NOT NULL DEFAULT 'pending',
 	created_at timestamptz NOT NULL DEFAULT NOW()
 );

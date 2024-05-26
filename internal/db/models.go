@@ -54,6 +54,91 @@ func (ns NullBackingStatus) Value() (driver.Value, error) {
 	return string(ns.BackingStatus), nil
 }
 
+type CardBrand string
+
+const (
+	CardBrandVISA       CardBrand = "VISA"
+	CardBrandMASTERCARD CardBrand = "MASTERCARD"
+)
+
+func (e *CardBrand) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = CardBrand(s)
+	case string:
+		*e = CardBrand(s)
+	default:
+		return fmt.Errorf("unsupported scan type for CardBrand: %T", src)
+	}
+	return nil
+}
+
+type NullCardBrand struct {
+	CardBrand CardBrand `json:"card_brand"`
+	Valid     bool      `json:"valid"` // Valid is true if CardBrand is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCardBrand) Scan(value interface{}) error {
+	if value == nil {
+		ns.CardBrand, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.CardBrand.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCardBrand) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.CardBrand), nil
+}
+
+type ProjectStatus string
+
+const (
+	ProjectStatusOngoing         ProjectStatus = "ongoing"
+	ProjectStatusCompletedPayout ProjectStatus = "completed_payout"
+	ProjectStatusCompletedRefund ProjectStatus = "completed_refund"
+)
+
+func (e *ProjectStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ProjectStatus(s)
+	case string:
+		*e = ProjectStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ProjectStatus: %T", src)
+	}
+	return nil
+}
+
+type NullProjectStatus struct {
+	ProjectStatus ProjectStatus `json:"project_status"`
+	Valid         bool          `json:"valid"` // Valid is true if ProjectStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullProjectStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ProjectStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ProjectStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullProjectStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ProjectStatus), nil
+}
+
 type TransactionStatus string
 
 const (
@@ -183,12 +268,22 @@ func (ns NullUserType) Value() (driver.Value, error) {
 }
 
 type Backing struct {
-	ID        pgtype.UUID        `json:"id"`
-	ProjectID pgtype.UUID        `json:"project_id"`
-	BackerID  pgtype.UUID        `json:"backer_id"`
-	Amount    int64              `json:"amount"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-	Status    BackingStatus      `json:"status"`
+	ID            pgtype.UUID        `json:"id"`
+	ProjectID     pgtype.UUID        `json:"project_id"`
+	BackerID      pgtype.UUID        `json:"backer_id"`
+	Amount        int64              `json:"amount"`
+	WordOfSupport *string            `json:"word_of_support"`
+	Status        BackingStatus      `json:"status"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type Card struct {
+	ID             pgtype.UUID        `json:"id"`
+	Token          string             `json:"token"`
+	CardOwnerName  string             `json:"card_owner_name"`
+	LastFourDigits string             `json:"last_four_digits"`
+	Brand          CardBrand          `json:"brand"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 type Category struct {
@@ -203,7 +298,7 @@ type EscrowUser struct {
 	Email          string             `json:"email"`
 	HashedPassword string             `json:"hashed_password"`
 	UserType       UserType           `json:"user_type"`
-	PaymentID      pgtype.Text        `json:"payment_id"`
+	CardID         pgtype.UUID        `json:"card_id"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
@@ -218,19 +313,10 @@ type Project struct {
 	CurrentAmount int64              `json:"current_amount"`
 	Country       string             `json:"country"`
 	Province      string             `json:"province"`
+	CardID        pgtype.UUID        `json:"card_id"`
 	StartDate     pgtype.Timestamptz `json:"start_date"`
 	EndDate       pgtype.Timestamptz `json:"end_date"`
-	PaymentID     pgtype.Text        `json:"payment_id"`
-	IsActive      bool               `json:"is_active"`
-}
-
-type ProjectComment struct {
-	ID              pgtype.UUID        `json:"id"`
-	ProjectID       pgtype.UUID        `json:"project_id"`
-	BackerID        pgtype.UUID        `json:"backer_id"`
-	ParentCommentID pgtype.UUID        `json:"parent_comment_id"`
-	Content         string             `json:"content"`
-	CommentedAt     pgtype.Timestamptz `json:"commented_at"`
+	Status        ProjectStatus      `json:"status"`
 }
 
 type ProjectUpdate struct {
@@ -242,11 +328,11 @@ type ProjectUpdate struct {
 
 type Transaction struct {
 	ID              pgtype.UUID        `json:"id"`
-	BackingID       pgtype.UUID        `json:"backing_id"`
+	ProjectID       pgtype.UUID        `json:"project_id"`
 	TransactionType TransactionType    `json:"transaction_type"`
 	Amount          int64              `json:"amount"`
-	InitiatorID     pgtype.UUID        `json:"initiator_id"`
-	RecipientID     pgtype.UUID        `json:"recipient_id"`
+	InitiatorCardID pgtype.UUID        `json:"initiator_card_id"`
+	RecipientCardID pgtype.UUID        `json:"recipient_card_id"`
 	Status          TransactionStatus  `json:"status"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
@@ -257,7 +343,7 @@ type User struct {
 	HashedPassword string             `json:"hashed_password"`
 	FirstName      string             `json:"first_name"`
 	LastName       string             `json:"last_name"`
-	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	ProfilePicture *string            `json:"profile_picture"`
 	Activated      bool               `json:"activated"`
 	UserType       UserType           `json:"user_type"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`

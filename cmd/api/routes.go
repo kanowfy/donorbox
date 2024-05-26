@@ -10,7 +10,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /users/authenticated", app.requireUserAuthentication(app.getAuthenticatedUserHandler))
 	router.HandleFunc("GET /users/{id}", app.getUserByIDHandler)
 	router.HandleFunc("POST /users/register", app.registerAccountHandler)
-	router.HandleFunc("POST /users/verify", app.activateUserHandler) // change when incorporate frontend
+	router.HandleFunc("POST /users/verify", app.activateUserHandler)
 	router.HandleFunc("POST /users/login", app.loginHandler)
 	router.HandleFunc("PATCH /users", app.requireUserAuthentication(app.updateAccountHandler))
 	router.HandleFunc("PATCH /users/password", app.requireUserAuthentication(app.changePasswordHandler))
@@ -20,6 +20,12 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /users/logout/{provider}", app.googleAuthLogoutHandler)
 	router.HandleFunc("GET /users/auth/{provider}/token", app.getAuthenticationTokenHandler)
 
+	router.HandleFunc("GET /escrow/authenticated", app.requireEscrowAuthentication(app.getAuthenticatedEscrowHandler))
+	router.HandleFunc("POST /escrow/login", app.escrowLoginHandler)
+	router.HandleFunc("POST /escrow/transfer", app.requireEscrowAuthentication(app.setupEscrowCardHandler))
+	router.HandleFunc("POST /escrow/payout", app.requireEscrowAuthentication(app.payoutHandler))
+	router.HandleFunc("POST /escrow/refund", app.requireEscrowAuthentication(app.refundHandler))
+
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("POST /projects/search", app.searchProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
@@ -27,7 +33,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /projects/{id}", app.requireUserAuthentication(app.updateProjectHandler))
 	router.HandleFunc("DELETE /projects/{id}", app.requireUserAuthentication(app.deleteProjectHandler))
 	router.HandleFunc("POST /projects/updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
-	router.HandleFunc("POST /projects/comments", app.requireUserAuthentication(app.createProjectCommentHandler))
+	router.HandleFunc("POST /projects/{id}/transfer", app.requireUserAuthentication(app.setupProjectCardHandler))
 
 	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
 	router.HandleFunc("POST /projects/{id}/backings", app.requireUserAuthentication(app.createProjectBackingHandler))

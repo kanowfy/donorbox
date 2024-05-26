@@ -8,23 +8,21 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/log"
 	"github.com/kanowfy/donorbox/internal/mail"
+	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/google"
 )
 
-type repository struct {
-	*db.Queries
-	pool *pgxpool.Pool
-}
-
 type application struct {
 	config     config
-	repository repository
+	service    *service.Service
+	repository *db.Queries // remove after fully migrate to service
 	validator  *validator.Validate
 	mailer     mail.Mailer
 	wg         sync.WaitGroup
@@ -57,14 +55,23 @@ func main() {
 	)
 
 	app := &application{
-		config: cfg,
-		repository: repository{
-			Queries: db.New(dbpool),
-			pool:    dbpool,
-		},
-		validator: validator.New(validator.WithRequiredStructEnabled()),
-		mailer:    mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+		config:     cfg,
+		service:    service.New(dbpool),
+		repository: db.New(dbpool),
+		validator:  validator.New(validator.WithRequiredStructEnabled()),
+		mailer:     mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
 	}
+
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(1).Day().At("00:00").Do(func() {
+		err := app.service.CheckAndUpdateFinishedProjects(context.Background())
+		slog.Error(err.Error())
+	})
+
+	app.background(func() {
+		slog.Info("Starting cronjob...")
+		s.StartBlocking()
+	})
 
 	err = app.serve()
 	if err != nil {

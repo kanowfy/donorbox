@@ -4,9 +4,7 @@ import (
 	"net/http"
 
 	"github.com/kanowfy/donorbox/internal/convert"
-	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
-	"github.com/kanowfy/donorbox/internal/service"
 )
 
 func (app *application) getBackingsForProjectHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,13 +65,7 @@ func (app *application) createProjectBackingHandler(w http.ResponseWriter, r *ht
 
 	user := app.contextGetUser(r)
 
-	arg := db.CreateBackingParams{
-		ProjectID: pid,
-		BackerID:  user.ID,
-		Amount:    convert.MustStringToInt64(req.Amount),
-	}
-
-	if err := service.AcceptBacking(r.Context(), app.repository.pool, app.repository.Queries, arg); err != nil {
+	if err := app.service.AcceptBacking(r.Context(), pid, user.ID, req); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}

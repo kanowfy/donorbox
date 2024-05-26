@@ -23,17 +23,30 @@ func (rec *statusRecorder) WriteHeader(statusCode int) {
 
 func (app *application) enableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		trustedOrigins := []string{"http://localhost:5173", "http://localhost:4001"}
+		w.Header().Set("Vary", "Origin")
+		origin := r.Header.Get("Origin")
 
-		// Check if the request is a preflight request
-		if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
-			w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
-			w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+		if origin != "" {
+			for i := range trustedOrigins {
+				if origin == trustedOrigins[i] {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-			// Write a 200 OK status and return without further actions.
-			w.WriteHeader(http.StatusOK)
-			return
+					// Check if the request is a preflight request
+					if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+						w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
+						w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+
+						// Write a 200 OK status and return without further actions.
+						w.WriteHeader(http.StatusOK)
+						return
+					}
+					break
+
+				}
+			}
+
 		}
 
 		next.ServeHTTP(w, r)

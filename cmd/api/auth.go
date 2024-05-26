@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/token"
@@ -27,13 +26,10 @@ func (app *application) googleAuthCallbackHandler(w http.ResponseWriter, r *http
 	user, err = app.repository.GetUserByEmail(r.Context(), gothUser.Email)
 	if err != nil {
 		params := db.CreateSocialLoginUserParams{
-			Email:     gothUser.Email,
-			FirstName: gothUser.FirstName,
-			LastName:  gothUser.LastName,
-			ProfilePicture: pgtype.Text{
-				String: gothUser.AvatarURL,
-				Valid:  true,
-			},
+			Email:          gothUser.Email,
+			FirstName:      gothUser.FirstName,
+			LastName:       gothUser.LastName,
+			ProfilePicture: &gothUser.AvatarURL,
 		}
 
 		if params.FirstName == "" {

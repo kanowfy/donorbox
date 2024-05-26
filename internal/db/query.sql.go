@@ -24,29 +24,71 @@ func (q *Queries) ActivateUser(ctx context.Context, id pgtype.UUID) error {
 
 const createBacking = `-- name: CreateBacking :one
 INSERT INTO backings (
-    project_id, backer_id, amount
+    project_id, backer_id, amount, word_of_support
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4
 ) 
-RETURNING id, project_id, backer_id, amount, created_at, status
+RETURNING id, project_id, backer_id, amount, word_of_support, status, created_at
 `
 
 type CreateBackingParams struct {
-	ProjectID pgtype.UUID `json:"project_id"`
-	BackerID  pgtype.UUID `json:"backer_id"`
-	Amount    int64       `json:"amount"`
+	ProjectID     pgtype.UUID `json:"project_id"`
+	BackerID      pgtype.UUID `json:"backer_id"`
+	Amount        int64       `json:"amount"`
+	WordOfSupport *string     `json:"word_of_support"`
 }
 
 func (q *Queries) CreateBacking(ctx context.Context, arg CreateBackingParams) (Backing, error) {
-	row := q.db.QueryRow(ctx, createBacking, arg.ProjectID, arg.BackerID, arg.Amount)
+	row := q.db.QueryRow(ctx, createBacking,
+		arg.ProjectID,
+		arg.BackerID,
+		arg.Amount,
+		arg.WordOfSupport,
+	)
 	var i Backing
 	err := row.Scan(
 		&i.ID,
 		&i.ProjectID,
 		&i.BackerID,
 		&i.Amount,
-		&i.CreatedAt,
+		&i.WordOfSupport,
 		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createCard = `-- name: CreateCard :one
+INSERT INTO cards (
+    token, card_owner_name, last_four_digits, brand
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING id, token, card_owner_name, last_four_digits, brand, created_at
+`
+
+type CreateCardParams struct {
+	Token          string    `json:"token"`
+	CardOwnerName  string    `json:"card_owner_name"`
+	LastFourDigits string    `json:"last_four_digits"`
+	Brand          CardBrand `json:"brand"`
+}
+
+func (q *Queries) CreateCard(ctx context.Context, arg CreateCardParams) (Card, error) {
+	row := q.db.QueryRow(ctx, createCard,
+		arg.Token,
+		arg.CardOwnerName,
+		arg.LastFourDigits,
+		arg.Brand,
+	)
+	var i Card
+	err := row.Scan(
+		&i.ID,
+		&i.Token,
+		&i.CardOwnerName,
+		&i.LastFourDigits,
+		&i.Brand,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -57,7 +99,7 @@ INSERT INTO projects (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active
+RETURNING id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, card_id, start_date, end_date, status
 `
 
 type CreateProjectParams struct {
@@ -96,45 +138,10 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 		&i.CurrentAmount,
 		&i.Country,
 		&i.Province,
+		&i.CardID,
 		&i.StartDate,
 		&i.EndDate,
-		&i.PaymentID,
-		&i.IsActive,
-	)
-	return i, err
-}
-
-const createProjectComment = `-- name: CreateProjectComment :one
-INSERT INTO project_comments (
-    project_id, backer_id, parent_comment_id, content
-) VALUES (
-    $1, $2, $3, $4
-)
-RETURNING id, project_id, backer_id, parent_comment_id, content, commented_at
-`
-
-type CreateProjectCommentParams struct {
-	ProjectID       pgtype.UUID `json:"project_id"`
-	BackerID        pgtype.UUID `json:"backer_id"`
-	ParentCommentID pgtype.UUID `json:"parent_comment_id"`
-	Content         string      `json:"content"`
-}
-
-func (q *Queries) CreateProjectComment(ctx context.Context, arg CreateProjectCommentParams) (ProjectComment, error) {
-	row := q.db.QueryRow(ctx, createProjectComment,
-		arg.ProjectID,
-		arg.BackerID,
-		arg.ParentCommentID,
-		arg.Content,
-	)
-	var i ProjectComment
-	err := row.Scan(
-		&i.ID,
-		&i.ProjectID,
-		&i.BackerID,
-		&i.ParentCommentID,
-		&i.Content,
-		&i.CommentedAt,
+		&i.Status,
 	)
 	return i, err
 }
@@ -175,10 +182,10 @@ RETURNING id, email, hashed_password, first_name, last_name, profile_picture, ac
 `
 
 type CreateSocialLoginUserParams struct {
-	Email          string      `json:"email"`
-	FirstName      string      `json:"first_name"`
-	LastName       string      `json:"last_name"`
-	ProfilePicture pgtype.Text `json:"profile_picture"`
+	Email          string  `json:"email"`
+	FirstName      string  `json:"first_name"`
+	LastName       string  `json:"last_name"`
+	ProfilePicture *string `json:"profile_picture"`
 }
 
 func (q *Queries) CreateSocialLoginUser(ctx context.Context, arg CreateSocialLoginUserParams) (User, error) {
@@ -205,37 +212,37 @@ func (q *Queries) CreateSocialLoginUser(ctx context.Context, arg CreateSocialLog
 
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
-    backing_id, transaction_type, amount, initiator_id, recipient_id
+    project_id, transaction_type, amount, initiator_card_id, recipient_card_id
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at
+RETURNING id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at
 `
 
 type CreateTransactionParams struct {
-	BackingID       pgtype.UUID     `json:"backing_id"`
+	ProjectID       pgtype.UUID     `json:"project_id"`
 	TransactionType TransactionType `json:"transaction_type"`
 	Amount          int64           `json:"amount"`
-	InitiatorID     pgtype.UUID     `json:"initiator_id"`
-	RecipientID     pgtype.UUID     `json:"recipient_id"`
+	InitiatorCardID pgtype.UUID     `json:"initiator_card_id"`
+	RecipientCardID pgtype.UUID     `json:"recipient_card_id"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
 	row := q.db.QueryRow(ctx, createTransaction,
-		arg.BackingID,
+		arg.ProjectID,
 		arg.TransactionType,
 		arg.Amount,
-		arg.InitiatorID,
-		arg.RecipientID,
+		arg.InitiatorCardID,
+		arg.RecipientCardID,
 	)
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
-		&i.BackingID,
+		&i.ProjectID,
 		&i.TransactionType,
 		&i.Amount,
-		&i.InitiatorID,
-		&i.RecipientID,
+		&i.InitiatorCardID,
+		&i.RecipientCardID,
 		&i.Status,
 		&i.CreatedAt,
 	)
@@ -289,16 +296,6 @@ func (q *Queries) DeleteProjectByID(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
-const deleteProjectComment = `-- name: DeleteProjectComment :exec
-DELETE FROM project_comments
-WHERE id = $1
-`
-
-func (q *Queries) DeleteProjectComment(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteProjectComment, id)
-	return err
-}
-
 const deleteProjectUpdate = `-- name: DeleteProjectUpdate :exec
 DELETE FROM project_updates
 WHERE id = $1
@@ -340,7 +337,7 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 
 const getAllProjects = `-- name: GetAllProjects :many
 
-SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.start_date, projects.end_date, projects.payment_id, projects.is_active, COUNT(backings.project_id) as backing_count
+SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.card_id, projects.start_date, projects.end_date, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
@@ -367,10 +364,10 @@ type GetAllProjectsRow struct {
 	CurrentAmount int64              `json:"current_amount"`
 	Country       string             `json:"country"`
 	Province      string             `json:"province"`
+	CardID        pgtype.UUID        `json:"card_id"`
 	StartDate     pgtype.Timestamptz `json:"start_date"`
 	EndDate       pgtype.Timestamptz `json:"end_date"`
-	PaymentID     pgtype.Text        `json:"payment_id"`
-	IsActive      bool               `json:"is_active"`
+	Status        ProjectStatus      `json:"status"`
 	BackingCount  int64              `json:"backing_count"`
 }
 
@@ -395,10 +392,10 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 			&i.CurrentAmount,
 			&i.Country,
 			&i.Province,
+			&i.CardID,
 			&i.StartDate,
 			&i.EndDate,
-			&i.PaymentID,
-			&i.IsActive,
+			&i.Status,
 			&i.BackingCount,
 		); err != nil {
 			return nil, err
@@ -413,7 +410,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 
 const getAllTransactions = `-- name: GetAllTransactions :many
 
-SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
+SELECT id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at FROM transactions
 ORDER BY created_at DESC
 `
 
@@ -429,11 +426,11 @@ func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error)
 		var i Transaction
 		if err := rows.Scan(
 			&i.ID,
-			&i.BackingID,
+			&i.ProjectID,
 			&i.TransactionType,
 			&i.Amount,
-			&i.InitiatorID,
-			&i.RecipientID,
+			&i.InitiatorCardID,
+			&i.RecipientCardID,
 			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
@@ -457,7 +454,7 @@ type GetAllUsersRow struct {
 	Email          string             `json:"email"`
 	FirstName      string             `json:"first_name"`
 	LastName       string             `json:"last_name"`
-	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	ProfilePicture *string            `json:"profile_picture"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
@@ -490,7 +487,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 }
 
 const getBackingByID = `-- name: GetBackingByID :one
-SELECT id, project_id, backer_id, amount, created_at, status FROM backings
+SELECT id, project_id, backer_id, amount, word_of_support, status, created_at FROM backings
 WHERE id = $1
 `
 
@@ -502,8 +499,9 @@ func (q *Queries) GetBackingByID(ctx context.Context, id pgtype.UUID) (Backing, 
 		&i.ProjectID,
 		&i.BackerID,
 		&i.Amount,
-		&i.CreatedAt,
+		&i.WordOfSupport,
 		&i.Status,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -521,30 +519,76 @@ func (q *Queries) GetBackingCountForProject(ctx context.Context, projectID pgtyp
 	return backing_count, err
 }
 
-const getBackingsForProject = `-- name: GetBackingsForProject :many
-
-SELECT id, project_id, backer_id, amount, created_at, status FROM backings
-WHERE project_id = $1
-ORDER BY created_at DESC
+const getBackingTransactionsForProject = `-- name: GetBackingTransactionsForProject :many
+SELECT id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at FROM transactions
+WHERE project_id = $1 AND transaction_type == 'backing'
 `
 
+func (q *Queries) GetBackingTransactionsForProject(ctx context.Context, projectID pgtype.UUID) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getBackingTransactionsForProject, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transaction
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.TransactionType,
+			&i.Amount,
+			&i.InitiatorCardID,
+			&i.RecipientCardID,
+			&i.Status,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getBackingsForProject = `-- name: GetBackingsForProject :many
+
+SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
+JOIN backings ON backings.backer_id = users.id
+WHERE project_id = $1
+ORDER BY backings.created_at DESC
+`
+
+type GetBackingsForProjectRow struct {
+	UserID         pgtype.UUID        `json:"user_id"`
+	FirstName      string             `json:"first_name"`
+	LastName       string             `json:"last_name"`
+	ProfilePicture *string            `json:"profile_picture"`
+	BackingID      pgtype.UUID        `json:"backing_id"`
+	Amount         int64              `json:"amount"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 // :::::::::: BACKING ::::::::::--
-func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UUID) ([]Backing, error) {
+func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UUID) ([]GetBackingsForProjectRow, error) {
 	rows, err := q.db.Query(ctx, getBackingsForProject, projectID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Backing
+	var items []GetBackingsForProjectRow
 	for rows.Next() {
-		var i Backing
+		var i GetBackingsForProjectRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.ProjectID,
-			&i.BackerID,
+			&i.UserID,
+			&i.FirstName,
+			&i.LastName,
+			&i.ProfilePicture,
+			&i.BackingID,
 			&i.Amount,
 			&i.CreatedAt,
-			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -557,7 +601,7 @@ func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UU
 }
 
 const getBackingsForUser = `-- name: GetBackingsForUser :many
-SELECT id, project_id, backer_id, amount, created_at, status FROM backings
+SELECT id, project_id, backer_id, amount, word_of_support, status, created_at FROM backings
 WHERE backer_id = $1
 `
 
@@ -575,8 +619,9 @@ func (q *Queries) GetBackingsForUser(ctx context.Context, backerID pgtype.UUID) 
 			&i.ProjectID,
 			&i.BackerID,
 			&i.Amount,
-			&i.CreatedAt,
+			&i.WordOfSupport,
 			&i.Status,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -588,8 +633,48 @@ func (q *Queries) GetBackingsForUser(ctx context.Context, backerID pgtype.UUID) 
 	return items, nil
 }
 
+const getCardByID = `-- name: GetCardByID :one
+
+SELECT id, token, card_owner_name, last_four_digits, brand, created_at FROM cards
+WHERE id = $1
+`
+
+// :::::::::: CARD ::::::::::--
+func (q *Queries) GetCardByID(ctx context.Context, id pgtype.UUID) (Card, error) {
+	row := q.db.QueryRow(ctx, getCardByID, id)
+	var i Card
+	err := row.Scan(
+		&i.ID,
+		&i.Token,
+		&i.CardOwnerName,
+		&i.LastFourDigits,
+		&i.Brand,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getEscrowUser = `-- name: GetEscrowUser :one
+SELECT id, email, hashed_password, user_type, card_id, created_at FROM escrow_users
+LIMIT 1
+`
+
+func (q *Queries) GetEscrowUser(ctx context.Context) (EscrowUser, error) {
+	row := q.db.QueryRow(ctx, getEscrowUser)
+	var i EscrowUser
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.HashedPassword,
+		&i.UserType,
+		&i.CardID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getEscrowUserByEmail = `-- name: GetEscrowUserByEmail :one
-SELECT id, email, hashed_password, user_type, payment_id, created_at FROM escrow_users
+SELECT id, email, hashed_password, user_type, card_id, created_at FROM escrow_users
 WHERE email = $1
 `
 
@@ -601,17 +686,18 @@ func (q *Queries) GetEscrowUserByEmail(ctx context.Context, email string) (Escro
 		&i.Email,
 		&i.HashedPassword,
 		&i.UserType,
-		&i.PaymentID,
+		&i.CardID,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getEscrowUserByID = `-- name: GetEscrowUserByID :one
-SELECT id, email, hashed_password, user_type, payment_id, created_at FROM escrow_users
+SELECT id, email, hashed_password, user_type, card_id, created_at FROM escrow_users
 WHERE id = $1
 `
 
+// :::::::::: ESCROW USER ::::::::::--
 func (q *Queries) GetEscrowUserByID(ctx context.Context, id pgtype.UUID) (EscrowUser, error) {
 	row := q.db.QueryRow(ctx, getEscrowUserByID, id)
 	var i EscrowUser
@@ -620,7 +706,7 @@ func (q *Queries) GetEscrowUserByID(ctx context.Context, id pgtype.UUID) (Escrow
 		&i.Email,
 		&i.HashedPassword,
 		&i.UserType,
-		&i.PaymentID,
+		&i.CardID,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -638,7 +724,7 @@ type GetFirstBackingDonorRow struct {
 	UserID         pgtype.UUID        `json:"user_id"`
 	FirstName      string             `json:"first_name"`
 	LastName       string             `json:"last_name"`
-	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	ProfilePicture *string            `json:"profile_picture"`
 	BackingID      pgtype.UUID        `json:"backing_id"`
 	Amount         int64              `json:"amount"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
@@ -671,7 +757,7 @@ type GetMostBackingDonorRow struct {
 	UserID         pgtype.UUID        `json:"user_id"`
 	FirstName      string             `json:"first_name"`
 	LastName       string             `json:"last_name"`
-	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	ProfilePicture *string            `json:"profile_picture"`
 	BackingID      pgtype.UUID        `json:"backing_id"`
 	Amount         int64              `json:"amount"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
@@ -704,7 +790,7 @@ type GetMostRecentBackingDonorRow struct {
 	UserID         pgtype.UUID        `json:"user_id"`
 	FirstName      string             `json:"first_name"`
 	LastName       string             `json:"last_name"`
-	ProfilePicture pgtype.Text        `json:"profile_picture"`
+	ProfilePicture *string            `json:"profile_picture"`
 	BackingID      pgtype.UUID        `json:"backing_id"`
 	Amount         int64              `json:"amount"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
@@ -726,7 +812,7 @@ func (q *Queries) GetMostRecentBackingDonor(ctx context.Context, projectID pgtyp
 }
 
 const getProjectByID = `-- name: GetProjectByID :one
-SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, start_date, end_date, payment_id, is_active FROM projects
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, card_id, start_date, end_date, status FROM projects
 WHERE id = $1
 `
 
@@ -744,46 +830,12 @@ func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (Project, 
 		&i.CurrentAmount,
 		&i.Country,
 		&i.Province,
+		&i.CardID,
 		&i.StartDate,
 		&i.EndDate,
-		&i.PaymentID,
-		&i.IsActive,
+		&i.Status,
 	)
 	return i, err
-}
-
-const getProjectComments = `-- name: GetProjectComments :many
-
-SELECT id, project_id, backer_id, parent_comment_id, content, commented_at FROM project_comments
-WHERE project_id = $1
-`
-
-// :::::::::: PROJECT COMMENT ::::::::::--
-func (q *Queries) GetProjectComments(ctx context.Context, projectID pgtype.UUID) ([]ProjectComment, error) {
-	rows, err := q.db.Query(ctx, getProjectComments, projectID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ProjectComment
-	for rows.Next() {
-		var i ProjectComment
-		if err := rows.Scan(
-			&i.ID,
-			&i.ProjectID,
-			&i.BackerID,
-			&i.ParentCommentID,
-			&i.Content,
-			&i.CommentedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getProjectUpdates = `-- name: GetProjectUpdates :many
@@ -819,13 +871,34 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 	return items, nil
 }
 
-const getTransactionAudit = `-- name: GetTransactionAudit :many
-SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
-WHERE backing_id = $1 ORDER BY created_at ASC
+const getTransactionByID = `-- name: GetTransactionByID :one
+SELECT id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at FROM transactions
+WHERE id = $1
 `
 
-func (q *Queries) GetTransactionAudit(ctx context.Context, backingID pgtype.UUID) ([]Transaction, error) {
-	rows, err := q.db.Query(ctx, getTransactionAudit, backingID)
+func (q *Queries) GetTransactionByID(ctx context.Context, id pgtype.UUID) (Transaction, error) {
+	row := q.db.QueryRow(ctx, getTransactionByID, id)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.TransactionType,
+		&i.Amount,
+		&i.InitiatorCardID,
+		&i.RecipientCardID,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getTransactionsForProject = `-- name: GetTransactionsForProject :many
+SELECT id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at FROM transactions
+WHERE project_id = $1 ORDER BY created_at ASC
+`
+
+func (q *Queries) GetTransactionsForProject(ctx context.Context, projectID pgtype.UUID) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, getTransactionsForProject, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -835,11 +908,11 @@ func (q *Queries) GetTransactionAudit(ctx context.Context, backingID pgtype.UUID
 		var i Transaction
 		if err := rows.Scan(
 			&i.ID,
-			&i.BackingID,
+			&i.ProjectID,
 			&i.TransactionType,
 			&i.Amount,
-			&i.InitiatorID,
-			&i.RecipientID,
+			&i.InitiatorCardID,
+			&i.RecipientCardID,
 			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
@@ -851,27 +924,6 @@ func (q *Queries) GetTransactionAudit(ctx context.Context, backingID pgtype.UUID
 		return nil, err
 	}
 	return items, nil
-}
-
-const getTransactionByID = `-- name: GetTransactionByID :one
-SELECT id, backing_id, transaction_type, amount, initiator_id, recipient_id, status, created_at FROM transactions
-WHERE id = $1
-`
-
-func (q *Queries) GetTransactionByID(ctx context.Context, id pgtype.UUID) (Transaction, error) {
-	row := q.db.QueryRow(ctx, getTransactionByID, id)
-	var i Transaction
-	err := row.Scan(
-		&i.ID,
-		&i.BackingID,
-		&i.TransactionType,
-		&i.Amount,
-		&i.InitiatorID,
-		&i.RecipientID,
-		&i.Status,
-		&i.CreatedAt,
-	)
-	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
@@ -919,7 +971,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (User, error)
 }
 
 const searchProjects = `-- name: SearchProjects :many
-SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.start_date, projects.end_date, projects.payment_id, projects.is_active, COUNT(backings.project_id) as backing_count
+SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.card_id, projects.start_date, projects.end_date, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE 
@@ -946,10 +998,10 @@ type SearchProjectsRow struct {
 	CurrentAmount int64              `json:"current_amount"`
 	Country       string             `json:"country"`
 	Province      string             `json:"province"`
+	CardID        pgtype.UUID        `json:"card_id"`
 	StartDate     pgtype.Timestamptz `json:"start_date"`
 	EndDate       pgtype.Timestamptz `json:"end_date"`
-	PaymentID     pgtype.Text        `json:"payment_id"`
-	IsActive      bool               `json:"is_active"`
+	Status        ProjectStatus      `json:"status"`
 	BackingCount  int64              `json:"backing_count"`
 }
 
@@ -973,10 +1025,10 @@ func (q *Queries) SearchProjects(ctx context.Context, arg SearchProjectsParams) 
 			&i.CurrentAmount,
 			&i.Country,
 			&i.Province,
+			&i.CardID,
 			&i.StartDate,
 			&i.EndDate,
-			&i.PaymentID,
-			&i.IsActive,
+			&i.Status,
 			&i.BackingCount,
 		); err != nil {
 			return nil, err
@@ -989,19 +1041,44 @@ func (q *Queries) SearchProjects(ctx context.Context, arg SearchProjectsParams) 
 	return items, nil
 }
 
-const updateEscrowUserPaymentID = `-- name: UpdateEscrowUserPaymentID :exec
-UPDATE escrow_users
-SET payment_id = $2
+const updateEscrowCard = `-- name: UpdateEscrowCard :exec
+UPDATE escrow_users SET card_id = $2
 WHERE id = $1
 `
 
-type UpdateEscrowUserPaymentIDParams struct {
-	ID        pgtype.UUID `json:"id"`
-	PaymentID pgtype.Text `json:"payment_id"`
+type UpdateEscrowCardParams struct {
+	ID     pgtype.UUID `json:"id"`
+	CardID pgtype.UUID `json:"card_id"`
 }
 
-func (q *Queries) UpdateEscrowUserPaymentID(ctx context.Context, arg UpdateEscrowUserPaymentIDParams) error {
-	_, err := q.db.Exec(ctx, updateEscrowUserPaymentID, arg.ID, arg.PaymentID)
+func (q *Queries) UpdateEscrowCard(ctx context.Context, arg UpdateEscrowCardParams) error {
+	_, err := q.db.Exec(ctx, updateEscrowCard, arg.ID, arg.CardID)
+	return err
+}
+
+const updateEscrowUserByID = `-- name: UpdateEscrowUserByID :exec
+UPDATE escrow_users SET email = $2, hashed_password = $3
+WHERE id = $1
+`
+
+type UpdateEscrowUserByIDParams struct {
+	ID             pgtype.UUID `json:"id"`
+	Email          string      `json:"email"`
+	HashedPassword string      `json:"hashed_password"`
+}
+
+func (q *Queries) UpdateEscrowUserByID(ctx context.Context, arg UpdateEscrowUserByIDParams) error {
+	_, err := q.db.Exec(ctx, updateEscrowUserByID, arg.ID, arg.Email, arg.HashedPassword)
+	return err
+}
+
+const updateFinishedProjectsStatus = `-- name: UpdateFinishedProjectsStatus :exec
+UPDATE projects SET status = 'ended'
+WHERE end_date <= NOW() AND status = 'ongoing'
+`
+
+func (q *Queries) UpdateFinishedProjectsStatus(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, updateFinishedProjectsStatus)
 	return err
 }
 
@@ -1052,6 +1129,21 @@ func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDPa
 	return err
 }
 
+const updateProjectCard = `-- name: UpdateProjectCard :exec
+UPDATE projects SET card_id = $2
+WHERE id = $1
+`
+
+type UpdateProjectCardParams struct {
+	ID     pgtype.UUID `json:"id"`
+	CardID pgtype.UUID `json:"card_id"`
+}
+
+func (q *Queries) UpdateProjectCard(ctx context.Context, arg UpdateProjectCardParams) error {
+	_, err := q.db.Exec(ctx, updateProjectCard, arg.ID, arg.CardID)
+	return err
+}
+
 const updateProjectFund = `-- name: UpdateProjectFund :exec
 UPDATE projects SET current_amount = current_amount + $2::bigint
 WHERE id = $1
@@ -1067,18 +1159,18 @@ func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundPa
 	return err
 }
 
-const updateProjectPaymentID = `-- name: UpdateProjectPaymentID :exec
-UPDATE projects SET payment_id = $2
+const updateProjectStatus = `-- name: UpdateProjectStatus :exec
+UPDATE projects SET status = $2
 WHERE id = $1
 `
 
-type UpdateProjectPaymentIDParams struct {
-	ID        pgtype.UUID `json:"id"`
-	PaymentID pgtype.Text `json:"payment_id"`
+type UpdateProjectStatusParams struct {
+	ID     pgtype.UUID   `json:"id"`
+	Status ProjectStatus `json:"status"`
 }
 
-func (q *Queries) UpdateProjectPaymentID(ctx context.Context, arg UpdateProjectPaymentIDParams) error {
-	_, err := q.db.Exec(ctx, updateProjectPaymentID, arg.ID, arg.PaymentID)
+func (q *Queries) UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error {
+	_, err := q.db.Exec(ctx, updateProjectStatus, arg.ID, arg.Status)
 	return err
 }
 
@@ -1109,7 +1201,7 @@ type UpdateUserByIDParams struct {
 	Email          string      `json:"email"`
 	FirstName      string      `json:"first_name"`
 	LastName       string      `json:"last_name"`
-	ProfilePicture pgtype.Text `json:"profile_picture"`
+	ProfilePicture *string     `json:"profile_picture"`
 }
 
 func (q *Queries) UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error {

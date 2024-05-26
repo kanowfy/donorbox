@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/models"
+	"github.com/kanowfy/donorbox/internal/service"
 )
 
 func (app *application) getAllProjectsHandler(w http.ResponseWriter, r *http.Request) {
@@ -98,57 +100,6 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 		app.serverErrorResponse(w, r, err)
 	}
 }
-
-/* Server side pagination
-func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Request) {
-	qs := r.URL.Query()
-
-	page, _ := readInt(qs, "page", 1)
-	pageSize, _ := readInt(qs, "page_size", 6)
-	category, _ := readInt(qs, "category", 0)
-	searchQuery := readString(qs, "query", "")
-	province := readString(qs, "province", "")
-	country := readString(qs, "country", "")
-	closeToGoal, _ := readInt(qs, "close_to_goal", 0)
-	recent, _ := readInt(qs, "recently_launched", 0)
-
-	filters := models.Filters{
-		Category: category,
-		Page:     page,
-		PageSize: pageSize,
-	}
-
-	args := db.SearchProjectsParams{
-		Category:    int32(category),
-		SearchQuery: searchQuery,
-		Province:    province,
-		Country:     country,
-		CloseToGoal: int32(closeToGoal),
-		Recent:      int32(recent),
-		PageLimit:   int32(filters.Limit()),
-		TotalOffset: int32(filters.Offset()),
-	}
-
-	projects, err := app.repository.SearchProjects(r.Context(), args)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	metadata := models.CalculateMetadata(len(projects), filters.Page, filters.PageSize)
-
-	if projects == nil {
-		projects = []db.SearchProjectsRow{}
-	}
-
-	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
-		"projects": projects,
-		"metadata": metadata,
-	}, nil); err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
-*/
 
 func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
@@ -296,6 +247,43 @@ func (app *application) updateProjectHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+func (app *application) setupProjectCardHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	pid, err := convert.StringToPgxUUID(idStr)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	var req models.CardInformation
+
+	err = app.readJSON(w, r, &req)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err = app.validator.Struct(req); err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	if err := app.service.SetupProjectCard(r.Context(), pid, req); err != nil {
+		if errors.Is(err, service.ErrInvalidCardInfo) {
+			app.badRequestResponse(w, r, err)
+		} else {
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "setup transfer successfully",
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+}
+
 func (app *application) deleteProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := convert.StringToPgxUUID(idStr)
@@ -377,52 +365,4 @@ func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *htt
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
-}
-
-func (app *application) createProjectCommentHandler(w http.ResponseWriter, r *http.Request) {
-	var req models.CreateProjectCommentRequest
-
-	err := app.readJSON(w, r, &req)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	if err = app.validator.Struct(req); err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	pid := convert.MustStringToPgxUUID(req.ProjectID)
-
-	// check if projectID is valid, backerID is validated through middleware
-	if _, err = app.repository.GetProjectByID(r.Context(), pid); err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	//TODO: check permission of requesting user(must be owner or backer of the project)
-
-	args := db.CreateProjectCommentParams{
-		ProjectID: pid,
-		BackerID:  convert.MustStringToPgxUUID(req.BackerID),
-		Content:   req.Content,
-	}
-
-	if req.ParentCommentID != nil {
-		args.ParentCommentID = convert.MustStringToPgxUUID(*req.ParentCommentID)
-	}
-
-	comment, err := app.repository.CreateProjectComment(r.Context(), args)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	if err := app.writeJSON(w, http.StatusCreated, map[string]interface{}{
-		"project_comment": comment,
-	}, nil); err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-
 }
