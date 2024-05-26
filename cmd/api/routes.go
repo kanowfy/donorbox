@@ -22,7 +22,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandleFunc("GET /escrow/authenticated", app.requireEscrowAuthentication(app.getAuthenticatedEscrowHandler))
 	router.HandleFunc("POST /escrow/login", app.escrowLoginHandler)
-	router.HandleFunc("POST /escrow/transfer", app.requireUserAuthentication(app.setupEscrowCardHandler))
+	router.HandleFunc("POST /escrow/transfer", app.requireEscrowAuthentication(app.setupEscrowCardHandler))
 	router.HandleFunc("POST /escrow/payout", app.requireEscrowAuthentication(app.payoutHandler))
 	router.HandleFunc("POST /escrow/refund", app.requireEscrowAuthentication(app.refundHandler))
 

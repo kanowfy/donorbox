@@ -1072,6 +1072,16 @@ func (q *Queries) UpdateEscrowUserByID(ctx context.Context, arg UpdateEscrowUser
 	return err
 }
 
+const updateFinishedProjectsStatus = `-- name: UpdateFinishedProjectsStatus :exec
+UPDATE projects SET status = 'ended'
+WHERE end_date <= NOW() AND status = 'ongoing'
+`
+
+func (q *Queries) UpdateFinishedProjectsStatus(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, updateFinishedProjectsStatus)
+	return err
+}
+
 const updateProjectBackingStatus = `-- name: UpdateProjectBackingStatus :exec
 UPDATE backings
 SET status = $2

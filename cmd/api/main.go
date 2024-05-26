@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kanowfy/donorbox/internal/db"
@@ -60,6 +61,17 @@ func main() {
 		validator:  validator.New(validator.WithRequiredStructEnabled()),
 		mailer:     mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
 	}
+
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(1).Day().At("00:00").Do(func() {
+		err := app.service.CheckAndUpdateFinishedProjects(context.Background())
+		slog.Error(err.Error())
+	})
+
+	app.background(func() {
+		slog.Info("Starting cronjob...")
+		s.StartBlocking()
+	})
 
 	err = app.serve()
 	if err != nil {

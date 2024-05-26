@@ -55,6 +55,10 @@ RETURNING *;
 -- name: GetAllCategories :many
 SELECT * FROM categories;
 
+-- name: UpdateFinishedProjectsStatus :exec
+UPDATE projects SET status = 'ended'
+WHERE end_date <= NOW() AND status = 'ongoing';
+
 --:::::::::: PROJECT UPDATE ::::::::::--
 
 -- name: GetProjectUpdates :many
