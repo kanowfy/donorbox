@@ -560,6 +560,7 @@ FROM backings
 LEFT JOIN users
 ON backings.backer_id = users.id
 WHERE project_id = $1
+ORDER BY backings.created_at DESC
 `
 
 type GetBackingsForProjectRow struct {

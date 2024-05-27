@@ -150,7 +150,8 @@ SELECT backings.*, users.first_name, users.last_name, users.profile_picture
 FROM backings
 LEFT JOIN users
 ON backings.backer_id = users.id
-WHERE project_id = $1;
+WHERE project_id = $1
+ORDER BY backings.created_at DESC;
 
 -- name: GetBackingByID :one
 SELECT * FROM backings
