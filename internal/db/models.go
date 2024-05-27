@@ -100,6 +100,7 @@ type ProjectStatus string
 
 const (
 	ProjectStatusOngoing         ProjectStatus = "ongoing"
+	ProjectStatusEnded           ProjectStatus = "ended"
 	ProjectStatusCompletedPayout ProjectStatus = "completed_payout"
 	ProjectStatusCompletedRefund ProjectStatus = "completed_refund"
 )

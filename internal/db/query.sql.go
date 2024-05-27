@@ -555,20 +555,24 @@ func (q *Queries) GetBackingTransactionsForProject(ctx context.Context, projectI
 
 const getBackingsForProject = `-- name: GetBackingsForProject :many
 
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.id, backings.project_id, backings.backer_id, backings.amount, backings.word_of_support, backings.status, backings.created_at, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
-ORDER BY backings.created_at DESC
 `
 
 type GetBackingsForProjectRow struct {
-	UserID         pgtype.UUID        `json:"user_id"`
-	FirstName      string             `json:"first_name"`
-	LastName       string             `json:"last_name"`
-	ProfilePicture *string            `json:"profile_picture"`
-	BackingID      pgtype.UUID        `json:"backing_id"`
+	ID             pgtype.UUID        `json:"id"`
+	ProjectID      pgtype.UUID        `json:"project_id"`
+	BackerID       pgtype.UUID        `json:"backer_id"`
 	Amount         int64              `json:"amount"`
+	WordOfSupport  *string            `json:"word_of_support"`
+	Status         BackingStatus      `json:"status"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	FirstName      *string            `json:"first_name"`
+	LastName       *string            `json:"last_name"`
+	ProfilePicture *string            `json:"profile_picture"`
 }
 
 // :::::::::: BACKING ::::::::::--
@@ -582,13 +586,16 @@ func (q *Queries) GetBackingsForProject(ctx context.Context, projectID pgtype.UU
 	for rows.Next() {
 		var i GetBackingsForProjectRow
 		if err := rows.Scan(
-			&i.UserID,
+			&i.ID,
+			&i.ProjectID,
+			&i.BackerID,
+			&i.Amount,
+			&i.WordOfSupport,
+			&i.Status,
+			&i.CreatedAt,
 			&i.FirstName,
 			&i.LastName,
 			&i.ProfilePicture,
-			&i.BackingID,
-			&i.Amount,
-			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -713,100 +720,124 @@ func (q *Queries) GetEscrowUserByID(ctx context.Context, id pgtype.UUID) (Escrow
 }
 
 const getFirstBackingDonor = `-- name: GetFirstBackingDonor :one
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.id, backings.project_id, backings.backer_id, backings.amount, backings.word_of_support, backings.status, backings.created_at, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
 ORDER BY backings.created_at
 LIMIT 1
 `
 
 type GetFirstBackingDonorRow struct {
-	UserID         pgtype.UUID        `json:"user_id"`
-	FirstName      string             `json:"first_name"`
-	LastName       string             `json:"last_name"`
-	ProfilePicture *string            `json:"profile_picture"`
-	BackingID      pgtype.UUID        `json:"backing_id"`
+	ID             pgtype.UUID        `json:"id"`
+	ProjectID      pgtype.UUID        `json:"project_id"`
+	BackerID       pgtype.UUID        `json:"backer_id"`
 	Amount         int64              `json:"amount"`
+	WordOfSupport  *string            `json:"word_of_support"`
+	Status         BackingStatus      `json:"status"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	FirstName      *string            `json:"first_name"`
+	LastName       *string            `json:"last_name"`
+	ProfilePicture *string            `json:"profile_picture"`
 }
 
 func (q *Queries) GetFirstBackingDonor(ctx context.Context, projectID pgtype.UUID) (GetFirstBackingDonorRow, error) {
 	row := q.db.QueryRow(ctx, getFirstBackingDonor, projectID)
 	var i GetFirstBackingDonorRow
 	err := row.Scan(
-		&i.UserID,
+		&i.ID,
+		&i.ProjectID,
+		&i.BackerID,
+		&i.Amount,
+		&i.WordOfSupport,
+		&i.Status,
+		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.ProfilePicture,
-		&i.BackingID,
-		&i.Amount,
-		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getMostBackingDonor = `-- name: GetMostBackingDonor :one
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.id, backings.project_id, backings.backer_id, backings.amount, backings.word_of_support, backings.status, backings.created_at, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
 ORDER BY backings.amount DESC
 LIMIT 1
 `
 
 type GetMostBackingDonorRow struct {
-	UserID         pgtype.UUID        `json:"user_id"`
-	FirstName      string             `json:"first_name"`
-	LastName       string             `json:"last_name"`
-	ProfilePicture *string            `json:"profile_picture"`
-	BackingID      pgtype.UUID        `json:"backing_id"`
+	ID             pgtype.UUID        `json:"id"`
+	ProjectID      pgtype.UUID        `json:"project_id"`
+	BackerID       pgtype.UUID        `json:"backer_id"`
 	Amount         int64              `json:"amount"`
+	WordOfSupport  *string            `json:"word_of_support"`
+	Status         BackingStatus      `json:"status"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	FirstName      *string            `json:"first_name"`
+	LastName       *string            `json:"last_name"`
+	ProfilePicture *string            `json:"profile_picture"`
 }
 
 func (q *Queries) GetMostBackingDonor(ctx context.Context, projectID pgtype.UUID) (GetMostBackingDonorRow, error) {
 	row := q.db.QueryRow(ctx, getMostBackingDonor, projectID)
 	var i GetMostBackingDonorRow
 	err := row.Scan(
-		&i.UserID,
+		&i.ID,
+		&i.ProjectID,
+		&i.BackerID,
+		&i.Amount,
+		&i.WordOfSupport,
+		&i.Status,
+		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.ProfilePicture,
-		&i.BackingID,
-		&i.Amount,
-		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getMostRecentBackingDonor = `-- name: GetMostRecentBackingDonor :one
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.id, backings.project_id, backings.backer_id, backings.amount, backings.word_of_support, backings.status, backings.created_at, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
 ORDER BY backings.created_at DESC
 LIMIT 1
 `
 
 type GetMostRecentBackingDonorRow struct {
-	UserID         pgtype.UUID        `json:"user_id"`
-	FirstName      string             `json:"first_name"`
-	LastName       string             `json:"last_name"`
-	ProfilePicture *string            `json:"profile_picture"`
-	BackingID      pgtype.UUID        `json:"backing_id"`
+	ID             pgtype.UUID        `json:"id"`
+	ProjectID      pgtype.UUID        `json:"project_id"`
+	BackerID       pgtype.UUID        `json:"backer_id"`
 	Amount         int64              `json:"amount"`
+	WordOfSupport  *string            `json:"word_of_support"`
+	Status         BackingStatus      `json:"status"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	FirstName      *string            `json:"first_name"`
+	LastName       *string            `json:"last_name"`
+	ProfilePicture *string            `json:"profile_picture"`
 }
 
 func (q *Queries) GetMostRecentBackingDonor(ctx context.Context, projectID pgtype.UUID) (GetMostRecentBackingDonorRow, error) {
 	row := q.db.QueryRow(ctx, getMostRecentBackingDonor, projectID)
 	var i GetMostRecentBackingDonorRow
 	err := row.Scan(
-		&i.UserID,
+		&i.ID,
+		&i.ProjectID,
+		&i.BackerID,
+		&i.Amount,
+		&i.WordOfSupport,
+		&i.Status,
+		&i.CreatedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.ProfilePicture,
-		&i.BackingID,
-		&i.Amount,
-		&i.CreatedAt,
 	)
 	return i, err
 }

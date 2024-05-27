@@ -146,10 +146,11 @@ WHERE id = $1;
 --:::::::::: BACKING ::::::::::--
 
 -- name: GetBackingsForProject :many
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
-WHERE project_id = $1
-ORDER BY backings.created_at DESC;
+SELECT backings.*, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
+WHERE project_id = $1;
 
 -- name: GetBackingByID :one
 SELECT * FROM backings
@@ -160,22 +161,28 @@ SELECT * FROM backings
 WHERE backer_id = $1;
 
 -- name: GetMostBackingDonor :one
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.*, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
 ORDER BY backings.amount DESC
 LIMIT 1;
 
 -- name: GetFirstBackingDonor :one
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.*, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
 ORDER BY backings.created_at
 LIMIT 1;
 
 -- name: GetMostRecentBackingDonor :one
-SELECT users.id AS user_id, users.first_name, users.last_name, users.profile_picture, backings.id AS backing_id, backings.amount, backings.created_at FROM users
-JOIN backings ON backings.backer_id = users.id
+SELECT backings.*, users.first_name, users.last_name, users.profile_picture
+FROM backings
+LEFT JOIN users
+ON backings.backer_id = users.id
 WHERE project_id = $1
 ORDER BY backings.created_at DESC
 LIMIT 1;

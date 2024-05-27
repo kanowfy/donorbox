@@ -1,4 +1,3 @@
-import { Button } from "flowbite-react";
 import { Link } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard";
 import { useEffect, useState } from "react";
@@ -23,17 +22,17 @@ const Home = () => {
   return (
     <>
       <div>
-        <section className="flex flex-col pt-20 items-center h-128 bg-cover bg-gradient-to-b from-white to-emerald-200">
-          <div className="pb-7 font-semibold text-emerald-900 text-6xl">
+        <section className="flex flex-col pt-20 items-center h-[35rem] bg-cover bg-gradient-to-b from-white to-emerald-200">
+          <div className="pb-7 font-semibold text-teal-700 text-6xl">
             Help those in need today
           </div>
           <div className="text-emerald-700 pb-10 font-medium text-lg">
             Your home for communities, charities and people you care about
           </div>
           <div>
-            <Button gradientDuoTone="greenToBlue" size="xl" className="mt-5">
+            <button className="mt-10 px-8 py-5 text-white font-medium text-xl rounded-xl shadow-lg bg-gradient-to-t from-teal-500 to-green-700 hover:bg-gradient-to-b">
               Start a Fundraiser
-            </Button>
+            </button>
           </div>
         </section>
 

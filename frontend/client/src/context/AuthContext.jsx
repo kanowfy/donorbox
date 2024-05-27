@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import userService from "../services/user";
 import { AUTH_ACTIONS as ACTIONS } from "../constants";
 
@@ -8,17 +7,14 @@ const AuthContext = React.createContext();
 const authReducer = (state, action) => {
   switch (action.type) {
     case ACTIONS.LOGIN:
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${action.payload.token}`;
       localStorage.setItem("token", action.payload.token);
       return {
         ...state,
         token: action.payload.token,
         user: action.payload.user,
+        loading: false,
       };
     case ACTIONS.LOGOUT:
-      delete axios.defaults.headers.common["Authorization"];
       localStorage.removeItem("token");
       return { ...state, token: null, user: null };
     default:
@@ -29,14 +25,16 @@ const authReducer = (state, action) => {
 // eslint-disable-next-line react/prop-types
 const AuthProvider = ({ children }) => {
   const [state, dispatch] = React.useReducer(authReducer, {
-    token: null,
+    token: localStorage.getItem("token"),
     user: null,
+    loading: true,
   });
 
   React.useEffect(() => {
     const fetchUser = async (token) => {
       try {
         const userResponse = await userService.getCurrent(token);
+        console.log(userResponse);
         dispatch({
           type: ACTIONS.LOGIN,
           payload: {

@@ -5,6 +5,7 @@ CREATE TYPE user_type AS ENUM (
 
 CREATE TYPE project_status AS ENUM (
 	'ongoing',
+	'ended',
 	'completed_payout',
 	'completed_refund'
 );
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS projects (
 CREATE TABLE IF NOT EXISTS backings (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_id uuid NOT NULL REFERENCES projects(id),
-	backer_id uuid NOT NULL REFERENCES users(id),
+	backer_id uuid REFERENCES users(id),
 	amount bigint NOT NULL,
 	word_of_support text,
 	status backing_status NOT NULL DEFAULT 'pending',

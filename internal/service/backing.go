@@ -9,7 +9,7 @@ import (
 	"github.com/kanowfy/donorbox/internal/models"
 )
 
-func (s *Service) AcceptBacking(ctx context.Context, projectID pgtype.UUID, backerID pgtype.UUID, request models.BackingRequest) error {
+func (s *Service) AcceptBacking(ctx context.Context, projectID pgtype.UUID, request models.BackingRequest) error {
 	tx, err := s.dbPool.Begin(ctx)
 	if err != nil {
 		return err
@@ -28,12 +28,17 @@ func (s *Service) AcceptBacking(ctx context.Context, projectID pgtype.UUID, back
 		return err
 	}
 
-	backing, err := qtx.CreateBacking(ctx, db.CreateBackingParams{
+	backingParams := db.CreateBackingParams{
 		ProjectID:     projectID,
-		BackerID:      backerID,
 		Amount:        convert.MustStringToInt64(request.Amount),
 		WordOfSupport: request.WordOfSupport,
-	})
+	}
+
+	if request.UserID != nil {
+		backingParams.BackerID = convert.MustStringToPgxUUID(*request.UserID)
+	}
+
+	backing, err := qtx.CreateBacking(ctx, backingParams)
 	if err != nil {
 		return err
 	}
