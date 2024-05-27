@@ -17,6 +17,8 @@ const authReducer = (state, action) => {
     case ACTIONS.LOGOUT:
       localStorage.removeItem("token");
       return { ...state, token: null, user: null };
+    case ACTIONS.LOADED:
+      return { ...state, loading: false };
     default:
       throw new Error(`Unhandled action type: ${action.type}`);
   }
@@ -49,6 +51,10 @@ const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (token) {
       fetchUser(token);
+    } else {
+      dispatch({
+        type: ACTIONS.LOADED,
+      });
     }
   }, []);
 

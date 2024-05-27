@@ -115,8 +115,22 @@ func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	backings, err := app.repository.GetBackingsForProject(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	user, err := app.repository.GetUserByID(r.Context(), project.UserID)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
 	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
-		"project": project,
+		"project":  project,
+		"backings": backings,
+		"user":     user,
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

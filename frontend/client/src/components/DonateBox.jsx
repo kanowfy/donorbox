@@ -3,13 +3,15 @@ import utils from "../utils/utils";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import backingService from "../services/backing";
-import { Avatar } from "flowbite-react";
+import { Avatar, Modal } from "flowbite-react";
+import Donator from "./Donator";
 
-const DonateBox = ({ id, currentAmount, goalAmount }) => {
+const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
   const [recentBacking, setRecentBacking] = useState({});
   const [mostBacking, setMostBacking] = useState({});
   const [firstBacking, setFirstBacking] = useState({});
   const [backingCount, setBackingCount] = useState(0);
+  const [viewDonations, setViewDonations] = useState(false);
 
   useEffect(() => {
     const fetchBackingStats = async (projectID) => {
@@ -58,7 +60,7 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
       </div>
 
       {backingCount ? (
-        <div className="mt-7 mb-2 space-y-4">
+        <div className="mt-7 mb-2 space-y-2">
           <div className="grid grid-cols-12">
             <div className="col-span-2">
               <Avatar
@@ -92,6 +94,8 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
               </div>
             </div>
           </div>
+
+          <hr />
 
           <div className="grid grid-cols-12">
             <div className="col-span-2">
@@ -127,6 +131,8 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
             </div>
           </div>
 
+          <hr />
+
           <div className="grid grid-cols-12">
             <div className="col-span-2">
               <Avatar
@@ -160,6 +166,41 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
               </div>
             </div>
           </div>
+
+          <div className="w-full flex justify-center">
+            <button
+              className="hover:underline text-sm"
+              onClick={() => setViewDonations(true)}
+            >
+              View all donations
+            </button>
+          </div>
+
+          <Modal
+            show={viewDonations}
+            size="md"
+            onClose={() => setViewDonations(false)}
+            popup
+          >
+            <Modal.Header />
+            <Modal.Body>
+              <div className="mb-4 underline">List of donations</div>
+              <div className="space-y-1">
+                {backings?.map((b) => (
+                  <Donator
+                    key={b.id}
+                    profile_picture={
+                      b.profile_picture ? b.profile_picture : "/avatar.svg"
+                    }
+                    first_name={b.first_name ? b.first_name : "Anonymous"}
+                    last_name={b.last_name ? b.last_name : ""}
+                    amount={b.amount}
+                    created_at={b.created_at}
+                  />
+                ))}
+              </div>
+            </Modal.Body>
+          </Modal>
         </div>
       ) : (
         <div className="flex items-center justify-center space-x-1 mt-5">
@@ -180,7 +221,7 @@ DonateBox.propTypes = {
   id: PropTypes.string,
   currentAmount: PropTypes.number,
   goalAmount: PropTypes.number,
-  numBackings: PropTypes.number,
+  backings: PropTypes.array,
 };
 
 export default DonateBox;

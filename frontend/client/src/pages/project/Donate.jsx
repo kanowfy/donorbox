@@ -49,7 +49,7 @@ const Donate = () => {
       }
     };
 
-    if (!loading && user) {
+    if (!loading) {
       fetchProject();
     }
   }, [params.id, user, loading, navigate]);

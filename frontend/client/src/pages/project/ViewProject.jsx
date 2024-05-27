@@ -5,7 +5,6 @@ import DonateBox from "../../components/DonateBox";
 import { useEffect, useState } from "react";
 import projectService from "../../services/project";
 import utils from "../../utils/utils";
-import userService from "../../services/user";
 
 const Project = () => {
   // useparams to get id
@@ -15,24 +14,27 @@ const Project = () => {
   const navigate = useNavigate();
   const [project, setProject] = useState({});
   const [owner, setOwner] = useState({});
+  const [backings, setBackings] = useState();
+  const [wosList, setWosList] = useState();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProject = async () => {
       try {
         const projectResponse = await projectService.getOne(params.id);
         setProject(projectResponse.project);
+        setBackings(projectResponse.backings);
+        setOwner(projectResponse.user);
 
-        const ownerResponse = await userService.getOne(
-          projectResponse.project.user_id
+        setWosList(
+          projectResponse.backings.filter((b) => b.word_of_support !== null)
         );
-        setOwner(ownerResponse.user);
       } catch (err) {
         navigate("/not-found");
         console.error(err);
       }
     };
 
-    fetchData();
+    fetchProject();
   }, [params.id, navigate]);
 
   return (
@@ -74,7 +76,7 @@ const Project = () => {
 
           <p className="max-w-2xl tracking-tight mt-4">{project.description}</p>
           <div className="flex justify-center my-5">
-            <Link to="#">
+            <Link to={`/${params.id}/donate`}>
               <div className="border text-xl flex py-3 max-w-lg rounded-lg border-gray-400 px-40 hover:bg-gray-100 hover:border-gray-900 duration-300">
                 Donate
               </div>
@@ -84,34 +86,21 @@ const Project = () => {
           <div className="h-px bg-gray-300"></div>
 
           <div className="my-5">
-            <div className="text-xl font-semibold">
-              Donators&apos; words of support
+            <div className="text-xl font-semibold tracking-tight">
+              Donors&apos; words of support ({wosList?.length})
             </div>
 
-            <Support
-              avatar="/avatar.svg"
-              amount={250000}
-              day_since={21}
-              comment="
-              consectetur adipisicing elit. Velit quas explicabo hic possimus
-              nisi placeat recusandae quo illum, fugit officia saepe, laudantium
-              numquam rem quibusdam nulla nesciunt nobis reiciendis quos?"
-            />
-            <Support
-              avatar="/avatar.svg"
-              amount={250000}
-              day_since={21}
-              comment="skibidi toilet let go"
-            />
-            <Support
-              avatar="/avatar.svg"
-              amount={250000}
-              day_since={21}
-              comment="
-              consectetur adipisicing elit. Velit quas explicabo hic possimus
-              nisi placeat recusandae quo illum, fugit officia saepe, laudantium
-              numquam rem quibusdam nulla nesciunt nobis reiciendis quos?"
-            />
+            {wosList?.map((b) => (
+              <Support
+                key={b.id}
+                avatar={b.profile_picture ? b.profile_picture : "/avatar.svg"}
+                first_name={b.first_name ? b.first_name : "Anonymous"}
+                last_name={b.last_name ? b.last_name : ""}
+                amount={b.amount}
+                day_since={utils.getDaySince(b.created_at)}
+                comment={b.word_of_support}
+              />
+            ))}
           </div>
         </div>
         <div className="col-span-1">
@@ -119,6 +108,7 @@ const Project = () => {
             id={params.id}
             currentAmount={project.current_amount}
             goalAmount={project.goal_amount}
+            backings={backings}
           />
         </div>
       </div>
