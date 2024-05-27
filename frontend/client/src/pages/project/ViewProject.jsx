@@ -1,5 +1,5 @@
 import { Avatar } from "flowbite-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import Support from "../../components/Support";
 import DonateBox from "../../components/DonateBox";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ const Project = () => {
   // useeffect to fetch the project and all related shi
   // plug that shi in
   const params = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState({});
   const [owner, setOwner] = useState({});
 
@@ -26,12 +27,13 @@ const Project = () => {
         );
         setOwner(ownerResponse.user);
       } catch (err) {
+        navigate("/not-found");
         console.error(err);
       }
     };
 
     fetchData();
-  }, [params.id]);
+  }, [params.id, navigate]);
 
   return (
     <div className="mx-auto">
@@ -117,7 +119,6 @@ const Project = () => {
             id={params.id}
             currentAmount={project.current_amount}
             goalAmount={project.goal_amount}
-            numBackings={69}
           />
         </div>
       </div>

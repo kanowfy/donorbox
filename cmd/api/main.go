@@ -62,16 +62,13 @@ func main() {
 		mailer:     mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
 	}
 
+	slog.Info("Starting cronjob...")
 	s := gocron.NewScheduler(time.UTC)
 	s.Every(1).Day().At("00:00").Do(func() {
 		err := app.service.CheckAndUpdateFinishedProjects(context.Background())
 		slog.Error(err.Error())
 	})
-
-	app.background(func() {
-		slog.Info("Starting cronjob...")
-		s.StartBlocking()
-	})
+	s.StartAsync()
 
 	err = app.serve()
 	if err != nil {

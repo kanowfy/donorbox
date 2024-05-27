@@ -63,9 +63,7 @@ func (app *application) createProjectBackingHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	user := app.contextGetUser(r)
-
-	if err := app.service.AcceptBacking(r.Context(), pid, user.ID, req); err != nil {
+	if err := app.service.AcceptBacking(r.Context(), pid, req); err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}

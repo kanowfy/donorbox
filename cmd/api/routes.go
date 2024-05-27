@@ -36,7 +36,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("POST /projects/{id}/transfer", app.requireUserAuthentication(app.setupProjectCardHandler))
 
 	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
-	router.HandleFunc("POST /projects/{id}/backings", app.requireUserAuthentication(app.createProjectBackingHandler))
+	router.HandleFunc("POST /projects/{id}/backings", app.createProjectBackingHandler)
 	router.HandleFunc("GET /projects/{id}/backings/stats", app.getProjectBackingStats)
 
 	router.HandleFunc("GET /transactions", app.requireEscrowAuthentication(app.getAllTransactionsHandler))

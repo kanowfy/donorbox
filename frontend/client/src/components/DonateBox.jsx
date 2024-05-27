@@ -31,7 +31,7 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
   return (
     <div className="shadow-xl p-6 rounded-lg">
       <div>
-        <Link to="#">
+        <Link to={`/${id}/donate`}>
           <div className="py-3 px-10 bg-gradient-to-b from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 flex items-center justify-center font-semibold text-lg rounded-xl">
             Donate
           </div>
@@ -72,7 +72,11 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
               />
             </div>
             <div className="col-span-10 flex flex-col">
-              <div className="font-normal">{`${recentBacking.first_name} ${recentBacking.last_name}`}</div>
+              <div className="font-normal">
+                {recentBacking.first_name
+                  ? `${recentBacking.first_name} ${recentBacking.last_name}`
+                  : "Anonymous"}
+              </div>
               <div className="flex gap-2 my-1">
                 <span className="text-sm block font-bold">
                   ₫{recentBacking?.amount?.toLocaleString()}{" "}
@@ -102,7 +106,11 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
               />
             </div>
             <div className="col-span-10 flex flex-col">
-              <div className="font-normal">{`${mostBacking.first_name} ${mostBacking.last_name}`}</div>
+              <div className="font-normal">
+                {mostBacking.first_name
+                  ? `${mostBacking.first_name} ${mostBacking.last_name}`
+                  : "Anonymous"}
+              </div>
               <div className="flex gap-2 my-1">
                 <span className="text-sm block font-bold">
                   ₫{mostBacking?.amount?.toLocaleString()}{" "}
@@ -132,7 +140,11 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
               />
             </div>
             <div className="col-span-10 flex flex-col">
-              <div className="font-normal">{`${firstBacking.first_name} ${firstBacking.last_name}`}</div>
+              <div className="font-normal">
+                {firstBacking.first_name
+                  ? `${firstBacking.first_name} ${firstBacking.last_name}`
+                  : "Anonymous"}
+              </div>
               <div className="flex gap-2 my-1">
                 <span className="text-sm block font-bold">
                   ₫{firstBacking?.amount?.toLocaleString()}{" "}
@@ -153,7 +165,7 @@ const DonateBox = ({ id, currentAmount, goalAmount }) => {
         <div className="flex items-center justify-center space-x-1 mt-5">
           <div>Be the first to help!</div>
           <Link
-            to="#"
+            to={`/${id}/donate`}
             className="font-semibold text-gray-600 underline hover:text-black"
           >
             Donate now

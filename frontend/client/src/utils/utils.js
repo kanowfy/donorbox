@@ -26,4 +26,11 @@ const formatDate = (date) => {
     return day + '/' + month + '/' + year;
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate }
+const parseExpiry = (date) => {
+    return {
+        month: parseInt(date.substring(0, 2), 10),
+        year: parseInt("20" + date.substring(2), 10)
+    }
+}
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate, parseExpiry }

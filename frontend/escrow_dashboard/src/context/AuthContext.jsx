@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import authService from "../services/auth";
 import { AUTH_ACTIONS as ACTIONS } from "../constants";
 
@@ -8,9 +7,6 @@ const AuthContext = React.createContext();
 const authReducer = (state, action) => {
   switch (action.type) {
     case ACTIONS.LOGIN:
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${action.payload.token}`;
       localStorage.setItem("token", action.payload.token);
       return {
         ...state,
@@ -18,7 +14,6 @@ const authReducer = (state, action) => {
         user: action.payload.user,
       };
     case ACTIONS.LOGOUT:
-      delete axios.defaults.headers.common["Authorization"];
       localStorage.removeItem("token");
       return { ...state, token: null, user: null };
     default:
