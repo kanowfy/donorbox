@@ -15,9 +15,9 @@ func (s *Service) CheckAndUpdateFinishedProjects(ctx context.Context) error {
 	}
 
 	if res.RowsAffected() == 0 {
-		slog.Info("No project needs updating", "CronjobUpdatedStatus", 0)
+		slog.Info("No project needs updating", "numProjectUpdateEnded", 0)
 	} else {
-		slog.Info(fmt.Sprintf("Successfully updated %d rows", res.RowsAffected()), "CronjobUpdatedStatus", res.RowsAffected())
+		slog.Info(fmt.Sprintf("Successfully updated %d rows", res.RowsAffected()), "numProjectUpdateEnded", res.RowsAffected())
 	}
 
 	return nil

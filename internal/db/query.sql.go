@@ -521,7 +521,7 @@ func (q *Queries) GetBackingCountForProject(ctx context.Context, projectID pgtyp
 
 const getBackingTransactionsForProject = `-- name: GetBackingTransactionsForProject :many
 SELECT id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at FROM transactions
-WHERE project_id = $1 AND transaction_type == 'backing'
+WHERE project_id = $1 AND transaction_type = 'backing'
 `
 
 func (q *Queries) GetBackingTransactionsForProject(ctx context.Context, projectID pgtype.UUID) ([]Transaction, error) {

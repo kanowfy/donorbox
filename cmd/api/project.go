@@ -117,6 +117,20 @@ func (app *application) getProjectsForUserHandler(w http.ResponseWriter, r *http
 	}
 }
 
+func (app *application) getEndedProjectsHandler(w http.ResponseWriter, r *http.Request) {
+	projects, err := app.repository.GetEndedProjects(r.Context())
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"projects": projects,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := convert.StringToPgxUUID(idStr)
