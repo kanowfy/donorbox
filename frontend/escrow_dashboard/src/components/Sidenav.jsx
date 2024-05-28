@@ -1,5 +1,11 @@
-import { Sidebar } from "flowbite-react";
+import { Sidebar, Avatar } from "flowbite-react";
 import { Link } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
+import { LuLogOut } from "react-icons/lu";
+import { RxDashboard } from "react-icons/rx";
+import { MdPayments } from "react-icons/md";
+import { RiRefund2Fill } from "react-icons/ri";
+import { AiOutlineAudit } from "react-icons/ai";
 
 const customSidenavTheme = {
   root: {
@@ -82,14 +88,15 @@ const customSidenavTheme = {
 };
 
 const Sidenav = () => {
+  const { user } = useAuthContext();
   return (
     <Sidebar
       className="h-screen sticky top-10 w-full"
       theme={customSidenavTheme}
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col justify-between h-full">
         <div>
-          <div className="flex justify-center pr-5">
+          <div className="flex justify-center pr-5 pt-3">
             <Sidebar.Logo
               as={Link}
               to="#"
@@ -103,21 +110,43 @@ const Sidenav = () => {
             <div className="text-gray-500 text-sm ml-2 mb-2">MENU</div>
             <Sidebar.Items>
               <Sidebar.ItemGroup>
-                <Sidebar.Item as={Link} to="/">
+                <Sidebar.Item as={Link} to="/" icon={RxDashboard}>
                   Dashboard
                 </Sidebar.Item>
-                <Sidebar.Item as={Link} to="/manage/payout">
+                <Sidebar.Item as={Link} to="/manage/payout" icon={MdPayments}>
                   Manage Payouts
                 </Sidebar.Item>
-                <Sidebar.Item as={Link} to="/manage/refund">
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/refund"
+                  icon={RiRefund2Fill}
+                >
                   Manage Refunds
                 </Sidebar.Item>
-                <Sidebar.Item as={Link} to="/">
+                <Sidebar.Item as={Link} to="/" icon={AiOutlineAudit}>
                   Transaction Audits
+                </Sidebar.Item>
+              </Sidebar.ItemGroup>
+              <Sidebar.ItemGroup>
+                <Sidebar.Item as={Link} to="/logout" icon={LuLogOut}>
+                  Logout
                 </Sidebar.Item>
               </Sidebar.ItemGroup>
             </Sidebar.Items>
           </div>
+        </div>
+        <div className="w-full flex justify-center space-x-2">
+          <Avatar
+            img={() => (
+              <img
+                src="/avatar.svg"
+                className="h-8 w-8 bg-white rounded-full p-1"
+              />
+            )}
+            rounded
+            bordered
+          />
+          <div className="text-gray-300 text-sm mt-1">{user?.email}</div>
         </div>
       </div>
     </Sidebar>

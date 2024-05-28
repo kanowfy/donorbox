@@ -24,6 +24,19 @@ LIMIT @page_limit::integer OFFSET @total_offset::integer;
 SELECT * FROM projects
 WHERE id = $1;
 
+-- name: GetProjectsForUser :many
+SELECT * FROM projects
+WHERE user_id = $1
+ORDER BY start_date DESC;
+
+-- name: GetEndedProjects :many
+SELECT projects.*, COUNT(backings.project_id) as backing_count
+FROM projects
+JOIN backings ON projects.ID = backings.project_id
+WHERE projects.status = 'ended'
+GROUP BY projects.ID
+ORDER BY end_date DESC;
+
 -- name: UpdateProjectByID :exec
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8

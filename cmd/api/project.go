@@ -101,6 +101,22 @@ func (app *application) searchProjectsHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
+func (app *application) getProjectsForUserHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+
+	projects, err := app.repository.GetProjectsForUser(r.Context(), user.ID)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"projects": projects,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := convert.StringToPgxUUID(idStr)
@@ -296,6 +312,27 @@ func (app *application) setupProjectCardHandler(w http.ResponseWriter, r *http.R
 		app.serverErrorResponse(w, r, err)
 	}
 
+}
+
+func (app *application) getProjectTransferHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	cid, err := convert.StringToPgxUUID(idStr)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	card, err := app.repository.GetCardByID(r.Context(), cid)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"card": card,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) deleteProjectHandler(w http.ResponseWriter, r *http.Request) {
