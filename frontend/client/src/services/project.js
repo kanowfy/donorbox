@@ -6,6 +6,14 @@ const getAll = async () => {
     return response.data;
 }
 
+const getForUser = async (token) => {
+    const response = await axios.get(`${BASE_URL}/projects/authenticated`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+
+    return response.data;
+}
+
 const getOne = async (id) => {
     const response = await axios.get(`${BASE_URL}/projects/${id}`)
     return response.data;
@@ -20,4 +28,4 @@ const search = async (query, page, pageSize) => {
     return response.data;
 }
 
-export default { getAll, search, getOne }
+export default { getAll, getForUser, search, getOne }

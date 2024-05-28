@@ -25,9 +25,11 @@ const Project = () => {
         setBackings(projectResponse.backings);
         setOwner(projectResponse.user);
 
-        setWosList(
-          projectResponse.backings.filter((b) => b.word_of_support !== null)
-        );
+        if (projectResponse.backings) {
+          setWosList(
+            projectResponse.backings.filter((b) => b.word_of_support !== null)
+          );
+        }
       } catch (err) {
         navigate("/not-found");
         console.error(err);
@@ -87,7 +89,8 @@ const Project = () => {
 
           <div className="my-5">
             <div className="text-xl font-semibold tracking-tight">
-              Donors&apos; words of support ({wosList?.length})
+              Donors&apos; words of support (
+              {wosList?.length ? wosList.length : 0})
             </div>
 
             {wosList?.map((b) => (

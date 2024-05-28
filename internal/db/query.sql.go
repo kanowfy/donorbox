@@ -662,6 +662,69 @@ func (q *Queries) GetCardByID(ctx context.Context, id pgtype.UUID) (Card, error)
 	return i, err
 }
 
+const getEndedProjects = `-- name: GetEndedProjects :many
+SELECT projects.id, projects.user_id, projects.category_id, projects.title, projects.description, projects.cover_picture, projects.goal_amount, projects.current_amount, projects.country, projects.province, projects.card_id, projects.start_date, projects.end_date, projects.status, COUNT(backings.project_id) as backing_count
+FROM projects
+JOIN backings ON projects.ID = backings.project_id
+WHERE projects.status = 'ended'
+GROUP BY projects.ID
+ORDER BY end_date DESC
+`
+
+type GetEndedProjectsRow struct {
+	ID            pgtype.UUID        `json:"id"`
+	UserID        pgtype.UUID        `json:"user_id"`
+	CategoryID    int32              `json:"category_id"`
+	Title         string             `json:"title"`
+	Description   string             `json:"description"`
+	CoverPicture  string             `json:"cover_picture"`
+	GoalAmount    int64              `json:"goal_amount"`
+	CurrentAmount int64              `json:"current_amount"`
+	Country       string             `json:"country"`
+	Province      string             `json:"province"`
+	CardID        pgtype.UUID        `json:"card_id"`
+	StartDate     pgtype.Timestamptz `json:"start_date"`
+	EndDate       pgtype.Timestamptz `json:"end_date"`
+	Status        ProjectStatus      `json:"status"`
+	BackingCount  int64              `json:"backing_count"`
+}
+
+func (q *Queries) GetEndedProjects(ctx context.Context) ([]GetEndedProjectsRow, error) {
+	rows, err := q.db.Query(ctx, getEndedProjects)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetEndedProjectsRow
+	for rows.Next() {
+		var i GetEndedProjectsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CategoryID,
+			&i.Title,
+			&i.Description,
+			&i.CoverPicture,
+			&i.GoalAmount,
+			&i.CurrentAmount,
+			&i.Country,
+			&i.Province,
+			&i.CardID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Status,
+			&i.BackingCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEscrowUser = `-- name: GetEscrowUser :one
 SELECT id, email, hashed_password, user_type, card_id, created_at FROM escrow_users
 LIMIT 1
@@ -892,6 +955,47 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 			&i.ProjectID,
 			&i.Description,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getProjectsForUser = `-- name: GetProjectsForUser :many
+SELECT id, user_id, category_id, title, description, cover_picture, goal_amount, current_amount, country, province, card_id, start_date, end_date, status FROM projects
+WHERE user_id = $1
+ORDER BY start_date DESC
+`
+
+func (q *Queries) GetProjectsForUser(ctx context.Context, userID pgtype.UUID) ([]Project, error) {
+	rows, err := q.db.Query(ctx, getProjectsForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Project
+	for rows.Next() {
+		var i Project
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CategoryID,
+			&i.Title,
+			&i.Description,
+			&i.CoverPicture,
+			&i.GoalAmount,
+			&i.CurrentAmount,
+			&i.Country,
+			&i.Province,
+			&i.CardID,
+			&i.StartDate,
+			&i.EndDate,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}

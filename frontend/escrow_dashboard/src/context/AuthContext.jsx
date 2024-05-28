@@ -12,6 +12,7 @@ const authReducer = (state, action) => {
         ...state,
         token: action.payload.token,
         user: action.payload.user,
+        loading: false,
       };
     case ACTIONS.LOGOUT:
       localStorage.removeItem("token");
@@ -26,6 +27,7 @@ const AuthProvider = ({ children }) => {
   const [state, dispatch] = React.useReducer(authReducer, {
     token: localStorage.getItem("token"),
     user: null,
+    loading: true,
   });
 
   React.useEffect(() => {

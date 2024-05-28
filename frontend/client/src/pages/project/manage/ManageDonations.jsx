@@ -1,6 +1,8 @@
 import Donator from "../../../components/Donator";
+import { useOutletContext } from "react-router-dom";
 
 const ManageDonations = () => {
+  const { backings } = useOutletContext();
   return (
     <div>
       <div className="text-3xl font-semibold">Donations</div>
@@ -8,24 +10,16 @@ const ManageDonations = () => {
         See all donations in your fundraiser
       </div>
       <div className="my-10 grid grid-cols-2 gap-5">
-        <Donator
-          first_name="John"
-          last_name="Doe"
-          created_at="2024-05-21T07:30:37+00:00"
-          amount={90000}
-        />
-        <Donator
-          first_name="John"
-          last_name="Doe"
-          created_at="2024-05-21T07:30:37+00:00"
-          amount={90000}
-        />
-        <Donator
-          first_name="John"
-          last_name="Doe"
-          created_at="2024-05-21T07:30:37+00:00"
-          amount={90000}
-        />
+        {backings?.map((b) => (
+          <Donator
+            key={b.id}
+            profile_picture={b?.profile_picture}
+            first_name={b.first_name ? b.first_name : "Anonymous"}
+            last_name={b.last_name ? b.last_name : ""}
+            amount={b.amount}
+            created_at={b.created_at}
+          />
+        ))}
       </div>
     </div>
   );

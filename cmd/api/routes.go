@@ -30,10 +30,13 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("POST /projects/search", app.searchProjectsHandler)
 	router.HandleFunc("GET /projects/{id}", app.getOneProjectHandler)
 	router.HandleFunc("POST /projects", app.requireUserAuthentication(app.createProjectHandler))
+	router.HandleFunc("GET /projects/authenticated", app.requireUserAuthentication(app.getProjectsForUserHandler))
 	router.HandleFunc("PATCH /projects/{id}", app.requireUserAuthentication(app.updateProjectHandler))
 	router.HandleFunc("DELETE /projects/{id}", app.requireUserAuthentication(app.deleteProjectHandler))
 	router.HandleFunc("POST /projects/updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
 	router.HandleFunc("POST /projects/{id}/transfer", app.requireUserAuthentication(app.setupProjectCardHandler))
+
+	router.HandleFunc("GET /cards/{id}/project", app.requireUserAuthentication(app.getProjectTransferHandler))
 
 	router.HandleFunc("GET /projects/{id}/backings", app.getBackingsForProjectHandler)
 	router.HandleFunc("POST /projects/{id}/backings", app.createProjectBackingHandler)

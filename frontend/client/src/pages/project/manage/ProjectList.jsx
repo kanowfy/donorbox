@@ -1,27 +1,57 @@
 import { Button } from "flowbite-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProjectListCard from "../../../components/ProjectListCard";
 import utils from "../../../utils/utils";
+import { useAuthContext } from "../../../context/AuthContext";
+import projectService from "../../../services/project";
+import { useNavigate, Link } from "react-router-dom";
 
 const ProjectList = () => {
-  const [hasProject] = useState(false);
+  const navigate = useNavigate();
+  const [projects, setProjects] = useState();
+  const { token } = useAuthContext() || {};
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await projectService.getForUser(token);
+        setProjects(response.projects);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (token) {
+      fetchProjects();
+    } else {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+
   return (
     <section className="py-10 flex flex-col items-center">
       <div className="flex justify-between w-2/5">
         <div className="text-3xl font-semibold my-2">Your Fundraisers</div>
-        <Button color="green" className="h-fit" size="lg">
-          Start a Fundraiser
-        </Button>
+        <Link to="/start-fundraiser">
+          <Button color="green" className="h-fit" size="lg">
+            Start a Fundraiser
+          </Button>
+        </Link>
       </div>
       <div className="w-2/5">
-        {!hasProject ? (
-          <div className="mt-20">
-            <ProjectListCard
-              id="69"
-              title="my son go to school"
-              img="https://images.gofundme.com/6KzAXSWgpeMlN5z4jC9UH1sda7k=/720x405/https://d2g8igdw686xgo.cloudfront.net/79205119_171177018484968_r.png"
-              date={utils.formatDate(new Date(Date.now()))}
-            />
+        {projects ? (
+          <div className="mt-20 space-y-3">
+            {projects?.map((p) => (
+              <ProjectListCard
+                key={p.id}
+                id={p.id}
+                title={p.title}
+                img={p.cover_picture}
+                date={utils.formatDate(
+                  new Date(utils.parseDateFromRFC3339(p.start_date))
+                )}
+              />
+            ))}
           </div>
         ) : (
           <div className="flex justify-center text-lg mt-28">
