@@ -9,18 +9,40 @@ import {
   Button,
   Dialog,
   DialogPanel,
+  Badge,
 } from "@tremor/react";
 import { Checkbox } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useState } from "react";
 import { RiRefund2Fill } from "react-icons/ri";
 import { IoIosCloseCircle } from "react-icons/io";
+import fundService from "../../services/fund";
+import { CategoryIndexMap } from "../../constants";
+import { IoOpenOutline } from "react-icons/io5";
+import utils from "../../utils/utils";
 
-const PendingRefundTable = ({ data, setSuccess }) => {
+const PendingRefundTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const [isOpenReview, setIsOpenReview] = useState(false);
   const [review, setReview] = useState();
   const [isSelectedAll, setIsSelectedAll] = useState(false);
   const [selectedList, setSelectedList] = useState([]);
+
+  const handleRefund = async () => {
+    try {
+      for (const id of selectedList) {
+        await fundService.refund(token, id);
+      }
+
+      setIsSuccessful(true);
+      setTimeout(() => {
+        setIsSuccessful(false);
+      }, 1500);
+    } catch (err) {
+      setIsFailed(true);
+      console.error(err);
+    }
+  };
+
   return (
     <>
       <Card className="my-5 shadow-lg shadow-gray-500 space-y-2">
@@ -33,7 +55,7 @@ const PendingRefundTable = ({ data, setSuccess }) => {
             color="green"
             disabled={selectedList.length == 0}
             icon={RiRefund2Fill}
-            onClick={() => setSuccess(true)}
+            onClick={handleRefund}
           >
             Refund
           </Button>
@@ -62,16 +84,16 @@ const PendingRefundTable = ({ data, setSuccess }) => {
                   }}
                 />
               </TableHeaderCell>
-              <TableHeaderCell>ID</TableHeaderCell>
               <TableHeaderCell>Title</TableHeaderCell>
               <TableHeaderCell>Goal Amount</TableHeaderCell>
-              <TableHeaderCell>Accumulated Amount</TableHeaderCell>
+              <TableHeaderCell>Donated Amount</TableHeaderCell>
+              <TableHeaderCell># Donations</TableHeaderCell>
               <TableHeaderCell>End date</TableHeaderCell>
               <TableHeaderCell></TableHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((item) => (
+            {data?.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
                   <Checkbox
@@ -88,13 +110,17 @@ const PendingRefundTable = ({ data, setSuccess }) => {
                     }}
                   />
                 </TableCell>
-                <TableCell>{item.id}</TableCell>
                 <TableCell>{item.title}</TableCell>
                 <TableCell>{item.goal_amount.toLocaleString()}</TableCell>
+                <TableCell>{item.current_amount.toLocaleString()}</TableCell>
                 <TableCell>
-                  {item.accumulated_amount.toLocaleString()}
+                  <Badge>{item.backing_count}</Badge>
                 </TableCell>
-                <TableCell>{item.end_date}</TableCell>
+                <TableCell>
+                  {utils.formatDate(
+                    new Date(utils.parseDateFromRFC3339(item.end_date))
+                  )}
+                </TableCell>
                 <TableCell>
                   <Button
                     variant="secondary"
@@ -116,26 +142,113 @@ const PendingRefundTable = ({ data, setSuccess }) => {
         onClose={(val) => setIsOpenReview(val)}
         static={true}
       >
-        <DialogPanel>
-          <div className="flex justify-end">
-            <div
-              onClick={() => setIsOpenReview(false)}
-              className="hover:cursor-pointer"
-            >
-              <IoIosCloseCircle className="w-6 h-6" />
-            </div>
+        <DialogPanel className="w-full">
+          <div
+            className="flex justify-end hover:cursor-pointer"
+            onClick={() => setIsOpenReview(false)}
+          >
+            <IoIosCloseCircle className="w-7 h-7" />
           </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              {review?.title}
-            </h3>
-            <img src={review?.cover_picture} />
-            <p className="mt-2 leading-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat,
-              nihil inventore sequi exercitationem ex impedit blanditiis
-              officiis perspiciatis porro aspernatur quidem praesentium velit
-              aliquid culpa dolore in nulla quod voluptatibus.
-            </p>
+          <div className="space-y-2 grid-cols-2 md:grid-cols-1 w-full">
+            <div className="font-medium text-gray-800">Fundraiser Details:</div>
+            <div className="border rounded-lg p-5 space-y-2">
+              <div className="rounded-xl overflow-hidden h-72 aspect-[4/3] object-cover">
+                <img
+                  src={review?.cover_picture}
+                  className="w-full h-full m-auto object-cover"
+                />
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">Title: </div>
+                <h3 className="font-medium text-tremor-content-strong">
+                  {review?.title}
+                </h3>
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">Category: </div>
+                <h3 className="text-black">
+                  {Object.keys(CategoryIndexMap).find(
+                    (key) => CategoryIndexMap[key] === review?.category_id
+                  )}
+                </h3>
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">Location: </div>
+                <h3 className="text-black">
+                  {`${review?.province}, ${review?.country}`}
+                </h3>
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">Link: </div>
+                <a
+                  target="_blank"
+                  href={`http://localhost:5173/fundraiser/${review?.id}`}
+                  className="flex text-black hover:underline text-sm"
+                >
+                  Go to Fundraiser
+                  <IoOpenOutline className="ml-1 w-5 h-5" />
+                </a>
+              </div>
+            </div>
+
+            <div className="font-medium text-gray-800">Fundraiser Status:</div>
+            <div className="border rounded-lg p-5 space-y-2">
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">
+                  Accumulated amount:{" "}
+                </div>
+                <h3 className="text-black">
+                  ₫
+                  {review?.current_amount &&
+                    utils.formatNumber(review?.current_amount)}
+                </h3>
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">
+                  Goal amount:{" "}
+                </div>
+                <h3 className="font-medium text-tremor-content-strong">
+                  ₫
+                  {review?.goal_amount &&
+                    utils.formatNumber(review?.goal_amount)}
+                </h3>
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">
+                  No. donations:{" "}
+                </div>
+                <h3 className="text-black">{review?.backing_count}</h3>
+              </div>
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">
+                  Transfer setup:{" "}
+                </div>
+                {review?.card_id ? (
+                  <>
+                    <Badge color="green">Yes</Badge>
+                  </>
+                ) : (
+                  <>
+                    <Badge color="red">No</Badge>
+                  </>
+                )}
+              </div>
+
+              <div className="flex space-x-2 items-baseline">
+                <div className="underline text-black text-sm">Started at: </div>
+                <h3 className="text-black">
+                  {utils.formatDate(
+                    new Date(utils.parseDateFromRFC3339(review?.start_date))
+                  )}
+                </h3>
+                <div className="underline text-black text-sm">Ended at: </div>
+                <h3 className="text-black">
+                  {utils.formatDate(
+                    new Date(utils.parseDateFromRFC3339(review?.end_date))
+                  )}
+                </h3>
+              </div>
+            </div>
           </div>
         </DialogPanel>
       </Dialog>
@@ -144,8 +257,10 @@ const PendingRefundTable = ({ data, setSuccess }) => {
 };
 
 PendingRefundTable.propTypes = {
+  token: PropTypes.string,
   data: PropTypes.array,
-  setSuccess: PropTypes.func,
+  setIsSuccessful: PropTypes.func,
+  setIsFailed: PropTypes.func,
 };
 
 export default PendingRefundTable;

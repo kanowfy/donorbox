@@ -63,10 +63,12 @@ func main() {
 	}
 
 	slog.Info("Starting cronjob...")
-	s := gocron.NewScheduler(time.UTC)
-	s.Every(1).Day().At("00:00").Do(func() {
+	s := gocron.NewScheduler(time.Local)
+	s.Every(1).Day().At("00:00").StartImmediately().Do(func() {
 		err := app.service.CheckAndUpdateFinishedProjects(context.Background())
-		slog.Error(err.Error())
+		if err != nil {
+			slog.Error(err.Error())
+		}
 	})
 	s.StartAsync()
 

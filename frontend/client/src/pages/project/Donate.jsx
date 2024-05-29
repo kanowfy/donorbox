@@ -30,7 +30,7 @@ const Donate = () => {
     formState: { errors },
     reset,
   } = useForm();
-  const [isSucessful, setIsSuccessful] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
   const [project, setProject] = useState();
 
@@ -328,7 +328,7 @@ const Donate = () => {
       </form>
 
       <Modal
-        show={isSucessful}
+        show={isSuccessful}
         size="md"
         onClose={() => setIsSuccessful(false)}
         popup

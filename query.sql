@@ -235,7 +235,7 @@ WHERE project_id = $1 ORDER BY created_at ASC;
 
 -- name: GetBackingTransactionsForProject :many
 SELECT * FROM transactions
-WHERE project_id = $1 AND transaction_type == 'backing';
+WHERE project_id = $1 AND transaction_type = 'backing';
 
 -- name: CreateTransaction :one
 INSERT INTO transactions (

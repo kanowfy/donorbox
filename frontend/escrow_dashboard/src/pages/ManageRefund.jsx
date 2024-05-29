@@ -1,15 +1,10 @@
-import {
-  Dialog,
-  DialogPanel,
-  Tab,
-  TabGroup,
-  TabList,
-  TabPanel,
-  TabPanels,
-} from "@tremor/react";
-import { useState } from "react";
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@tremor/react";
+import { useEffect, useState } from "react";
 import PendingRefundTable from "../components/refund/PendingRefundTable";
 import ReportedFundraisersTable from "../components/refund/ReportedFundraisersTable";
+import { useAuthContext } from "../context/AuthContext";
+import projectService from "../services/project";
+import { Modal } from "flowbite-react";
 
 const data = [
   {
@@ -44,7 +39,26 @@ const data = [
   },
 ];
 const ManageRefund = () => {
-  const [success, setSuccess] = useState(false);
+  const { token } = useAuthContext();
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
+  const [pendingProjects, setPendingProjects] = useState();
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const response = await projectService.getEnded();
+        console.log(response.projects);
+        setPendingProjects(
+          response.projects.filter((p) => p.current_amount < p.goal_amount)
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProject();
+  }, []);
 
   return (
     <div className="p-10 bg-slate-200 w-full space-y-10 font-sans h-screen">
@@ -59,16 +73,58 @@ const ManageRefund = () => {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <PendingRefundTable data={data} setSuccess={setSuccess} />
+              <PendingRefundTable
+                data={pendingProjects}
+                setIsSuccessful={setIsSuccessful}
+                setIsFailed={setIsFailed}
+                token={token}
+              />
             </TabPanel>
             <TabPanel>
-              <ReportedFundraisersTable data={data} setSuccess={setSuccess} />
+              <ReportedFundraisersTable
+                data={data}
+                setSuccess={setIsSuccessful}
+              />
             </TabPanel>
           </TabPanels>
         </TabGroup>
-        <Dialog open={success} onClose={(val) => setSuccess(val)} static>
-          <DialogPanel>Action completed</DialogPanel>
-        </Dialog>
+        <Modal
+          show={isSuccessful}
+          size="md"
+          onClose={() => setIsSuccessful(false)}
+          popup
+        >
+          <Modal.Header />
+          <Modal.Body>
+            <div className="text-center flex flex-col space-y-2">
+              <img
+                src="/success.svg"
+                height={32}
+                width={32}
+                className="mx-auto"
+              />
+              <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                Action completed
+              </h3>
+            </div>
+          </Modal.Body>
+        </Modal>
+        <Modal
+          show={isFailed}
+          size="md"
+          onClose={() => setIsFailed(false)}
+          popup
+        >
+          <Modal.Header />
+          <Modal.Body>
+            <div className="text-center flex flex-col space-y-2">
+              <img src="/fail.svg" height={32} width={32} className="mx-auto" />
+              <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                Failed to complete action
+              </h3>
+            </div>
+          </Modal.Body>
+        </Modal>
       </div>
     </div>
   );

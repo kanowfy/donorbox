@@ -3,7 +3,8 @@ const formatNumber = (num) => {
 }
 
 const calculateProgress = (current, goal) => {
-    return Math.floor(current / goal * 100);
+    const progress = Math.floor(current / goal * 100);
+    return progress < 100 ? progress : 100;
 }
 
 const calculateDayDifference = (dateA, dateB) => {
