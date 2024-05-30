@@ -10,7 +10,7 @@ const Home = () => {
     const fetchProjects = async () => {
       try {
         const resp = await projectService.getAll();
-        setProjects(resp.projects);
+        setProjects(resp.projects.filter((p) => p.status === "ongoing"));
       } catch (err) {
         console.error(err);
       }
@@ -22,17 +22,19 @@ const Home = () => {
   return (
     <>
       <div>
-        <section className="flex flex-col pt-20 items-center h-[35rem] bg-cover bg-gradient-to-b from-white to-emerald-200">
-          <div className="pb-7 font-semibold text-teal-700 text-6xl">
+        <section className="flex flex-col pt-20 items-center h-[35rem] bg-cover bg-gradient-to-b from-white to-sky-200">
+          <div className="pb-7 font-semibold text-sky-700 text-6xl">
             Help those in need today
           </div>
-          <div className="text-emerald-700 pb-10 font-medium text-lg">
+          <div className="text-sky-800 pb-10 font-medium text-xl">
             Your home for communities, charities and people you care about
           </div>
           <div>
-            <button className="mt-10 px-8 py-5 text-white font-medium text-xl rounded-xl shadow-lg bg-gradient-to-t from-teal-500 to-green-700 hover:bg-gradient-to-b">
-              Start a Fundraiser
-            </button>
+            <Link to="/start-fundraiser">
+              <button className="mt-10 px-8 py-5 text-white tracking-wide text-xl rounded-xl shadow-lg bg-gradient-to-t from-cyan-500 to-blue-500 hover:bg-gradient-to-b">
+                Start a Fundraiser
+              </button>
+            </Link>
           </div>
         </section>
 
@@ -44,7 +46,7 @@ const Home = () => {
               </div>
               <div>
                 <Link to="/search">
-                  <div className="underline font-semibold text-xl text-gray-800 hover:text-emerald-700">
+                  <div className="underline font-semibold text-xl text-gray-800 hover:text-sky-700">
                     Explore
                   </div>
                 </Link>

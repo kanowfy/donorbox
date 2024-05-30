@@ -49,7 +49,7 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
       </div>
       <div className="mx-2 my-2 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
         <div
-          className="bg-green-500 h-1.5 rounded-full"
+          className="bg-blue-500 h-1.5 rounded-full"
           style={{
             width: `${utils.calculateProgress(currentAmount, goalAmount)}%`,
           }}

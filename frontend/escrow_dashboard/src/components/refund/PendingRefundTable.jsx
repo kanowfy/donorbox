@@ -20,12 +20,14 @@ import fundService from "../../services/fund";
 import { CategoryIndexMap } from "../../constants";
 import { IoOpenOutline } from "react-icons/io5";
 import utils from "../../utils/utils";
+import { useNavigate } from "react-router-dom";
 
 const PendingRefundTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const [isOpenReview, setIsOpenReview] = useState(false);
   const [review, setReview] = useState();
   const [isSelectedAll, setIsSelectedAll] = useState(false);
   const [selectedList, setSelectedList] = useState([]);
+  const navigate = useNavigate();
 
   const handleRefund = async () => {
     try {
@@ -36,6 +38,7 @@ const PendingRefundTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
       setIsSuccessful(true);
       setTimeout(() => {
         setIsSuccessful(false);
+        navigate(0);
       }, 1500);
     } catch (err) {
       setIsFailed(true);

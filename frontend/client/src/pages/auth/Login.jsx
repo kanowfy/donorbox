@@ -1,12 +1,13 @@
 import { Button } from "flowbite-react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import { BASE_URL } from "../../constants";
 
 const Login = () => {
   const { login } = useAuthContext();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
   const {
     register,
     formState: { errors },
@@ -18,7 +19,12 @@ const Login = () => {
     const loginAccount = async (data) => {
       try {
         await login(data.email, data.password);
-        navigate("/");
+        const redirect = params.get("redirect");
+        if (redirect) {
+          navigate(`/${redirect}`);
+        } else {
+          navigate("/");
+        }
       } catch (err) {
         console.error(err);
         setError("email", {

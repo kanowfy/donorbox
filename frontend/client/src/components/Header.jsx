@@ -141,8 +141,8 @@ const Header = () => {
                 <Navbar.Link as={Link} to="/login">
                   <div className="mt-3">Sign In</div>
                 </Navbar.Link>
-                <Navbar.Link as={Link} to="#">
-                  <Button pill color="green">
+                <Navbar.Link as={Link} to="/start-fundraiser">
+                  <Button pill color="teal">
                     Start a Fundraiser
                   </Button>
                 </Navbar.Link>
