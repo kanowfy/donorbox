@@ -41,4 +41,17 @@ const verify = async (token) => {
     return response.data;
 }
 
-export default { login, register, getCurrent, getOne, getToken, verify };
+const forgotPassword = async (email) => {
+    const response = await axios.post(`${BASE_URL}/users/password/forgot`, { email });
+    return response.data;
+}
+
+const resetPassword = async (token, password) => {
+    const response = await axios.post(`${BASE_URL}/users/password/reset`, {
+        reset_token: token,
+        new_password: password
+    });
+    return response.data;
+}
+
+export default { login, register, getCurrent, getOne, getToken, verify, forgotPassword, resetPassword };

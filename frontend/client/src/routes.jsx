@@ -20,6 +20,8 @@ import ManageUpdates from "./pages/project/manage/ManageUpdates";
 import ManageTransfer from "./pages/project/manage/ManageTransfer";
 import ManageLayout from "./pages/project/manage/ManageLayout";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 const AppRoutes = () => {
   return (
@@ -46,6 +48,8 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/login/google" element={<SocialLogin />} />
       <Route path="/logout" element={<Logout />} />
+      <Route path="/password/forgot" element={<ForgotPassword />} />
+      <Route path="/password/reset" element={<ResetPassword />} />
       <Route path="/verify" element={<Verify />} />
       <Route path="/:id/donate" element={<Donate />} />
     </Routes>
