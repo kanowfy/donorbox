@@ -17,10 +17,12 @@ import { CategoryIndexMap } from "../../constants";
 import { IoOpenOutline } from "react-icons/io5";
 import utils from "../../utils/utils";
 import fundService from "../../services/fund";
+import { useNavigate } from "react-router-dom";
 
 const PendingPayoutTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const [isOpenReview, setIsOpenReview] = useState(false);
   const [review, setReview] = useState();
+  const navigate = useNavigate();
 
   const handlePayout = async () => {
     try {
@@ -30,6 +32,7 @@ const PendingPayoutTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
       setIsSuccessful(true);
       setTimeout(() => {
         setIsSuccessful(false);
+        navigate(0);
       }, 1500);
     } catch (err) {
       setIsFailed(true);

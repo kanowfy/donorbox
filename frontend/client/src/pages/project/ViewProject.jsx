@@ -50,7 +50,7 @@ const Project = () => {
               className="w-full h-full m-auto object-cover"
             />
           </div>
-          <div className="m-3 flex justify-start">
+          <div className="m-3 flex justify-between">
             <Avatar
               alt="User settings"
               img={
@@ -59,7 +59,7 @@ const Project = () => {
               rounded
             >
               <div>
-                <span className="flex justify-start tracking">
+                <span className="flex justify-start">
                   {`${owner.first_name} ${owner.last_name}`} is organizing this
                   fundraiser.
                 </span>
@@ -73,6 +73,19 @@ const Project = () => {
                 </span>
               </div>
             </Avatar>
+            <div className="flex flex-col items-end">
+              <div className="font-medium">
+                {project.province}, {project.country}
+              </div>
+              <div className="flex space-x-1 items-end text-gray-500 text-sm">
+                <div>Fundraiser ends on </div>
+                <div className="font-medium">
+                  {utils.formatDate(
+                    new Date(utils.parseDateFromRFC3339(project.end_date))
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
           <div className="h-px bg-gray-300"></div>
 

@@ -15,6 +15,10 @@ const parseDateFromRFC3339 = (date) => {
     return Date.parse(date)
 }
 
+const getRFC3339DateString = (date) => {
+    return date.toISOString();
+}
+
 const getDaySince = (date) => {
     return calculateDayDifference(Date.now(), parseDateFromRFC3339(date));
 }
@@ -34,4 +38,9 @@ const parseExpiry = (date) => {
     }
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate, parseExpiry }
+const getProvincesByCountry = (data, country) => {
+    const record = data.filter(d => d.name === country)[0];
+    return record?.states.map(s => s.name);
+}
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getProvincesByCountry }

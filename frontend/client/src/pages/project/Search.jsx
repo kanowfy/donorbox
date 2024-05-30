@@ -37,13 +37,6 @@ const Search = () => {
     const searchProjects = async (q) => {
       try {
         const response = await projectService.search(q, 1, 12);
-        console.log(response);
-        console.log(
-          utils.calculateDayDifference(
-            Date.now(),
-            utils.parseDateFromRFC3339("2024-05-01T12:02:52.671662+07:00")
-          )
-        );
         setProjects(response.projects);
         setFiltered(response.projects);
       } catch (err) {
@@ -58,7 +51,7 @@ const Search = () => {
 
   return (
     <>
-      <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-emerald-100 mt-20">
+      <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-sky-200 mt-20">
         <div className="flex flex-col items-center">
           <div className="pb-7 font-semibold text-4xl tracking-tight">
             Search for fundraising projects

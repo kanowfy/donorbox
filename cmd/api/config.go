@@ -28,6 +28,8 @@ type config struct {
 
 	GoogleClientID     string `env:"GOOGLE_CLIENT_ID"`
 	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET"`
+
+	CloudinaryAPIUrl string `env:"CLOUDINARY_API_URL"`
 }
 
 func loadConfig() (config, error) {

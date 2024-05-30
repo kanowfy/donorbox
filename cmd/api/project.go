@@ -180,8 +180,10 @@ func (app *application) createProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	user := app.contextGetUser(r)
+
 	args := db.CreateProjectParams{
-		UserID:       convert.MustStringToPgxUUID(req.UserID),
+		UserID:       user.ID,
 		CategoryID:   int32(req.CategoryID),
 		Title:        req.Title,
 		Description:  req.Description,

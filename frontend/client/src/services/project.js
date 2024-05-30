@@ -28,4 +28,12 @@ const search = async (query, page, pageSize) => {
     return response.data;
 }
 
-export default { getAll, getForUser, search, getOne }
+const create = async (token, data) => {
+    const response = await axios.post(`${BASE_URL}/projects`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+
+    return response.data;
+}
+
+export default { getAll, getForUser, search, getOne, create }
