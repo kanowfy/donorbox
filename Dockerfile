@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN cgo_enabled=0 GOOS=linux go build -o /donorbox-backend
+RUN CGO_ENABLED=0 GOOS=linux go build -o /donorbox-backend
 
 EXPOSE 4000
 
