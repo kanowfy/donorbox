@@ -20,6 +20,8 @@ type config struct {
 	DBMaxIdleConns int    `env:"DB_MAXIDLECONNS" envDefault:"25"`
 	DBMaxIdleTime  string `env:"DB_MAXIDLETIME" envDefault:"15m"`
 
+	ClientPort int `env:"CLIENT_PORT" envDefault:"4001"`
+
 	SmtpHost     string `env:"SMTP_HOST"`
 	SmtpPort     int    `env:"SMTP_PORT" envDefault:"25"`
 	SmtpUsername string `env:"SMTP_USERNAME"`
