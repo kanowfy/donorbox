@@ -6,10 +6,10 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY *.go ./
+COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /donorbox-backend
+RUN CGO_ENABLED=0 GOOS=linux go build ./cmd/api
 
 EXPOSE 4000
 
-CMD ["/donorbox-backend"]
+CMD ["/api"]
