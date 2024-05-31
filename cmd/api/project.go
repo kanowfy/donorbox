@@ -151,6 +151,12 @@ func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	updates, err := app.repository.GetProjectUpdates(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
 	user, err := app.repository.GetUserByID(r.Context(), project.UserID)
 	if err != nil {
 		app.notFoundResponse(w, r)
@@ -160,6 +166,7 @@ func (app *application) getOneProjectHandler(w http.ResponseWriter, r *http.Requ
 	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
 		"project":  project,
 		"backings": backings,
+		"updates":  updates,
 		"user":     user,
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -386,6 +393,33 @@ func (app *application) getAllCategoriesHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
+func (app *application) getProjectUpdatesHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := convert.StringToPgxUUID(idStr)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	project, err := app.repository.GetProjectByID(r.Context(), id)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	updates, err := app.repository.GetProjectUpdates(r.Context(), project.ID)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"updates": updates,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateProjectUpdateRequest
 
@@ -417,8 +451,9 @@ func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *htt
 	}
 
 	args := db.CreateProjectUpdateParams{
-		ProjectID:   pid,
-		Description: req.Description,
+		ProjectID:       pid,
+		AttachmentPhoto: req.AttachmentPhoto,
+		Description:     req.Description,
 	}
 
 	update, err := app.repository.CreateProjectUpdate(r.Context(), args)
@@ -428,7 +463,7 @@ func (app *application) createProjectUpdateHandler(w http.ResponseWriter, r *htt
 	}
 
 	if err := app.writeJSON(w, http.StatusCreated, map[string]interface{}{
-		"project_update": update,
+		"update": update,
 	}, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

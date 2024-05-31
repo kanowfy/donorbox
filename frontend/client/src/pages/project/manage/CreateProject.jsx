@@ -21,6 +21,7 @@ const CreateProject = () => {
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
   const [failedReason, setFailedReason] = useState();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -70,7 +71,7 @@ const CreateProject = () => {
   }
 
   const onSubmit = async (data) => {
-    console.log(data);
+    setIsLoading(true);
     try {
       const imageUrl = await uploadImage(data.img);
       const payload = {
@@ -84,8 +85,8 @@ const CreateProject = () => {
         end_date: data.end_date,
       };
 
-      console.log("payload", payload);
       const response = await projectService.create(token, payload);
+      setIsLoading(false);
       setIsSuccessful(true);
       setTimeout(() => {
         setIsSuccessful(false);
@@ -98,7 +99,6 @@ const CreateProject = () => {
     }
   };
 
-  // eslint-disable-next-line no-unused-vars
   const uploadImage = async (image) => {
     if (!image) {
       throw new Error("Missing image");
@@ -316,6 +316,7 @@ const CreateProject = () => {
               size={"xl"}
               type="submit"
               disabled={!tosChecked}
+              isProcessing={isLoading}
             >
               Create
             </Button>

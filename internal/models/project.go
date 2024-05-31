@@ -24,8 +24,9 @@ type UpdateProjectRequest struct {
 }
 
 type CreateProjectUpdateRequest struct {
-	ProjectID   string `json:"project_id" validate:"required,uuid4"`
-	Description string `json:"description" validate:"required"`
+	ProjectID       string  `json:"project_id" validate:"required,uuid4"`
+	AttachmentPhoto *string `json:"attachment_photo" validate:"omitnil,http_url"`
+	Description     string  `json:"description" validate:"required"`
 }
 
 type CreateProjectCommentRequest struct {

@@ -21,6 +21,7 @@ const ManageTransfer = () => {
   const [card, setCard] = useState();
   const [setupSuccessful, setSetupSuccessful] = useState(false);
   const [setupFailed, setSetupFailed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     setValue,
@@ -44,8 +45,8 @@ const ManageTransfer = () => {
   }, [project?.card_id, token]);
 
   const onSubmit = (data) => {
-    console.log(data);
     const setupTransfer = async (data) => {
+      setIsLoading(true);
       try {
         const payload = {
           card_number: data.card_number,
@@ -57,6 +58,7 @@ const ManageTransfer = () => {
         };
 
         await transferService.setupCard(token, project.id, payload);
+        setIsLoading(false);
         setSetupSuccessful(true);
       } catch (err) {
         console.error(err);
@@ -249,7 +251,12 @@ const ManageTransfer = () => {
                 </div>
 
                 <div className="flex justify-center">
-                  <Button type="submit" color="blue" className="w-1/3">
+                  <Button
+                    type="submit"
+                    color="blue"
+                    className="w-1/3"
+                    isProcessing={isLoading}
+                  >
                     Submit
                   </Button>
                 </div>

@@ -321,10 +321,11 @@ type Project struct {
 }
 
 type ProjectUpdate struct {
-	ID          pgtype.UUID        `json:"id"`
-	ProjectID   pgtype.UUID        `json:"project_id"`
-	Description string             `json:"description"`
-	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	ID              pgtype.UUID        `json:"id"`
+	ProjectID       pgtype.UUID        `json:"project_id"`
+	AttachmentPhoto *string            `json:"attachment_photo"`
+	Description     string             `json:"description"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
 type Transaction struct {

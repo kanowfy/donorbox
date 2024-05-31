@@ -36,4 +36,17 @@ const create = async (token, data) => {
     return response.data;
 }
 
-export default { getAll, getForUser, search, getOne, create }
+const createUpdate = async (token, data) => {
+    const response = await axios.post(`${BASE_URL}/projects/updates`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+
+    return response.data;
+}
+
+const getUpdates = async (projectID) => {
+    const response = await axios.get(`${BASE_URL}/projects/${projectID}/updates`)
+    return response.data;
+}
+
+export default { getAll, getForUser, search, getOne, create, createUpdate, getUpdates }
