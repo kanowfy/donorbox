@@ -141,7 +141,7 @@ const Register = () => {
                 {errors.password?.type === "minLength" && (
                   <p className="text-red-600 text-sm">Minimum length is 8</p>
                 )}
-                {errors.lastName?.type === "maxLength" && (
+                {errors.password?.type === "maxLength" && (
                   <p className="text-red-600 text-sm">Maximum length is 50</p>
                 )}
               </div>
