@@ -17,7 +17,6 @@ type UpdateAccountRequest struct {
 	FirstName      *string `json:"first_name,omitempty"`
 	LastName       *string `json:"last_name,omitempty"`
 	ProfilePicture *string `json:"profile_picture,omitempty" validate:"omitnil,http_url"`
-	Activated      *bool   `json:"activated,omitempty"`
 }
 
 type ChangePasswordRequest struct {

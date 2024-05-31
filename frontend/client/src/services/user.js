@@ -54,4 +54,18 @@ const resetPassword = async (token, password) => {
     return response.data;
 }
 
-export default { login, register, getCurrent, getOne, getToken, verify, forgotPassword, resetPassword };
+const update = async (token, data) => {
+    const response = await axios.patch(`${BASE_URL}/users`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+}
+
+const updatePassword = async (token, data) => {
+    const response = await axios.patch(`${BASE_URL}/users/password`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+}
+
+export default { login, register, getCurrent, getOne, getToken, verify, forgotPassword, resetPassword, update, updatePassword };

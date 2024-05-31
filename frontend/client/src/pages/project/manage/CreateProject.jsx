@@ -181,7 +181,7 @@ const CreateProject = () => {
               placeholder="Enter title"
             />
             {errors.title?.type === "required" && (
-              <p className="text-red-600 text-sm">errors.amount.message</p>
+              <p className="text-red-600 text-sm">{errors.title.message}</p>
             )}
           </div>
           <div>
@@ -196,7 +196,9 @@ const CreateProject = () => {
               className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
             />
             {errors.description?.type === "required" && (
-              <p className="text-red-600 text-sm">errors.amount.message</p>
+              <p className="text-red-600 text-sm">
+                {errors.description.message}
+              </p>
             )}
           </div>
           <div className="flex items-end space-x-3">
@@ -242,10 +244,10 @@ const CreateProject = () => {
             </select>
           </div>
           {errors.country?.type === "required" && (
-            <p className="text-red-600 text-sm">errors.country.message</p>
+            <p className="text-red-600 text-sm">{errors.country.message}</p>
           )}
           {errors.province?.type === "required" && (
-            <p className="text-red-600 text-sm">errors.province.message</p>
+            <p className="text-red-600 text-sm">{errors.province.message}</p>
           )}
           <div className="flex items-baseline space-x-1">
             <label className="block mb-2 font-medium text-gray-900">
@@ -273,7 +275,9 @@ const CreateProject = () => {
               />
             </div>
             {errors.goal_amount?.type === "required" && (
-              <p className="text-red-600 text-sm">errors.goal_amount.message</p>
+              <p className="text-red-600 text-sm">
+                {errors.goal_amount.message}
+              </p>
             )}
           </div>
           <div>
