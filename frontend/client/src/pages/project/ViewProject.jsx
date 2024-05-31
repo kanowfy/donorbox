@@ -1,5 +1,5 @@
 import { Avatar } from "flowbite-react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Support from "../../components/Support";
 import DonateBox from "../../components/DonateBox";
 import { useEffect, useState } from "react";
@@ -7,22 +7,22 @@ import projectService from "../../services/project";
 import utils from "../../utils/utils";
 
 const Project = () => {
-  // useparams to get id
-  // useeffect to fetch the project and all related shi
-  // plug that shi in
   const params = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState({});
   const [owner, setOwner] = useState({});
   const [backings, setBackings] = useState();
+  const [updates, setUpdates] = useState();
   const [wosList, setWosList] = useState();
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
         const projectResponse = await projectService.getOne(params.id);
+        console.log(projectResponse);
         setProject(projectResponse.project);
         setBackings(projectResponse.backings);
+        setUpdates(projectResponse.updates);
         setOwner(projectResponse.user);
 
         if (projectResponse.backings) {
@@ -40,7 +40,7 @@ const Project = () => {
   }, [params.id, navigate]);
 
   return (
-    <div className="mx-auto">
+    <div className="mx-auto mb-10">
       <div className="text-3xl font-bold m-5">{project.title}</div>
       <div className="grid grid-cols-3 gap-4 ">
         <div className="col-span-2">
@@ -87,18 +87,46 @@ const Project = () => {
               </div>
             </div>
           </div>
-          <div className="h-px bg-gray-300"></div>
+          <div className="h-px bg-gray-300 mb-4"></div>
 
-          <p className="max-w-2xl tracking-tight mt-4">{project.description}</p>
-          <div className="flex justify-center my-5">
-            <Link to={`/${params.id}/donate`}>
-              <div className="border text-xl flex py-3 max-w-lg rounded-lg border-gray-400 px-40 hover:bg-gray-100 hover:border-gray-900 duration-300">
-                Donate
-              </div>
-            </Link>
+          <div className="text-xl font-semibold tracking-tight mb-3">
+            About the Fundraiser
           </div>
+          <p className="max-w-2xl tracking-tight">{project.description}</p>
 
-          <div className="h-px bg-gray-300"></div>
+          <div className="h-px bg-gray-300 mt-4"></div>
+
+          {updates && (
+            <>
+              <div className="my-5">
+                <div className="text-xl font-semibold tracking-tight mb-5">
+                  Updates ({updates.length})
+                </div>
+                <div className="space-y-4">
+                  {updates.map((u) => (
+                    <div key={u.id}>
+                      <div className="font-medium text-sm">
+                        On{" "}
+                        {utils.formatDate(
+                          new Date(utils.parseDateFromRFC3339(u.created_at))
+                        )}
+                      </div>
+                      <div className="tracking-tight">{u.description}</div>
+                      {u?.attachment_photo && (
+                        <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
+                          <img
+                            src={u.attachment_photo}
+                            className="w-full h-full m-auto object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="h-px bg-gray-300"></div>
+            </>
+          )}
 
           <div className="my-5">
             <div className="text-xl font-semibold tracking-tight">

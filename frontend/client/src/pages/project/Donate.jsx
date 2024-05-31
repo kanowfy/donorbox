@@ -32,6 +32,7 @@ const Donate = () => {
   } = useForm();
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [project, setProject] = useState();
 
   const handleSelectWOS = () => {
@@ -56,6 +57,7 @@ const Donate = () => {
 
   const onSubmit = (data) => {
     const donate = async (data) => {
+      setIsLoading(true);
       try {
         const payload = {
           amount: data.amount,
@@ -78,6 +80,7 @@ const Donate = () => {
         }
 
         await backingService.backProject(params.id, payload);
+        setIsLoading(false);
         setIsSuccessful(true);
         setTimeout(() => {
           navigate(`/fundraiser/${params.id}`);
@@ -322,7 +325,13 @@ const Donate = () => {
           </div>
         )}
 
-        <Button color="success" className="w-full" size={"xl"} type="submit">
+        <Button
+          color="success"
+          className="w-full"
+          size={"xl"}
+          type="submit"
+          isProcessing={isLoading}
+        >
           Donate
         </Button>
       </form>

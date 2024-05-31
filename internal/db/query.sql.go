@@ -148,24 +148,26 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 
 const createProjectUpdate = `-- name: CreateProjectUpdate :one
 INSERT INTO project_updates (
-    project_id, description
+    project_id, attachment_photo, description
 ) VALUES (
-    $1, $2
+    $1, $2, $3
 )
-RETURNING id, project_id, description, created_at
+RETURNING id, project_id, attachment_photo, description, created_at
 `
 
 type CreateProjectUpdateParams struct {
-	ProjectID   pgtype.UUID `json:"project_id"`
-	Description string      `json:"description"`
+	ProjectID       pgtype.UUID `json:"project_id"`
+	AttachmentPhoto *string     `json:"attachment_photo"`
+	Description     string      `json:"description"`
 }
 
 func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpdateParams) (ProjectUpdate, error) {
-	row := q.db.QueryRow(ctx, createProjectUpdate, arg.ProjectID, arg.Description)
+	row := q.db.QueryRow(ctx, createProjectUpdate, arg.ProjectID, arg.AttachmentPhoto, arg.Description)
 	var i ProjectUpdate
 	err := row.Scan(
 		&i.ID,
 		&i.ProjectID,
+		&i.AttachmentPhoto,
 		&i.Description,
 		&i.CreatedAt,
 	)
@@ -935,7 +937,7 @@ func (q *Queries) GetProjectByID(ctx context.Context, id pgtype.UUID) (Project, 
 
 const getProjectUpdates = `-- name: GetProjectUpdates :many
 
-SELECT id, project_id, description, created_at FROM project_updates
+SELECT id, project_id, attachment_photo, description, created_at FROM project_updates
 WHERE project_id = $1
 ORDER BY created_at DESC
 `
@@ -953,6 +955,7 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID pgtype.UUID) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProjectID,
+			&i.AttachmentPhoto,
 			&i.Description,
 			&i.CreatedAt,
 		); err != nil {

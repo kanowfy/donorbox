@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS backings (
 CREATE TABLE IF NOT EXISTS project_updates (
 	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	project_id uuid NOT NULL REFERENCES projects(id),
+	attachment_photo text,
 	description text NOT NULL,
 	created_at timestamptz NOT NULL DEFAULT NOW()
 );

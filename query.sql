@@ -85,9 +85,9 @@ WHERE id = $1;
 
 -- name: CreateProjectUpdate :one
 INSERT INTO project_updates (
-    project_id, description
+    project_id, attachment_photo, description
 ) VALUES (
-    $1, $2
+    $1, $2, $3
 )
 RETURNING *;
 

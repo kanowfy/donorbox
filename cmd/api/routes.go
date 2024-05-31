@@ -37,6 +37,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /projects/{id}", app.requireUserAuthentication(app.updateProjectHandler))
 	router.HandleFunc("DELETE /projects/{id}", app.requireUserAuthentication(app.deleteProjectHandler))
 	router.HandleFunc("POST /projects/updates", app.requireUserAuthentication(app.createProjectUpdateHandler))
+	router.HandleFunc("GET /projects/{id}/updates", app.getProjectUpdatesHandler)
 	router.HandleFunc("POST /projects/{id}/transfer", app.requireUserAuthentication(app.setupProjectCardHandler))
 
 	router.HandleFunc("POST /upload/image", app.uploadImageHandler)
