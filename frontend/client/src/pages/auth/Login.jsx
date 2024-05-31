@@ -1,6 +1,6 @@
 import { Button } from "flowbite-react";
 import { useForm } from "react-hook-form";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import { BASE_URL } from "../../constants";
 
@@ -129,12 +129,12 @@ const Login = () => {
                     <label className="text-gray-600">Remember me</label>
                   </div>
                 </div>
-                <a
-                  href="#"
+                <Link
+                  to="/password/forgot"
                   className="text-sm font-medium text-primary-600 hover:underline"
                 >
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <Button
                 gradientDuoTone="greenToBlue"

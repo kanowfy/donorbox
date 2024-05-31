@@ -24,3 +24,8 @@ type ChangePasswordRequest struct {
 	OldPassword string `json:"old_password" validate:"required"`
 	NewPassword string `json:"new_password" validate:"min=8,max=50"`
 }
+
+type ResetPasswordRequest struct {
+	ResetToken  string `json:"reset_token"`
+	NewPassword string `json:"new_password" validate:"min=8,max=50"`
+}

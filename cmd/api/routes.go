@@ -19,6 +19,8 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /users/auth/{provider}/callback", app.googleAuthCallbackHandler)
 	router.HandleFunc("GET /users/logout/{provider}", app.googleAuthLogoutHandler)
 	router.HandleFunc("GET /users/auth/{provider}/token", app.getAuthenticationTokenHandler)
+	router.HandleFunc("POST /users/password/forgot", app.passwordForgotHandler)
+	router.HandleFunc("POST /users/password/reset", app.resetPasswordHandler)
 
 	router.HandleFunc("GET /escrow/authenticated", app.requireEscrowAuthentication(app.getAuthenticatedEscrowHandler))
 	router.HandleFunc("POST /escrow/login", app.escrowLoginHandler)
