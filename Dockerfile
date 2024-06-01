@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o /api ./cmd/api
 
 EXPOSE 4000
 
