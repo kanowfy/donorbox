@@ -92,7 +92,7 @@ func (app *application) registerAccountHandler(w http.ResponseWriter, r *http.Re
 
 	app.background(func() {
 		payload := map[string]interface{}{
-			"activationUrl": fmt.Sprintf("http://%s:%d/verify?token=%s", app.config.Host, 5173, token), // adjust url as needed
+			"activationUrl": fmt.Sprintf("http://%s:%d/verify?token=%s", app.config.Host, app.config.ClientPort, token), // adjust url as needed
 		}
 
 		if err := app.mailer.Send(req.Email, "registration.tmpl", payload); err != nil {
@@ -142,7 +142,7 @@ func (app *application) passwordForgotHandler(w http.ResponseWriter, r *http.Req
 	app.background(func() {
 		payload := map[string]interface{}{
 			"firstName":        user.FirstName,
-			"resetPasswordUrl": fmt.Sprintf("http://%s:%d/password/reset?token=%s", app.config.Host, 5173, token), // adjust url as needed
+			"resetPasswordUrl": fmt.Sprintf("http://%s:%d/password/reset?token=%s", app.config.Host, app.config.ClientPort, token), // adjust url as needed
 		}
 
 		if err := app.mailer.Send(req.Email, "resetpassword.tmpl", payload); err != nil {
@@ -251,7 +251,7 @@ func (app *application) googleAuthCallbackHandler(w http.ResponseWriter, r *http
 		Path:     "/",
 	})
 
-	http.Redirect(w, r, "http://localhost:5173/login/google", http.StatusFound)
+	http.Redirect(w, r, fmt.Sprintf("http://%s:%d/login/google", app.config.Host, app.config.ClientPort), http.StatusFound)
 }
 
 func (app *application) getAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {
