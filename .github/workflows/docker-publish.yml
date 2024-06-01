@@ -13,7 +13,6 @@ jobs:
       IMAGE_BACKEND: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-backend
       IMAGE_CLIENT: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-client
       IMAGE_DASHBOARD: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-dashboard
-      API_URL: ${{ secrets.API_URL }}
 
     steps:
       - name: Checkout code
@@ -43,6 +42,8 @@ jobs:
           file: ./frontend/client/Dockerfile
           push: true
           tags: ${{ env.IMAGE_CLIENT }}:latest
+          build-args: |
+            API_URL=${{ secrets.API_URL }}
 
       - name: Build and push dashboard
         uses: docker/build-push-action@v5
@@ -51,3 +52,5 @@ jobs:
           file: ./frontend/escrow_dashboard/Dockerfile
           push: true
           tags: ${{ env.IMAGE_DASHBOARD }}:latest
+          build-args: |
+            API_URL=${{ secrets.API_URL }}
