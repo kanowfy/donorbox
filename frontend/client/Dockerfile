@@ -1,5 +1,9 @@
 FROM node:21-alpine as builder
 
+ARG API_URL
+
+ENV VITE_APP_BASE_URL=${API_URL}
+
 WORKDIR /app
 
 COPY package*.json ./
