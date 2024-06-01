@@ -13,6 +13,7 @@ jobs:
       IMAGE_BACKEND: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-backend
       IMAGE_CLIENT: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-client
       IMAGE_DASHBOARD: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-dashboard
+      API_URL: ${{ secrets.API_URL }}
 
     steps:
       - name: Checkout code
