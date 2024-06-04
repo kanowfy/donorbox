@@ -2,10 +2,10 @@ import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@tremor/react";
 import { Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
 import PendingPayoutTable from "../components/payout/PendingPayoutTable";
-import DisputedPayoutTable from "../components/payout/DisputedPayoutTable";
 import projectService from "../services/project";
 import { useAuthContext } from "../context/AuthContext";
 
+// eslint-disable-next-line no-unused-vars
 const data = [
   {
     id: "1b17d262-e7da-4d66-aa9e-77f03d62e581",
@@ -71,7 +71,7 @@ const ManagePayout = () => {
   }, []);
 
   return (
-    <div className="p-10 bg-slate-200 w-full space-y-10 font-sans h-screen">
+    <div className="p-10 bg-slate-200 w-full space-y-10 font-sans min-h-screen">
       <div className="text-3xl font-semibold tracking-tight">
         Payout Management
       </div>
@@ -90,9 +90,7 @@ const ManagePayout = () => {
                 setIsFailed={setIsFailed}
               />
             </TabPanel>
-            <TabPanel>
-              <DisputedPayoutTable data={data} setSuccess={setIsSuccessful} />
-            </TabPanel>
+            <TabPanel className="text-sm">To be implemented...</TabPanel>
           </TabPanels>
         </TabGroup>
         <Modal

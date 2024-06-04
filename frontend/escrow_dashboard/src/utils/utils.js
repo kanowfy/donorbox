@@ -27,6 +27,17 @@ const formatDate = (date) => {
     return day + '/' + month + '/' + year;
 }
 
+const formatDateTime = (date) => {
+    let year = date.getFullYear();
+    let month = (1 + date.getMonth()).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let hour = date.getHours().toString().padStart(2, '0');
+    let minute = date.getMinutes().toString().padStart(2, '0');
+    let second = date.getSeconds().toString().padStart(2, '0');
+
+    return day + '/' + month + '/' + year + " " + hour + ":" + minute + ":" + second;
+}
+
 const parseExpiry = (date) => {
     return {
         month: parseInt(date.substring(0, 2), 10),
@@ -34,4 +45,4 @@ const parseExpiry = (date) => {
     }
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate, parseExpiry }
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate, formatDateTime, parseExpiry }

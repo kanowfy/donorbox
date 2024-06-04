@@ -1010,6 +1010,52 @@ func (q *Queries) GetProjectsForUser(ctx context.Context, userID pgtype.UUID) ([
 	return items, nil
 }
 
+const getStatistics = `-- name: GetStatistics :one
+SELECT (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'ended'
+) AS ended, (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'ongoing'
+) AS ongoing, (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'completed_payout'
+) AS completed_payout, (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'completed_refund'
+) AS completed_refund, ((
+	SELECT SUM(amount) AS transaction_amount
+	FROM transactions GROUP BY transaction_type HAVING transaction_type = 'backing'
+) - (
+	SELECT SUM(amount) AS transaction_amount
+	FROM transactions GROUP BY transaction_type HAVING transaction_type = 'payout'
+) - (
+	SELECT SUM(amount) AS transaction_amount
+	FROM transactions GROUP BY transaction_type HAVING transaction_type = 'refund'
+)) AS balance
+`
+
+type GetStatisticsRow struct {
+	Ended           int64 `json:"ended"`
+	Ongoing         int64 `json:"ongoing"`
+	CompletedPayout int64 `json:"completed_payout"`
+	CompletedRefund int64 `json:"completed_refund"`
+	Balance         int32 `json:"balance"`
+}
+
+func (q *Queries) GetStatistics(ctx context.Context) (GetStatisticsRow, error) {
+	row := q.db.QueryRow(ctx, getStatistics)
+	var i GetStatisticsRow
+	err := row.Scan(
+		&i.Ended,
+		&i.Ongoing,
+		&i.CompletedPayout,
+		&i.CompletedRefund,
+		&i.Balance,
+	)
+	return i, err
+}
+
 const getTransactionByID = `-- name: GetTransactionByID :one
 SELECT id, project_id, transaction_type, amount, initiator_card_id, recipient_card_id, status, created_at FROM transactions
 WHERE id = $1
@@ -1054,6 +1100,52 @@ func (q *Queries) GetTransactionsForProject(ctx context.Context, projectID pgtyp
 			&i.RecipientCardID,
 			&i.Status,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactionsStatsByWeek = `-- name: GetTransactionsStatsByWeek :many
+SELECT
+    DATE_TRUNC('week', created_at)::date AS week,
+    COUNT(*) FILTER (WHERE transaction_type = 'backing') AS backings,
+	COUNT(*) FILTER (WHERE transaction_type = 'payout') AS payouts,
+	COUNT(*) FILTER (WHERE transaction_type = 'refund') AS refunds
+FROM
+    transactions
+GROUP BY
+    week
+ORDER BY
+    week
+`
+
+type GetTransactionsStatsByWeekRow struct {
+	Week     pgtype.Date `json:"week"`
+	Backings int64       `json:"backings"`
+	Payouts  int64       `json:"payouts"`
+	Refunds  int64       `json:"refunds"`
+}
+
+func (q *Queries) GetTransactionsStatsByWeek(ctx context.Context) ([]GetTransactionsStatsByWeekRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionsStatsByWeek)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTransactionsStatsByWeekRow
+	for rows.Next() {
+		var i GetTransactionsStatsByWeekRow
+		if err := rows.Scan(
+			&i.Week,
+			&i.Backings,
+			&i.Payouts,
+			&i.Refunds,
 		); err != nil {
 			return nil, err
 		}

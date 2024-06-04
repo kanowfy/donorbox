@@ -156,6 +156,43 @@ WHERE id = $1;
 UPDATE escrow_users SET card_id = $2
 WHERE id = $1;
 
+-- name: GetStatistics :one
+SELECT (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'ended'
+) AS ended, (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'ongoing'
+) AS ongoing, (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'completed_payout'
+) AS completed_payout, (
+	SELECT COUNT(*) AS status_aggregation
+	FROM projects GROUP BY status HAVING status = 'completed_refund'
+) AS completed_refund, ((
+	SELECT SUM(amount) AS transaction_amount
+	FROM transactions GROUP BY transaction_type HAVING transaction_type = 'backing'
+) - (
+	SELECT SUM(amount) AS transaction_amount
+	FROM transactions GROUP BY transaction_type HAVING transaction_type = 'payout'
+) - (
+	SELECT SUM(amount) AS transaction_amount
+	FROM transactions GROUP BY transaction_type HAVING transaction_type = 'refund'
+)) AS balance;
+
+-- name: GetTransactionsStatsByWeek :many
+SELECT
+    DATE_TRUNC('week', created_at)::date AS week,
+    COUNT(*) FILTER (WHERE transaction_type = 'backing') AS backings,
+	COUNT(*) FILTER (WHERE transaction_type = 'payout') AS payouts,
+	COUNT(*) FILTER (WHERE transaction_type = 'refund') AS refunds
+FROM
+    transactions
+GROUP BY
+    week
+ORDER BY
+    week;
+
 --:::::::::: BACKING ::::::::::--
 
 -- name: GetBackingsForProject :many

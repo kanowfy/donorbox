@@ -27,6 +27,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("POST /escrow/transfer", app.requireEscrowAuthentication(app.setupEscrowCardHandler))
 	router.HandleFunc("POST /escrow/{id}/payout", app.requireEscrowAuthentication(app.payoutHandler))
 	router.HandleFunc("POST /escrow/{id}/refund", app.requireEscrowAuthentication(app.refundHandler))
+	router.HandleFunc("GET /escrow/statistics", app.requireEscrowAuthentication(app.getStatisticsHandler))
 
 	router.HandleFunc("GET /projects", app.getAllProjectsHandler)
 	router.HandleFunc("POST /projects/search", app.searchProjectsHandler)

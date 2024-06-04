@@ -1,11 +1,11 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@tremor/react";
 import { useEffect, useState } from "react";
 import PendingRefundTable from "../components/refund/PendingRefundTable";
-import ReportedFundraisersTable from "../components/refund/ReportedFundraisersTable";
 import { useAuthContext } from "../context/AuthContext";
 import projectService from "../services/project";
 import { Modal } from "flowbite-react";
 
+// eslint-disable-next-line no-unused-vars
 const data = [
   {
     id: "1b17d262-e7da-4d66-aa9e-77f03d62e581",
@@ -61,7 +61,7 @@ const ManageRefund = () => {
   }, []);
 
   return (
-    <div className="p-10 bg-slate-200 w-full space-y-10 font-sans h-screen">
+    <div className="p-10 bg-slate-200 w-full space-y-10 font-sans min-h-screen">
       <div className="text-3xl font-semibold tracking-tight">
         Refund Management
       </div>
@@ -80,12 +80,7 @@ const ManageRefund = () => {
                 token={token}
               />
             </TabPanel>
-            <TabPanel>
-              <ReportedFundraisersTable
-                data={data}
-                setSuccess={setIsSuccessful}
-              />
-            </TabPanel>
+            <TabPanel className="text-sm">To be implemented...</TabPanel>
           </TabPanels>
         </TabGroup>
         <Modal
