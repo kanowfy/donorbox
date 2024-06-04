@@ -7,32 +7,36 @@ const Header = () => {
   console.log(user);
 
   return (
-    <MegaMenu className="my-3 mx-16">
-      <div className="w-full flex items-center justify-between py-4 px-10 md:space-x-8 shadow-gray-400 shadow-lg rounded-lg">
-        <Navbar.Brand href="/">
+    <MegaMenu
+      className="flex justify-center w-full"
+      theme={{
+        root: {
+          base: "bg-white dark:border-gray-700 dark:bg-gray-800 sm:px-4",
+          inner: {
+            base: "items-center justify-between w-full",
+          },
+        },
+      }}
+    >
+      <div className="w-full flex items-center justify-between py-4 px-10 md:space-x-8 border-b border-gray-300">
+        <Navbar.Brand as={Link} to="/" className="flex-grow basis-0">
           <img
             src="/logo.svg"
             className="mr-3 h-6 sm:h-9"
             alt="Flowbite React Logo"
           />
-          <span className="self-center whitespace-nowrap text-xl font-semibold">
+          <span className="self-center whitespace-nowrap text-2xl font-semibold tracking-tighter">
             Donorbox
           </span>
         </Navbar.Brand>
-        <Navbar.Collapse>
-          <Navbar.Link
-            as={Link}
-            to="/"
-            active
-            className="flex flex-col justify-end"
-          >
+        <Navbar.Collapse className="">
+          <Navbar.Link as={Link} to="/" className="text-lg">
             Home
           </Navbar.Link>
-          <Navbar.Link as={Link} to="/search">
-            Search
-          </Navbar.Link>
           <Navbar.Link>
-            <MegaMenu.Dropdown toggle={<>Category</>}>
+            <MegaMenu.Dropdown
+              toggle={<span className="text-lg">Category</span>}
+            >
               <ul className="grid grid-cols-3">
                 <div className="space-y-4 p-4">
                   <li>
@@ -88,11 +92,11 @@ const Header = () => {
               </ul>
             </MegaMenu.Dropdown>
           </Navbar.Link>
-          <Navbar.Link as={Link} to="/about">
-            About
+          <Navbar.Link as={Link} to="/search" className="text-lg">
+            Search
           </Navbar.Link>
         </Navbar.Collapse>
-        <div className="flex md:order-2">
+        <div className="flex md:order-2 flex-grow basis-0 justify-end">
           {user ? (
             <>
               <Dropdown
@@ -139,10 +143,10 @@ const Header = () => {
             <>
               <Navbar.Collapse>
                 <Navbar.Link as={Link} to="/login">
-                  <div className="mt-3">Sign In</div>
+                  <div className="mt-4 text-lg">Sign In</div>
                 </Navbar.Link>
-                <Navbar.Link as={Link} to="/start-fundraiser">
-                  <Button pill color="teal">
+                <Navbar.Link as={Link} to="/start-fundraiser" className="mt-2">
+                  <Button pill color="cyan" size="lg">
                     Start a Fundraiser
                   </Button>
                 </Navbar.Link>

@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Home from "./pages/Home";
-import About from "./pages/About";
 import Login from "./pages/auth/Login";
 import Logout from "./pages/auth/Logout";
 import Search from "./pages/project/Search";
@@ -29,7 +28,6 @@ const AppRoutes = () => {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/about" element={<About />} />
         <Route path="/account/settings" element={<AccountSettings />} />
         <Route path="/fundraiser/:id" element={<ViewProject />} />
         <Route path="/start-fundraiser" element={<CreateProject />} />

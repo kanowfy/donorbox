@@ -1,16 +1,5 @@
-import {
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
-  Card,
-  Button,
-  Dialog,
-  DialogPanel,
-  Badge,
-} from "@tremor/react";
+import { Button, Dialog, DialogPanel, Badge } from "@tremor/react";
+import { Table } from "flowbite-react";
 import { Checkbox } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useState } from "react";
@@ -48,12 +37,12 @@ const PendingRefundTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
 
   return (
     <>
-      <Card className="my-5 shadow-lg shadow-gray-500 space-y-2">
-        <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-          List of projects eligible for refund
+      <div className="mb-5 space-y-2">
+        <h3 className="font-semibold text-lg flex justify-center">
+          Fundraisers eligible for refund
         </h3>
 
-        <div className="space-y-1 pt-4">
+        <div className="flex items-baseline space-x-1">
           <Button
             color="green"
             disabled={selectedList.length == 0}
@@ -70,35 +59,35 @@ const PendingRefundTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
             )}
           </div>
         </div>
-        <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>
-                <Checkbox
-                  color="blue"
-                  checked={isSelectedAll}
-                  onChange={() => {
-                    if (isSelectedAll) {
-                      setSelectedList([]);
-                    } else {
-                      setSelectedList(data.map((i) => i.id));
-                    }
-                    setIsSelectedAll(!isSelectedAll);
-                  }}
-                />
-              </TableHeaderCell>
-              <TableHeaderCell>Title</TableHeaderCell>
-              <TableHeaderCell>Goal Amount</TableHeaderCell>
-              <TableHeaderCell>Donated Amount</TableHeaderCell>
-              <TableHeaderCell># Donations</TableHeaderCell>
-              <TableHeaderCell>End date</TableHeaderCell>
-              <TableHeaderCell></TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      </div>
+      <div className="border rounded-lg shadow-lg">
+        <Table hoverable>
+          <Table.Head>
+            <Table.HeadCell>
+              <Checkbox
+                color="blue"
+                checked={isSelectedAll}
+                onChange={() => {
+                  if (isSelectedAll) {
+                    setSelectedList([]);
+                  } else {
+                    setSelectedList(data.map((i) => i.id));
+                  }
+                  setIsSelectedAll(!isSelectedAll);
+                }}
+              />
+            </Table.HeadCell>
+            <Table.HeadCell>Title</Table.HeadCell>
+            <Table.HeadCell>Goal Amount</Table.HeadCell>
+            <Table.HeadCell>Donated Amount</Table.HeadCell>
+            <Table.HeadCell># Donations</Table.HeadCell>
+            <Table.HeadCell>End date</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
             {data?.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell>
+              <Table.Row key={item.id}>
+                <Table.Cell>
                   <Checkbox
                     color="blue"
                     checked={selectedList.includes(item.id)}
@@ -112,34 +101,40 @@ const PendingRefundTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                       }
                     }}
                   />
-                </TableCell>
-                <TableCell>{item.title}</TableCell>
-                <TableCell>{item.goal_amount.toLocaleString()}</TableCell>
-                <TableCell>{item.current_amount.toLocaleString()}</TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell className="text-gray-900 font-medium">
+                  {item.title}
+                </Table.Cell>
+                <Table.Cell className="text-black">
+                  ₫{utils.formatNumber(item.goal_amount)}
+                </Table.Cell>
+                <Table.Cell className="text-black">
+                  ₫{utils.formatNumber(item.current_amount)}
+                </Table.Cell>
+                <Table.Cell>
                   <Badge>{item.backing_count}</Badge>
-                </TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>
                   {utils.formatDate(
                     new Date(utils.parseDateFromRFC3339(item.end_date))
                   )}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="secondary"
+                </Table.Cell>
+                <Table.Cell>
+                  <button
+                    className="font-medium text-blue-600 hover:underline"
                     onClick={() => {
                       setIsOpenReview(true);
                       setReview(item);
                     }}
                   >
                     View
-                  </Button>
-                </TableCell>
-              </TableRow>
+                  </button>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </TableBody>
+          </Table.Body>
         </Table>
-      </Card>
+      </div>
       <Dialog
         open={isOpenReview}
         onClose={(val) => setIsOpenReview(val)}

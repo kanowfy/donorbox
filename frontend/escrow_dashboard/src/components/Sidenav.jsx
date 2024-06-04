@@ -91,7 +91,7 @@ const Sidenav = () => {
   const { user } = useAuthContext();
   return (
     <Sidebar
-      className="h-screen sticky top-10 w-full"
+      className="h-screen sticky top-0 w-full"
       theme={customSidenavTheme}
     >
       <div className="flex flex-col justify-between h-full">
@@ -123,7 +123,11 @@ const Sidenav = () => {
                 >
                   Manage Refunds
                 </Sidebar.Item>
-                <Sidebar.Item as={Link} to="/" icon={AiOutlineAudit}>
+                <Sidebar.Item
+                  as={Link}
+                  to="/transactions"
+                  icon={AiOutlineAudit}
+                >
                   Transaction Audits
                 </Sidebar.Item>
               </Sidebar.ItemGroup>

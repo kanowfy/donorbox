@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard";
 import { useEffect, useState } from "react";
 import projectService from "../services/project";
+import { FaSearch } from "react-icons/fa";
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
@@ -22,7 +23,7 @@ const Home = () => {
   return (
     <>
       <div>
-        <section className="flex flex-col pt-20 items-center h-[35rem] bg-cover bg-gradient-to-b from-white to-sky-200">
+        <section className="flex flex-col pt-20 items-center h-[33rem] bg-cover bg-gradient-to-b from-white to-sky-200">
           <div className="pb-7 font-semibold text-sky-700 text-6xl">
             Help those in need today
           </div>
@@ -31,7 +32,7 @@ const Home = () => {
           </div>
           <div>
             <Link to="/start-fundraiser">
-              <button className="mt-10 px-8 py-5 text-white tracking-wide text-xl rounded-xl shadow-lg bg-gradient-to-t from-cyan-500 to-blue-500 hover:bg-gradient-to-b">
+              <button className="mt-10 px-8 py-4 text-white font-medium rounded-xl shadow-lg bg-gradient-to-t from-cyan-500 to-blue-500 hover:bg-gradient-to-b">
                 Start a Fundraiser
               </button>
             </Link>
@@ -46,8 +47,9 @@ const Home = () => {
               </div>
               <div>
                 <Link to="/search">
-                  <div className="underline font-semibold text-xl text-gray-800 hover:text-sky-700">
-                    Explore
+                  <div className="underline font-semibold text-xl text-gray-800 hover:text-sky-700 flex items-center space-x-2">
+                    <div>Explore</div>
+                    <FaSearch className="w-4 h-4 mt-1" />
                   </div>
                 </Link>
               </div>

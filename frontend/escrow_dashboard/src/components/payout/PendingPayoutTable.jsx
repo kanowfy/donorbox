@@ -1,16 +1,5 @@
-import {
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
-  Card,
-  Button,
-  Dialog,
-  DialogPanel,
-  Badge,
-} from "@tremor/react";
+import { Button, Dialog, DialogPanel, Badge } from "@tremor/react";
+import { Table } from "flowbite-react";
 import PropTypes from "prop-types";
 import { useState } from "react";
 import { CategoryIndexMap } from "../../constants";
@@ -42,39 +31,43 @@ const PendingPayoutTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
 
   return (
     <>
-      <Card className="my-5 shadow-lg shadow-gray-500">
-        <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-          List of projects eligible for payout
+      <div className="mb-5 space-y-2">
+        <h3 className="font-semibold text-lg flex justify-center">
+          Fundraisers eligible for payout
         </h3>
-        <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>Title</TableHeaderCell>
-              <TableHeaderCell>Goal Amount</TableHeaderCell>
-              <TableHeaderCell>Donated Amount</TableHeaderCell>
-              <TableHeaderCell># Donations</TableHeaderCell>
-              <TableHeaderCell>End date</TableHeaderCell>
-              <TableHeaderCell>Transfer Setup</TableHeaderCell>
-              <TableHeaderCell></TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      </div>
+      <div className="border rounded-lg shadow-lg">
+        <Table hoverable>
+          <Table.Head>
+            <Table.HeadCell>Title</Table.HeadCell>
+            <Table.HeadCell>Goal Amount</Table.HeadCell>
+            <Table.HeadCell>Donated Amount</Table.HeadCell>
+            <Table.HeadCell># Donations</Table.HeadCell>
+            <Table.HeadCell>End date</Table.HeadCell>
+            <Table.HeadCell>Transfer Setup</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
             {data?.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium text-black">
+              <Table.Row key={item.id}>
+                <Table.Cell className="font-medium text-black">
                   {item.title}
-                </TableCell>
-                <TableCell>{item.goal_amount.toLocaleString()}</TableCell>
-                <TableCell>{item.current_amount.toLocaleString()}</TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell className="text-black">
+                  ₫{utils.formatNumber(item.goal_amount)}
+                </Table.Cell>
+                <Table.Cell className="text-black">
+                  ₫{utils.formatNumber(item.current_amount)}
+                </Table.Cell>
+                <Table.Cell>
                   <Badge>{item.backing_count}</Badge>
-                </TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>
                   {utils.formatDate(
                     new Date(utils.parseDateFromRFC3339(item.end_date))
                   )}
-                </TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>
                   {item?.card_id ? (
                     <>
                       <Badge color="green">Yes</Badge>
@@ -84,23 +77,23 @@ const PendingPayoutTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                       <Badge color="red">No</Badge>
                     </>
                   )}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="secondary"
+                </Table.Cell>
+                <Table.Cell>
+                  <button
+                    className="font-medium text-blue-600 hover:underline"
                     onClick={() => {
                       setIsOpenReview(true);
                       setReview(item);
                     }}
                   >
                     Review
-                  </Button>
-                </TableCell>
-              </TableRow>
+                  </button>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </TableBody>
+          </Table.Body>
         </Table>
-      </Card>
+      </div>
       <Dialog
         open={isOpenReview}
         onClose={(val) => setIsOpenReview(val)}
@@ -208,7 +201,11 @@ const PendingPayoutTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
               </div>
             </div>
             <div className="mt-8 w-full flex space-x-1">
-              <Button className="w-1/2" onClick={handlePayout}>
+              <Button
+                className="w-1/2"
+                onClick={handlePayout}
+                disabled={!review?.card_id}
+              >
                 Payout
               </Button>
               <Button

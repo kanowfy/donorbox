@@ -41,13 +41,13 @@ func (app *application) getOneTransactionHandler(w http.ResponseWriter, r *http.
 }
 
 func (app *application) getTransactionAuditHandler(w http.ResponseWriter, r *http.Request) {
-	backingID, err := convert.StringToPgxUUID(r.PathValue("id"))
+	pid, err := convert.StringToPgxUUID(r.PathValue("id"))
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	transactions, err := app.repository.GetTransactionsForProject(r.Context(), backingID)
+	transactions, err := app.repository.GetTransactionsForProject(r.Context(), pid)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

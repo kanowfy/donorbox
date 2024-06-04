@@ -155,3 +155,24 @@ func (app *application) refundHandler(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) getStatisticsHandler(w http.ResponseWriter, r *http.Request) {
+	stats, err := app.repository.GetStatistics(r.Context())
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	transactions, err := app.repository.GetTransactionsStatsByWeek(r.Context())
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.writeJSON(w, http.StatusOK, map[string]interface{}{
+		"stats":        stats,
+		"transactions": transactions,
+	}, nil); err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

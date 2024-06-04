@@ -6,6 +6,7 @@ import Layout from "./pages/Layout";
 import SetupTransfer from "./pages/SetupTransfer";
 import ManagePayout from "./pages/ManagePayout";
 import ManageRefund from "./pages/ManageRefund";
+import TransactionAudits from "./pages/TransactionAudits";
 
 const AppRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const AppRoutes = () => {
         <Route index element={<Home />} />
         <Route path="manage/payout" element={<ManagePayout />} />
         <Route path="manage/refund" element={<ManageRefund />} />
+        <Route path="transactions" element={<TransactionAudits />} />
       </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />

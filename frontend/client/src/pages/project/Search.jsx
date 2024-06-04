@@ -118,7 +118,7 @@ const Search = () => {
                   <Dropdown.Header>
                     <span>Choose location worldwide</span>
                   </Dropdown.Header>
-                  <Dropdown.Item>HAHA</Dropdown.Item>
+                  <Dropdown.Item></Dropdown.Item>
                 </Dropdown>
                 <Dropdown
                   label="Category"
@@ -136,7 +136,7 @@ const Search = () => {
                       {Object.entries(CategoryIndexMap).map(([name, num]) => (
                         <Button
                           size="xs"
-                          color="success"
+                          color="dark"
                           key={name}
                           onClick={() => {
                             setCategoryFilter(num);
