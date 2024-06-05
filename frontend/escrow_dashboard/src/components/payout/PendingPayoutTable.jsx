@@ -133,7 +133,7 @@ const PendingPayoutTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                 <div className="underline text-black text-sm">Link: </div>
                 <a
                   target="_blank"
-                  href={`http://localhost:5173/fundraiser/${review?.id}`}
+                  href={`http://localhost:4001/fundraiser/${review?.id}`}
                   className="flex text-black hover:underline text-sm"
                 >
                   Go to Fundraiser

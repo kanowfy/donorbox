@@ -21,6 +21,7 @@ import ManageLayout from "./pages/project/manage/ManageLayout";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import ReportProject from "./pages/project/ReportProject";
 
 const AppRoutes = () => {
   return (
@@ -32,6 +33,7 @@ const AppRoutes = () => {
         <Route path="/fundraiser/:id" element={<ViewProject />} />
         <Route path="/start-fundraiser" element={<CreateProject />} />
         <Route path="/fundraisers" element={<ProjectList />} />
+        <Route path="/:id/report" element={<ReportProject />} />
         <Route path="*" element={<NotFound />} />
 
         <Route path="/manage/:id" element={<ManageLayout />}>

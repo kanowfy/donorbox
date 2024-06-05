@@ -11,7 +11,8 @@ const Home = () => {
     const fetchProjects = async () => {
       try {
         const resp = await projectService.getAll();
-        setProjects(resp.projects.filter((p) => p.status === "ongoing"));
+        console.log(resp.projects);
+        setProjects(resp.projects);
       } catch (err) {
         console.error(err);
       }

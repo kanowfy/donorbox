@@ -28,6 +28,12 @@ CREATE TYPE transaction_status AS ENUM (
 	'failed'
 );
 
+CREATE TYPE report_status AS ENUM (
+	'pending',
+	'resolved',
+	'dismissed'
+);
+
 CREATE TYPE card_brand AS ENUM (
 	'VISA',
 	'MASTERCARD'
@@ -113,5 +119,16 @@ CREATE TABLE IF NOT EXISTS transactions (
 	initiator_card_id uuid NOT NULL REFERENCES cards(id),
 	recipient_card_id uuid NOT NULL REFERENCES cards(id),
 	status transaction_status NOT NULL DEFAULT 'pending',
+	created_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS reports (
+	id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	project_id uuid NOT NULL REFERENCES projects(id),
+	reporter_email varchar(255) NOT NULL,
+	reporter_phone_number varchar(20) NOT NULL,
+	reason varchar(255) NOT NULL,
+	details text NOT NULL,
+	status report_status NOT NULL DEFAULT 'pending',
 	created_at timestamptz NOT NULL DEFAULT NOW()
 );

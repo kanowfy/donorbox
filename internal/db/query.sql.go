@@ -174,6 +174,47 @@ func (q *Queries) CreateProjectUpdate(ctx context.Context, arg CreateProjectUpda
 	return i, err
 }
 
+const createReport = `-- name: CreateReport :one
+
+INSERT INTO reports (
+    project_id, reporter_email, reporter_phone_number, reason, details
+) VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING id, project_id, reporter_email, reporter_phone_number, reason, details, status, created_at
+`
+
+type CreateReportParams struct {
+	ProjectID           pgtype.UUID `json:"project_id"`
+	ReporterEmail       string      `json:"reporter_email"`
+	ReporterPhoneNumber string      `json:"reporter_phone_number"`
+	Reason              string      `json:"reason"`
+	Details             string      `json:"details"`
+}
+
+// :::::::::: REPORT ::::::::::--
+func (q *Queries) CreateReport(ctx context.Context, arg CreateReportParams) (Report, error) {
+	row := q.db.QueryRow(ctx, createReport,
+		arg.ProjectID,
+		arg.ReporterEmail,
+		arg.ReporterPhoneNumber,
+		arg.Reason,
+		arg.Details,
+	)
+	var i Report
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.ReporterEmail,
+		&i.ReporterPhoneNumber,
+		&i.Reason,
+		&i.Details,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createSocialLoginUser = `-- name: CreateSocialLoginUser :one
 INSERT INTO users (
     email, hashed_password, first_name, last_name, profile_picture, activated
@@ -344,6 +385,7 @@ FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
+AND projects.status = 'ongoing'
 GROUP BY projects.ID
 ORDER BY backing_count DESC
 LIMIT $3::integer OFFSET $2::integer

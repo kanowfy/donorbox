@@ -6,6 +6,7 @@ FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
     CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
+AND projects.status = 'ongoing'
 GROUP BY projects.ID
 ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
@@ -298,5 +299,15 @@ INSERT INTO cards (
     token, card_owner_name, last_four_digits, brand
 ) VALUES (
     $1, $2, $3, $4
+)
+RETURNING *;
+
+--:::::::::: REPORT ::::::::::--
+
+-- name: CreateReport :one
+INSERT INTO reports (
+    project_id, reporter_email, reporter_phone_number, reason, details
+) VALUES (
+    $1, $2, $3, $4, $5
 )
 RETURNING *;
