@@ -140,6 +140,49 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 	return string(ns.ProjectStatus), nil
 }
 
+type ReportStatus string
+
+const (
+	ReportStatusPending   ReportStatus = "pending"
+	ReportStatusResolved  ReportStatus = "resolved"
+	ReportStatusDismissed ReportStatus = "dismissed"
+)
+
+func (e *ReportStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportStatus(s)
+	case string:
+		*e = ReportStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReportStatus struct {
+	ReportStatus ReportStatus `json:"report_status"`
+	Valid        bool         `json:"valid"` // Valid is true if ReportStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportStatus), nil
+}
+
 type TransactionStatus string
 
 const (
@@ -326,6 +369,17 @@ type ProjectUpdate struct {
 	AttachmentPhoto *string            `json:"attachment_photo"`
 	Description     string             `json:"description"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type Report struct {
+	ID                  pgtype.UUID        `json:"id"`
+	ProjectID           pgtype.UUID        `json:"project_id"`
+	ReporterEmail       string             `json:"reporter_email"`
+	ReporterPhoneNumber string             `json:"reporter_phone_number"`
+	Reason              string             `json:"reason"`
+	Details             string             `json:"details"`
+	Status              ReportStatus       `json:"status"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 }
 
 type Transaction struct {

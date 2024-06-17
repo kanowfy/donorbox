@@ -1,10 +1,11 @@
-import { Avatar } from "flowbite-react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Avatar, Button } from "flowbite-react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import Support from "../../components/Support";
 import DonateBox from "../../components/DonateBox";
 import { useEffect, useState } from "react";
 import projectService from "../../services/project";
 import utils from "../../utils/utils";
+import { IoFlag } from "react-icons/io5";
 
 const Project = () => {
   const params = useParams();
@@ -145,6 +146,15 @@ const Project = () => {
                 comment={b.word_of_support}
               />
             ))}
+          </div>
+          <div className="h-px bg-gray-300"></div>
+          <div className="my-5">
+            <Link to={`/${params.id}/report`} className="w-fit">
+              <Button color="light" pill size="lg">
+                <IoFlag className="w-5 h-5 mr-1" />
+                Report Fundraiser
+              </Button>
+            </Link>
           </div>
         </div>
         <div className="col-span-1">

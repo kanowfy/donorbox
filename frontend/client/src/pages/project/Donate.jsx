@@ -53,7 +53,7 @@ const Donate = () => {
     if (!loading) {
       fetchProject();
     }
-  }, [params.id, user, loading, navigate]);
+  }, [params.id, loading, navigate]);
 
   const onSubmit = (data) => {
     const donate = async (data) => {
