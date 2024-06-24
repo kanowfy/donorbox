@@ -8,24 +8,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-co-op/gocron"
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kanowfy/donorbox/internal/db"
+	"github.com/kanowfy/donorbox/internal/config"
 	"github.com/kanowfy/donorbox/internal/log"
 	"github.com/kanowfy/donorbox/internal/mail"
-	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/google"
 )
 
 type application struct {
-	config     config
-	service    *service.Service
-	repository *db.Queries // remove after fully migrate to service
-	validator  *validator.Validate
-	mailer     mail.Mailer
-	wg         sync.WaitGroup
+	cfg       config.Config
+	dbpool    *pgxpool.Pool
+	validator *validator.Validate
+	mailer    mail.Mailer
+	wg        sync.WaitGroup
 }
 
 func init() {
@@ -34,7 +31,7 @@ func init() {
 }
 
 func main() {
-	cfg, err := loadConfig()
+	cfg, err := config.Load()
 	if err != nil {
 		slog.Error(fmt.Sprintf("error loading config: %v", err))
 		os.Exit(1)
@@ -55,30 +52,19 @@ func main() {
 	)
 
 	app := &application{
-		config:     cfg,
-		service:    service.New(dbpool),
-		repository: db.New(dbpool),
-		validator:  validator.New(validator.WithRequiredStructEnabled()),
-		mailer:     mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+		cfg:       cfg,
+		dbpool:    dbpool,
+		validator: validator.New(validator.WithRequiredStructEnabled()),
+		mailer:    mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
 	}
 
-	slog.Info("Starting cronjob...")
-	s := gocron.NewScheduler(time.Local)
-	s.Every(1).Day().At("00:00").StartImmediately().Do(func() {
-		err := app.service.CheckAndUpdateFinishedProjects(context.Background())
-		if err != nil {
-			slog.Error(err.Error())
-		}
-	})
-	s.StartAsync()
-
-	err = app.serve()
+	err = app.run()
 	if err != nil {
 		slog.Error(err.Error())
 	}
 }
 
-func openDB(cfg config) (*pgxpool.Pool, error) {
+func openDB(cfg config.Config) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 
 	dbpool, err := pgxpool.New(ctx, fmt.Sprintf(
