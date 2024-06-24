@@ -62,7 +62,7 @@ func (c *card) SetupEscrowCard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = c.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (c *card) SetupProjectCard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = c.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 

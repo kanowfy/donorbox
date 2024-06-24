@@ -78,7 +78,7 @@ func (p *project) SearchProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = p.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -160,7 +160,7 @@ func (p *project) CreateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = p.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -195,7 +195,7 @@ func (p *project) UpdateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = p.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -293,7 +293,7 @@ func (p *project) CreateProjectUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = p.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 

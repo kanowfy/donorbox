@@ -19,7 +19,6 @@ func (rec *statusRecorder) WriteHeader(statusCode int) {
 
 func EnableCors(trustedOrigins []string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//trustedOrigins := []string{fmt.Sprintf("http://%s:%d", app.config.Host, app.config.ClientPort), fmt.Sprintf("http://%s:%d", app.config.Host, app.config.DashboardPort)}
 		w.Header().Set("Vary", "Origin")
 		origin := r.Header.Get("Origin")
 

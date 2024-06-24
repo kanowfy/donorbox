@@ -52,7 +52,7 @@ func (a *auth) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = a.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (a *auth) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = a.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -143,7 +143,7 @@ func (a *auth) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = a.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -172,7 +172,7 @@ func (a *auth) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = a.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 

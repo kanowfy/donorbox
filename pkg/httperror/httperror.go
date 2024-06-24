@@ -1,9 +1,11 @@
 package httperror
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/kanowfy/donorbox/pkg/json"
 )
 
@@ -52,4 +54,40 @@ func InvalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) 
 
 func AuthenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
 	errorResponse(w, r, http.StatusUnauthorized, "you must be authenticated to access this resource")
+}
+
+func FailedValidationResponse(w http.ResponseWriter, r *http.Request, err error) {
+	errs, ok := err.(validator.ValidationErrors)
+	if !ok {
+		panic("err has to be validation error")
+	}
+
+	type inputError struct {
+		Field   string `json:"field"`
+		Message string `json:"message"`
+	}
+
+	errors := []inputError{}
+	for _, e := range errs {
+		var inputErr inputError
+		inputErr.Field = e.Field()
+		switch e.Tag() {
+		case "required":
+			inputErr.Message = fmt.Sprintf("missing required field")
+		case "email":
+			inputErr.Message = "invalid email"
+		case "credit_card":
+			inputErr.Message = "invalid credit card value"
+		case "uuid4":
+			inputErr.Message = "invalid uuid"
+		case "http_url":
+			inputErr.Message = "invalid url"
+		default:
+			inputErr.Message = fmt.Sprintf("validation failed on '%s' tag", e.Tag())
+		}
+
+		errors = append(errors, inputErr)
+	}
+
+	errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }

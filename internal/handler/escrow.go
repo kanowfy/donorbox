@@ -42,7 +42,7 @@ func (e *escrow) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = e.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 

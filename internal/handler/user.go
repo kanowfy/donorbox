@@ -73,7 +73,7 @@ func (u *user) UpdateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = u.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (u *user) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = u.validator.Struct(req); err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
 
