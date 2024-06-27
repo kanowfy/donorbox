@@ -16,7 +16,7 @@ const authReducer = (state, action) => {
       };
     case ACTIONS.LOGOUT:
       localStorage.removeItem("token");
-      return { ...state, token: null, user: null };
+      return { ...state, token: null, user: null, loading: false };
     default:
       throw new Error(`Unhandled action type: ${action.type}`);
   }
@@ -43,7 +43,11 @@ const AuthProvider = ({ children }) => {
           },
         });
       } catch (err) {
-        console.error(err);
+        dispatch({
+          type: ACTIONS.LOGOUT,
+          payload: null,
+        });
+        console.log("Log out user because of expired token");
       }
     };
     const token = localStorage.getItem("token");

@@ -36,9 +36,10 @@ const Search = () => {
   useEffect(() => {
     const searchProjects = async (q) => {
       try {
-        const response = await projectService.search(q, 1, 12);
-        setProjects(response.projects);
-        setFiltered(response.projects);
+        const response = await projectService.search(q, 1, 50);
+        // change to ssp
+        setProjects(response.projects.filter((p) => p.status === "ongoing"));
+        setFiltered(response.projects.filter((p) => p.status === "ongoing"));
       } catch (err) {
         console.log(err);
       }

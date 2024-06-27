@@ -92,7 +92,6 @@ const TransactionAudits = () => {
             <Table.HeadCell>Amount</Table.HeadCell>
             <Table.HeadCell>Initiator Card ID</Table.HeadCell>
             <Table.HeadCell>Recipient Card ID</Table.HeadCell>
-            <Table.HeadCell>Status</Table.HeadCell>
             <Table.HeadCell>
               <span className="sr-only">View Details</span>
             </Table.HeadCell>
@@ -121,11 +120,6 @@ const TransactionAudits = () => {
                 </Table.Cell>
                 <Table.Cell>{t.initiator_card_id.slice(0, 14)}...</Table.Cell>
                 <Table.Cell>{t.recipient_card_id.slice(0, 14)}...</Table.Cell>
-                <Table.Cell>
-                  <Badge className="w-fit" color="warning">
-                    {t.status}
-                  </Badge>
-                </Table.Cell>
                 <Table.Cell>
                   <button className="font-medium text-blue-600 hover:underline">
                     View

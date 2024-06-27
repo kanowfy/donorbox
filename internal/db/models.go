@@ -7,8 +7,9 @@ package db
 import (
 	"database/sql/driver"
 	"fmt"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type BackingStatus string
@@ -32,8 +33,8 @@ func (e *BackingStatus) Scan(src interface{}) error {
 }
 
 type NullBackingStatus struct {
-	BackingStatus BackingStatus `json:"backing_status"`
-	Valid         bool          `json:"valid"` // Valid is true if BackingStatus is not NULL
+	BackingStatus BackingStatus
+	Valid         bool // Valid is true if BackingStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -74,8 +75,8 @@ func (e *CardBrand) Scan(src interface{}) error {
 }
 
 type NullCardBrand struct {
-	CardBrand CardBrand `json:"card_brand"`
-	Valid     bool      `json:"valid"` // Valid is true if CardBrand is not NULL
+	CardBrand CardBrand
+	Valid     bool // Valid is true if CardBrand is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -118,8 +119,8 @@ func (e *ProjectStatus) Scan(src interface{}) error {
 }
 
 type NullProjectStatus struct {
-	ProjectStatus ProjectStatus `json:"project_status"`
-	Valid         bool          `json:"valid"` // Valid is true if ProjectStatus is not NULL
+	ProjectStatus ProjectStatus
+	Valid         bool // Valid is true if ProjectStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -138,6 +139,49 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ProjectStatus), nil
+}
+
+type ReportStatus string
+
+const (
+	ReportStatusPending   ReportStatus = "pending"
+	ReportStatusResolved  ReportStatus = "resolved"
+	ReportStatusDismissed ReportStatus = "dismissed"
+)
+
+func (e *ReportStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportStatus(s)
+	case string:
+		*e = ReportStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReportStatus struct {
+	ReportStatus ReportStatus
+	Valid        bool // Valid is true if ReportStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportStatus), nil
 }
 
 type TransactionStatus string
@@ -161,8 +205,8 @@ func (e *TransactionStatus) Scan(src interface{}) error {
 }
 
 type NullTransactionStatus struct {
-	TransactionStatus TransactionStatus `json:"transaction_status"`
-	Valid             bool              `json:"valid"` // Valid is true if TransactionStatus is not NULL
+	TransactionStatus TransactionStatus
+	Valid             bool // Valid is true if TransactionStatus is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -204,8 +248,8 @@ func (e *TransactionType) Scan(src interface{}) error {
 }
 
 type NullTransactionType struct {
-	TransactionType TransactionType `json:"transaction_type"`
-	Valid           bool            `json:"valid"` // Valid is true if TransactionType is not NULL
+	TransactionType TransactionType
+	Valid           bool // Valid is true if TransactionType is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -246,8 +290,8 @@ func (e *UserType) Scan(src interface{}) error {
 }
 
 type NullUserType struct {
-	UserType UserType `json:"user_type"`
-	Valid    bool     `json:"valid"` // Valid is true if UserType is not NULL
+	UserType UserType
+	Valid    bool // Valid is true if UserType is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -269,84 +313,96 @@ func (ns NullUserType) Value() (driver.Value, error) {
 }
 
 type Backing struct {
-	ID            pgtype.UUID        `json:"id"`
-	ProjectID     pgtype.UUID        `json:"project_id"`
-	BackerID      pgtype.UUID        `json:"backer_id"`
-	Amount        int64              `json:"amount"`
-	WordOfSupport *string            `json:"word_of_support"`
-	Status        BackingStatus      `json:"status"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	ID            uuid.UUID
+	ProjectID     uuid.UUID
+	BackerID      uuid.UUID
+	Amount        int64
+	WordOfSupport *string
+	Status        BackingStatus
+	CreatedAt     time.Time
 }
 
 type Card struct {
-	ID             pgtype.UUID        `json:"id"`
-	Token          string             `json:"token"`
-	CardOwnerName  string             `json:"card_owner_name"`
-	LastFourDigits string             `json:"last_four_digits"`
-	Brand          CardBrand          `json:"brand"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	ID             uuid.UUID
+	Token          string
+	CardOwnerName  string
+	LastFourDigits string
+	Brand          CardBrand
+	CreatedAt      time.Time
 }
 
 type Category struct {
-	ID           int32  `json:"id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	CoverPicture string `json:"cover_picture"`
+	ID           int32
+	Name         string
+	Description  string
+	CoverPicture string
 }
 
 type EscrowUser struct {
-	ID             pgtype.UUID        `json:"id"`
-	Email          string             `json:"email"`
-	HashedPassword string             `json:"hashed_password"`
-	UserType       UserType           `json:"user_type"`
-	CardID         pgtype.UUID        `json:"card_id"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	ID             uuid.UUID
+	Email          string
+	HashedPassword string
+	UserType       UserType
+	CardID         uuid.UUID
+	CreatedAt      time.Time
 }
 
 type Project struct {
-	ID            pgtype.UUID        `json:"id"`
-	UserID        pgtype.UUID        `json:"user_id"`
-	CategoryID    int32              `json:"category_id"`
-	Title         string             `json:"title"`
-	Description   string             `json:"description"`
-	CoverPicture  string             `json:"cover_picture"`
-	GoalAmount    int64              `json:"goal_amount"`
-	CurrentAmount int64              `json:"current_amount"`
-	Country       string             `json:"country"`
-	Province      string             `json:"province"`
-	CardID        pgtype.UUID        `json:"card_id"`
-	StartDate     pgtype.Timestamptz `json:"start_date"`
-	EndDate       pgtype.Timestamptz `json:"end_date"`
-	Status        ProjectStatus      `json:"status"`
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	CategoryID    int32
+	Title         string
+	Description   string
+	CoverPicture  string
+	GoalAmount    int64
+	CurrentAmount int64
+	Country       string
+	Province      string
+	CardID        uuid.UUID
+	StartDate     time.Time
+	EndDate       time.Time
+	Status        ProjectStatus
 }
 
 type ProjectUpdate struct {
-	ID              pgtype.UUID        `json:"id"`
-	ProjectID       pgtype.UUID        `json:"project_id"`
-	AttachmentPhoto *string            `json:"attachment_photo"`
-	Description     string             `json:"description"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	ID              uuid.UUID
+	ProjectID       uuid.UUID
+	AttachmentPhoto *string
+	Description     string
+	CreatedAt       time.Time
+}
+
+type Report struct {
+	ID                  uuid.UUID
+	ProjectID           uuid.UUID
+	ReporterEmail       string
+	ReporterPhoneNumber string
+	ReporterFullname    string
+	Reason              string
+	Details             string
+	Status              ReportStatus
+	CreatedAt           time.Time
 }
 
 type Transaction struct {
-	ID              pgtype.UUID        `json:"id"`
-	ProjectID       pgtype.UUID        `json:"project_id"`
-	TransactionType TransactionType    `json:"transaction_type"`
-	Amount          int64              `json:"amount"`
-	InitiatorCardID pgtype.UUID        `json:"initiator_card_id"`
-	RecipientCardID pgtype.UUID        `json:"recipient_card_id"`
-	Status          TransactionStatus  `json:"status"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	ID              uuid.UUID
+	ProjectID       uuid.UUID
+	TransactionType TransactionType
+	Amount          int64
+	InitiatorCardID uuid.UUID
+	RecipientCardID uuid.UUID
+	Status          TransactionStatus
+	CreatedAt       time.Time
 }
 
 type User struct {
-	ID             pgtype.UUID        `json:"id"`
-	Email          string             `json:"email"`
-	HashedPassword string             `json:"hashed_password"`
-	FirstName      string             `json:"first_name"`
-	LastName       string             `json:"last_name"`
-	ProfilePicture *string            `json:"profile_picture"`
-	Activated      bool               `json:"activated"`
-	UserType       UserType           `json:"user_type"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	ID             uuid.UUID
+	Email          string
+	HashedPassword string
+	FirstName      string
+	LastName       string
+	ProfilePicture *string
+	Activated      bool
+	UserType       UserType
+	CreatedAt      time.Time
 }
