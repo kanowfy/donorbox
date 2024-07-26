@@ -1,0 +1,30 @@
+with-expecter: true
+outpkg: mocks
+packages:
+  github.com/kanowfy/donorbox/internal/service:
+    config:
+      all: true
+      dir: "./internal/service/mocks"
+      filename: "{{.InterfaceName}}.go"
+      mockname: "{{.InterfaceName}}"
+  github.com/kanowfy/donorbox/internal/db:
+    interfaces:
+      Querier:
+        config:
+          dir: "./internal/db/mocks"
+          filename: "{{.InterfaceName}}.go"
+          mockname: "{{.InterfaceName}}"
+  github.com/kanowfy/donorbox/internal/middleware:
+    interfaces:
+      Auth:
+        config:
+          dir: "./internal/middleware/mocks"
+          filename: "{{.InterfaceName}}.go"
+          mockname: "{{.InterfaceName}}"
+  github.com/kanowfy/donorbox/internal/mail:
+    interfaces:
+      Mailer:
+        config:
+          dir: "./internal/mail/mocks"
+          filename: "{{.InterfaceName}}.go"
+          mockname: "{{.InterfaceName}}"

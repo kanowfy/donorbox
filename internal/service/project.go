@@ -2,23 +2,467 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
+
+	"github.com/google/uuid"
+	"github.com/kanowfy/donorbox/internal/convert"
+	"github.com/kanowfy/donorbox/internal/db"
+	"github.com/kanowfy/donorbox/internal/dto"
+	"github.com/kanowfy/donorbox/internal/filters"
+	"github.com/kanowfy/donorbox/internal/model"
 )
 
-func (s *Service) CheckAndUpdateFinishedProjects(ctx context.Context) error {
-	query := `UPDATE projects SET status = 'ended'
-	WHERE end_date <= NOW() AND status = 'ongoing'`
-	res, err := s.dbPool.Exec(ctx, query)
+var (
+	ErrProjectNotFound = errors.New("project not found")
+	ErrNotOwner        = errors.New("user does not own the project")
+	ErrProjectHasFund  = errors.New("project has fund")
+)
+
+type Project interface {
+	GetAllProjects(ctx context.Context, pageNum, pageSize, categoryIndex int) ([]model.Project, filters.Metadata, error)
+	SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error)
+	GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
+	GetEndedProjects(ctx context.Context) ([]model.Project, error)
+	GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error)
+	CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error)
+	UpdateProject(ctx context.Context, userID, projectID uuid.UUID, req dto.UpdateProjectRequest) error
+	DeleteProject(ctx context.Context, userID, projectID uuid.UUID) error
+	GetAllCategories(ctx context.Context) ([]model.Category, error)
+	GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]model.ProjectUpdate, error)
+	CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
+	CheckAndUpdateFinishedProjects(ctx context.Context) error
+}
+
+type project struct {
+	repository     db.Querier
+	backingService Backing
+	userService    User
+}
+
+func NewProject(repository db.Querier, backingService Backing, userService User) Project {
+	return &project{
+		repository,
+		backingService,
+		userService,
+	}
+}
+
+func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categoryIndex int) ([]model.Project, filters.Metadata, error) {
+	f := filters.Filters{
+		Category: categoryIndex,
+		Page:     pageNum,
+		PageSize: pageSize,
+	}
+
+	var args db.GetAllProjectsParams
+
+	args.Category = int32(categoryIndex)
+	args.PageLimit = int32(f.Limit())
+	args.TotalOffset = int32(f.Offset())
+
+	dbProjects, err := p.repository.GetAllProjects(ctx, args)
+	if err != nil {
+		return nil, filters.Metadata{}, err
+	}
+
+	metadata := filters.CalculateMetadata(len(dbProjects), f.Page, f.PageSize)
+
+	var projects []model.Project
+
+	for _, p := range dbProjects {
+		projects = append(projects, model.Project{
+			ID:            p.ID,
+			UserID:        p.UserID,
+			CategoryID:    p.CategoryID,
+			Title:         p.Title,
+			Description:   p.Description,
+			CoverPicture:  p.CoverPicture,
+			GoalAmount:    p.GoalAmount,
+			CurrentAmount: p.CurrentAmount,
+			Country:       p.Country,
+			Province:      p.Province,
+			CardID:        p.CardID,
+			StartDate:     p.StartDate,
+			EndDate:       p.EndDate,
+			Status:        convertProjectStatus(p.Status),
+			BackingCount:  &p.BackingCount,
+		})
+	}
+
+	return projects, metadata, nil
+}
+
+func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error) {
+	f := filters.Filters{
+		Page:     pageNum,
+		PageSize: pageSize,
+	}
+
+	args := db.SearchProjectsParams{
+		SearchQuery: query,
+		PageLimit:   int32(f.Limit()),
+		TotalOffset: int32(f.Offset()),
+	}
+
+	dbProjects, err := p.repository.SearchProjects(ctx, args)
+	if err != nil {
+		return nil, filters.Metadata{}, err
+	}
+
+	metadata := filters.CalculateMetadata(len(dbProjects), f.Page, f.PageSize)
+
+	var projects []model.Project
+
+	for _, p := range dbProjects {
+		projects = append(projects, model.Project{
+			ID:            p.ID,
+			UserID:        p.UserID,
+			CategoryID:    p.CategoryID,
+			Title:         p.Title,
+			Description:   p.Description,
+			CoverPicture:  p.CoverPicture,
+			GoalAmount:    p.GoalAmount,
+			CurrentAmount: p.CurrentAmount,
+			Country:       p.Country,
+			Province:      p.Province,
+			CardID:        p.CardID,
+			StartDate:     p.StartDate,
+			EndDate:       p.EndDate,
+			Status:        convertProjectStatus(p.Status),
+			BackingCount:  &p.BackingCount,
+		})
+	}
+
+	return projects, metadata, nil
+}
+
+func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error) {
+	dbProjects, err := p.repository.GetProjectsForUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []model.Project
+
+	for _, p := range dbProjects {
+		projects = append(projects, model.Project{
+			ID:            p.ID,
+			UserID:        p.UserID,
+			CategoryID:    p.CategoryID,
+			Title:         p.Title,
+			Description:   p.Description,
+			CoverPicture:  p.CoverPicture,
+			GoalAmount:    p.GoalAmount,
+			CurrentAmount: p.CurrentAmount,
+			Country:       p.Country,
+			Province:      p.Province,
+			CardID:        p.CardID,
+			StartDate:     p.StartDate,
+			EndDate:       p.EndDate,
+			Status:        convertProjectStatus(p.Status),
+		})
+	}
+
+	return projects, nil
+}
+
+func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error) {
+	dbProjects, err := p.repository.GetEndedProjects(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []model.Project
+
+	for _, p := range dbProjects {
+		projects = append(projects, model.Project{
+			ID:            p.ID,
+			UserID:        p.UserID,
+			CategoryID:    p.CategoryID,
+			Title:         p.Title,
+			Description:   p.Description,
+			CoverPicture:  p.CoverPicture,
+			GoalAmount:    p.GoalAmount,
+			CurrentAmount: p.CurrentAmount,
+			Country:       p.Country,
+			Province:      p.Province,
+			CardID:        p.CardID,
+			StartDate:     p.StartDate,
+			EndDate:       p.EndDate,
+			Status:        convertProjectStatus(p.Status),
+		})
+	}
+
+	return projects, nil
+}
+
+func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error) {
+	project, err := p.repository.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	backings, err := p.backingService.GetBackingsForProject(ctx, project.ID)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	updates, err := p.GetProjectUpdates(ctx, project.ID)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	user, err := p.userService.GetUserByID(ctx, project.UserID)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return &model.Project{
+		ID:            project.ID,
+		UserID:        project.UserID,
+		CategoryID:    project.CategoryID,
+		Title:         project.Title,
+		Description:   project.Description,
+		CoverPicture:  project.CoverPicture,
+		GoalAmount:    project.GoalAmount,
+		CurrentAmount: project.CurrentAmount,
+		Country:       project.Country,
+		Province:      project.Province,
+		CardID:        project.CardID,
+		StartDate:     project.StartDate,
+		EndDate:       project.EndDate,
+		Status:        convertProjectStatus(project.Status),
+	}, backings, updates, user, nil
+}
+
+func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error) {
+	args := db.CreateProjectParams{
+		UserID:       userID,
+		CategoryID:   int32(req.CategoryID),
+		Title:        req.Title,
+		Description:  req.Description,
+		CoverPicture: req.CoverPicture,
+		GoalAmount:   convert.MustStringToInt64(req.GoalAmount),
+		Country:      req.Country,
+		Province:     req.Province,
+		EndDate:      req.EndDate,
+	}
+
+	project, err := p.repository.CreateProject(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Project{
+		ID:            project.ID,
+		UserID:        project.UserID,
+		CategoryID:    project.CategoryID,
+		Title:         project.Title,
+		Description:   project.Description,
+		CoverPicture:  project.CoverPicture,
+		GoalAmount:    project.GoalAmount,
+		CurrentAmount: project.CurrentAmount,
+		Country:       project.Country,
+		Province:      project.Province,
+		CardID:        project.CardID,
+		StartDate:     project.StartDate,
+		EndDate:       project.EndDate,
+		Status:        model.ProjectStatusOngoing,
+	}, nil
+}
+
+func (p *project) UpdateProject(ctx context.Context, userID, projectID uuid.UUID, req dto.UpdateProjectRequest) error {
+	project, err := p.repository.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return ErrProjectNotFound
+	}
+
+	// check permission of requesting user and whether the current amount is 0
+
+	if userID != project.UserID {
+		return ErrNotOwner
+	}
+
+	if project.CurrentAmount > 0 {
+		return ErrProjectHasFund
+	}
+
+	var updateParams db.UpdateProjectByIDParams
+	updateParams.ID = project.ID
+
+	if req.Title != nil {
+		updateParams.Title = *req.Title
+	} else {
+		updateParams.Title = project.Title
+	}
+
+	if req.Description != nil {
+		updateParams.Description = *req.Description
+	} else {
+		updateParams.Description = project.Description
+	}
+
+	if req.CoverPicture != nil {
+		updateParams.CoverPicture = *req.CoverPicture
+	} else {
+		updateParams.CoverPicture = project.CoverPicture
+	}
+
+	if req.GoalAmount != nil {
+		updateParams.GoalAmount = convert.MustStringToInt64(*req.GoalAmount)
+	} else {
+		updateParams.GoalAmount = project.GoalAmount
+	}
+
+	if req.Country != nil {
+		updateParams.Country = *req.Country
+	} else {
+		updateParams.Country = project.Country
+	}
+
+	if req.Province != nil {
+		updateParams.Province = *req.Province
+	} else {
+		updateParams.Province = project.Province
+	}
+
+	if req.EndDate != nil {
+		updateParams.EndDate = *req.EndDate
+	} else {
+		updateParams.EndDate = project.EndDate
+	}
+
+	if err = p.repository.UpdateProjectByID(ctx, updateParams); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *project) DeleteProject(ctx context.Context, userID, projectID uuid.UUID) error {
+	project, err := p.repository.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return ErrProjectNotFound
+	}
+
+	if userID != project.UserID {
+		return ErrNotOwner
+	}
+
+	if err = p.repository.DeleteProjectByID(ctx, project.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *project) GetAllCategories(ctx context.Context) ([]model.Category, error) {
+	dbCategories, err := p.repository.GetAllCategories(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var categories []model.Category
+	for _, c := range dbCategories {
+		categories = append(categories, model.Category{
+			ID:           int(c.ID),
+			Name:         c.Name,
+			Description:  c.Description,
+			CoverPicture: c.CoverPicture,
+		})
+	}
+
+	return categories, nil
+}
+
+func (p *project) GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]model.ProjectUpdate, error) {
+	project, err := p.repository.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, ErrProjectNotFound
+	}
+
+	dbUpdates, err := p.repository.GetProjectUpdates(ctx, project.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var updates []model.ProjectUpdate
+	for _, c := range dbUpdates {
+		updates = append(updates, model.ProjectUpdate{
+			ID:              c.ID,
+			ProjectID:       c.ProjectID,
+			AttachmentPhoto: c.AttachmentPhoto,
+			Description:     c.Description,
+			CreatedAt:       c.CreatedAt,
+		})
+	}
+
+	return updates, nil
+}
+
+func (p *project) CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error) {
+	pid, err := uuid.Parse(req.ProjectID)
+	if err != nil {
+		return nil, ErrProjectNotFound
+	}
+
+	project, err := p.repository.GetProjectByID(ctx, pid)
+	if err != nil {
+		return nil, ErrProjectNotFound
+	}
+
+	if userID != project.UserID {
+		return nil, ErrNotOwner
+	}
+
+	args := db.CreateProjectUpdateParams{
+		ProjectID:       project.ID,
+		AttachmentPhoto: req.AttachmentPhoto,
+		Description:     req.Description,
+	}
+
+	update, err := p.repository.CreateProjectUpdate(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.ProjectUpdate{
+		ID:              update.ID,
+		ProjectID:       update.ProjectID,
+		AttachmentPhoto: update.AttachmentPhoto,
+		Description:     update.Description,
+		CreatedAt:       update.CreatedAt,
+	}, err
+}
+
+func (p *project) CheckAndUpdateFinishedProjects(ctx context.Context) error {
+	projects, err := p.repository.UpdateFinishedProjectsStatus(ctx)
 	if err != nil {
 		return err
 	}
 
-	if res.RowsAffected() == 0 {
+	if len(projects) == 0 {
 		slog.Info("No project needs updating", "numProjectUpdateEnded", 0)
 	} else {
-		slog.Info(fmt.Sprintf("Successfully updated %d rows", res.RowsAffected()), "numProjectUpdateEnded", res.RowsAffected())
+		slog.Info(fmt.Sprintf("Successfully updated %d rows", len(projects)), "numProjectUpdateEnded", len(projects))
 	}
 
 	return nil
+}
+
+func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {
+	var status model.ProjectStatus
+	switch dbStatus {
+	case db.ProjectStatusOngoing:
+		status = model.ProjectStatusOngoing
+	case db.ProjectStatusEnded:
+		status = model.ProjectStatusEnded
+	case db.ProjectStatusCompletedPayout:
+		status = model.ProjectStatusCompletedPayout
+	case db.ProjectStatusCompletedRefund:
+		status = model.ProjectStatusCompletedRefund
+	}
+	return status
 }

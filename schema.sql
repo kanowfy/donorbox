@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS reports (
 	project_id uuid NOT NULL REFERENCES projects(id),
 	reporter_email varchar(255) NOT NULL,
 	reporter_phone_number varchar(20) NOT NULL,
+	reporter_fullname varchar(255) NOT NULL,
 	reason varchar(255) NOT NULL,
 	details text NOT NULL,
 	status report_status NOT NULL DEFAULT 'pending',
