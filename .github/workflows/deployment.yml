@@ -1,14 +1,15 @@
-name: Build and Push Docker Images
+name: Build and deploy
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_run:
+    workflows: [ "Test"]
+    types:
+      - completed
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     env:
       IMAGE_BACKEND: ${{ secrets.DOCKERHUB_USERNAME }}/donorbox-backend
