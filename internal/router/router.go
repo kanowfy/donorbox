@@ -29,6 +29,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 
 	router.HandleFunc("GET /escrow/authenticated", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetAuthenticatedEscrow))
 	router.HandleFunc("POST /escrow/login", handlers.Escrow.Login)
+	router.HandleFunc("POST /escrow/approve", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveOfProject))
 
 	router.HandleFunc("GET /projects", handlers.Project.GetAllProjects)
 	router.HandleFunc("POST /projects/search", handlers.Project.SearchProjects)

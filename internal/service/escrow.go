@@ -15,6 +15,7 @@ import (
 type Escrow interface {
 	Login(ctx context.Context, req dto.LoginRequest) (string, error)
 	GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.EscrowUser, error)
+	ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error
 }
 
 type escrow struct {
@@ -58,4 +59,22 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.Escrow
 		UserType:  model.ESCROW,
 		CreatedAt: escrow.CreatedAt,
 	}, nil
+}
+
+func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
+	var status db.NullProjectStatus
+	if req.Approved {
+		status.Scan(db.ProjectStatusOngoing)
+	} else {
+		//TODO: do something with other req fields
+		status.Scan(db.ProjectStatusRejected)
+	}
+	if err := e.repository.UpdateProjectStatus(ctx, db.UpdateProjectStatusParams{
+		ID:     uuid.MustParse(req.ProjectID),
+		Status: status,
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

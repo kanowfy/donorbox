@@ -50,3 +50,10 @@ type CreateProjectCommentRequest struct {
 	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,uuid4"`
 	Content         string  `json:"content" validate:"required"`
 }
+
+type ProjectApprovalRequest struct {
+	ProjectID    string  `json:"project_id" validate:"required,uuid4"`
+	Approved     bool    `json:"approved" validate:"required"`
+	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
+	Description  *string `json:"description,omitempty" validate:"omitnil"`
+}
