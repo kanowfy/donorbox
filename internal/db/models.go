@@ -108,6 +108,7 @@ type Project struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
+	TotalFund      int64
 	StartDate      time.Time
 	EndDate        time.Time
 	ReceiverNumber string

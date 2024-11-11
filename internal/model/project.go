@@ -19,8 +19,10 @@ type Project struct {
 	ID             uuid.UUID     `json:"id"`
 	UserID         uuid.UUID     `json:"user_id"`
 	CategoryID     int32         `json:"category_id"`
+	Milestones     []Milestone   `json:"milestones"`
 	Title          string        `json:"title"`
 	Description    string        `json:"description"`
+	TotalFund      int64         `json:"total_fund"`
 	CoverPicture   string        `json:"cover_picture"`
 	ReceiverName   string        `json:"receiver_name"`
 	ReceiverNumber string        `json:"receiver_number"`
@@ -32,6 +34,16 @@ type Project struct {
 	EndDate        time.Time     `json:"end_date"`
 	Status         ProjectStatus `json:"status"`
 	BackingCount   *int64        `json:"backing_count,omitempty"`
+}
+
+type Milestone struct {
+	ID              uuid.UUID `json:"id"`
+	Title           string    `json:"title"`
+	Description     *string   `json:"description,omitempty"`
+	FundGoal        int64     `json:"fund_goal"`
+	CurrentFund     int64     `json:"current_fund"`
+	BankDescription string    `json:"bank_description"`
+	Completed       bool      `json:"completed"`
 }
 
 type ProjectUpdate struct {

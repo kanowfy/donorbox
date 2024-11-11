@@ -74,6 +74,7 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
 			ReceiverNumber: p.ReceiverNumber,
@@ -118,6 +119,7 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
 			ReceiverNumber: p.ReceiverNumber,
@@ -149,6 +151,7 @@ func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]m
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
 			ReceiverNumber: p.ReceiverNumber,
@@ -179,6 +182,7 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
 			ReceiverNumber: p.ReceiverNumber,
@@ -194,8 +198,41 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 	return projects, nil
 }
 
+func (p *project) GetMilestonesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Milestone, error) {
+	project, err := p.repository.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, ErrProjectNotFound
+	}
+
+	dbMilestones, err := p.repository.GetMilestoneForProject(ctx, project.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var milestones []model.Milestone
+	for _, m := range dbMilestones {
+		milestones = append(milestones, model.Milestone{
+			ID:              m.ID,
+			Title:           m.Title,
+			Description:     m.Description,
+			FundGoal:        m.FundGoal,
+			CurrentFund:     m.CurrentFund,
+			BankDescription: m.BankDescription,
+			Completed:       m.Completed,
+		})
+	}
+
+	return milestones, nil
+}
+
+// TODO: refactor into one struct
 func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	milestones, err := p.GetMilestonesForProject(ctx, projectID)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -221,6 +258,8 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 		CategoryID:     project.CategoryID,
 		Title:          project.Title,
 		Description:    project.Description,
+		Milestones:     milestones,
+		TotalFund:      project.TotalFund,
 		CoverPicture:   project.CoverPicture,
 		ReceiverName:   project.ReceiverName,
 		ReceiverNumber: project.ReceiverNumber,
@@ -233,8 +272,9 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 	}, backings, updates, user, nil
 }
 
+// TODO: put the queries in transaction
 func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error) {
-	args := db.CreateProjectParams{
+	projectArgs := db.CreateProjectParams{
 		UserID:         userID,
 		CategoryID:     int32(req.CategoryID),
 		Title:          req.Title,
@@ -249,17 +289,43 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 		EndDate:        req.EndDate,
 	}
 
-	project, err := p.repository.CreateProject(ctx, args)
+	project, err := p.repository.CreateProject(ctx, projectArgs)
 	if err != nil {
 		return nil, err
+	}
+
+	var milestones []model.Milestone
+
+	for _, m := range req.Milestones {
+		milestone, err := p.repository.CreateMilestone(ctx, db.CreateMilestoneParams{
+			ProjectID:       project.ID,
+			Title:           m.Title,
+			Description:     m.Description,
+			BankDescription: m.BankDescription,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+
+		milestones = append(milestones, model.Milestone{
+			ID:              milestone.ID,
+			Title:           milestone.Title,
+			Description:     milestone.Description,
+			FundGoal:        milestone.FundGoal,
+			BankDescription: milestone.BankDescription,
+		})
+
 	}
 
 	return &model.Project{
 		ID:             project.ID,
 		UserID:         project.UserID,
 		CategoryID:     project.CategoryID,
+		Milestones:     milestones,
 		Title:          project.Title,
 		Description:    project.Description,
+		TotalFund:      project.TotalFund,
 		CoverPicture:   project.CoverPicture,
 		ReceiverNumber: project.ReceiverNumber,
 		ReceiverName:   project.ReceiverName,

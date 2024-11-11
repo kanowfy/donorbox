@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS projects (
   description text NOT NULL,
   cover_picture text NOT NULL,
   category_id int NOT NULL REFERENCES categories(id),
+  total_fund bigint NOT NULL DEFAULT 0,
   start_date timestamptz NOT NULL DEFAULT NOW(),
   end_date timestamptz NOT NULL,
   receiver_number varchar(64) NOT NULL,
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS projects (
 
 CREATE TABLE IF NOT EXISTS milestones (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES projects(id),
+  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   title text NOT NULL,
   description text,
   fund_goal bigint NOT NULL,
@@ -62,7 +63,7 @@ CREATE TABLE IF NOT EXISTS milestones (
 
 CREATE TABLE IF NOT EXISTS project_updates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid NOT NULL REFERENCES projects(id),
+  project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   attachment_photo text,
   description text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT NOW()

@@ -12,13 +12,52 @@ import (
 	"github.com/google/uuid"
 )
 
+const createMilestone = `-- name: CreateMilestone :one
+INSERT INTO milestones (
+    project_id, title, description, fund_goal, bank_description
+) VALUES (
+    $1, $2, $3, $4, $5
+)
+RETURNING id, project_id, title, description, fund_goal, current_fund, bank_description, completed
+`
+
+type CreateMilestoneParams struct {
+	ProjectID       uuid.UUID
+	Title           string
+	Description     *string
+	FundGoal        int64
+	BankDescription string
+}
+
+func (q *Queries) CreateMilestone(ctx context.Context, arg CreateMilestoneParams) (Milestone, error) {
+	row := q.db.QueryRow(ctx, createMilestone,
+		arg.ProjectID,
+		arg.Title,
+		arg.Description,
+		arg.FundGoal,
+		arg.BankDescription,
+	)
+	var i Milestone
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.Title,
+		&i.Description,
+		&i.FundGoal,
+		&i.CurrentFund,
+		&i.BankDescription,
+		&i.Completed,
+	)
+	return i, err
+}
+
 const createProject = `-- name: CreateProject :one
 INSERT INTO projects (
     user_id, category_id, title, description, cover_picture, end_date, receiver_number, receiver_name, address, district, city, country
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 )
-RETURNING id, user_id, title, description, cover_picture, category_id, start_date, end_date, receiver_number, receiver_name, address, district, city, country, status
+RETURNING id, user_id, title, description, cover_picture, category_id, total_fund, start_date, end_date, receiver_number, receiver_name, address, district, city, country, status
 `
 
 type CreateProjectParams struct {
@@ -59,6 +98,7 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 		&i.Description,
 		&i.CoverPicture,
 		&i.CategoryID,
+		&i.TotalFund,
 		&i.StartDate,
 		&i.EndDate,
 		&i.ReceiverNumber,
@@ -149,7 +189,7 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 }
 
 const getAllProjects = `-- name: GetAllProjects :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.total_fund, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE category_id = 
@@ -173,6 +213,7 @@ type GetAllProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
+	TotalFund      int64
 	StartDate      time.Time
 	EndDate        time.Time
 	ReceiverNumber string
@@ -201,6 +242,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 			&i.Description,
 			&i.CoverPicture,
 			&i.CategoryID,
+			&i.TotalFund,
 			&i.StartDate,
 			&i.EndDate,
 			&i.ReceiverNumber,
@@ -223,7 +265,7 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 }
 
 const getFinishedProjects = `-- name: GetFinishedProjects :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.total_fund, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
 JOIN backings ON projects.ID = backings.project_id
 WHERE projects.status = 'finished'
@@ -238,6 +280,7 @@ type GetFinishedProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
+	TotalFund      int64
 	StartDate      time.Time
 	EndDate        time.Time
 	ReceiverNumber string
@@ -266,6 +309,7 @@ func (q *Queries) GetFinishedProjects(ctx context.Context) ([]GetFinishedProject
 			&i.Description,
 			&i.CoverPicture,
 			&i.CategoryID,
+			&i.TotalFund,
 			&i.StartDate,
 			&i.EndDate,
 			&i.ReceiverNumber,
@@ -287,8 +331,63 @@ func (q *Queries) GetFinishedProjects(ctx context.Context) ([]GetFinishedProject
 	return items, nil
 }
 
+const getMilestoneByID = `-- name: GetMilestoneByID :one
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed FROM milestones
+WHERE id = $1
+`
+
+func (q *Queries) GetMilestoneByID(ctx context.Context, id uuid.UUID) (Milestone, error) {
+	row := q.db.QueryRow(ctx, getMilestoneByID, id)
+	var i Milestone
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.Title,
+		&i.Description,
+		&i.FundGoal,
+		&i.CurrentFund,
+		&i.BankDescription,
+		&i.Completed,
+	)
+	return i, err
+}
+
+const getMilestoneForProject = `-- name: GetMilestoneForProject :many
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed FROM milestones
+WHERE project_id = $1
+`
+
+func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID uuid.UUID) ([]Milestone, error) {
+	rows, err := q.db.Query(ctx, getMilestoneForProject, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Milestone
+	for rows.Next() {
+		var i Milestone
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.Title,
+			&i.Description,
+			&i.FundGoal,
+			&i.CurrentFund,
+			&i.BankDescription,
+			&i.Completed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProjectByID = `-- name: GetProjectByID :one
-SELECT id, user_id, title, description, cover_picture, category_id, start_date, end_date, receiver_number, receiver_name, address, district, city, country, status FROM projects
+SELECT id, user_id, title, description, cover_picture, category_id, total_fund, start_date, end_date, receiver_number, receiver_name, address, district, city, country, status FROM projects
 WHERE id = $1
 `
 
@@ -302,6 +401,7 @@ func (q *Queries) GetProjectByID(ctx context.Context, id uuid.UUID) (Project, er
 		&i.Description,
 		&i.CoverPicture,
 		&i.CategoryID,
+		&i.TotalFund,
 		&i.StartDate,
 		&i.EndDate,
 		&i.ReceiverNumber,
@@ -348,7 +448,7 @@ func (q *Queries) GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([
 }
 
 const getProjectsForUser = `-- name: GetProjectsForUser :many
-SELECT id, user_id, title, description, cover_picture, category_id, start_date, end_date, receiver_number, receiver_name, address, district, city, country, status FROM projects
+SELECT id, user_id, title, description, cover_picture, category_id, total_fund, start_date, end_date, receiver_number, receiver_name, address, district, city, country, status FROM projects
 WHERE user_id = $1
 ORDER BY start_date DESC
 `
@@ -369,6 +469,7 @@ func (q *Queries) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]P
 			&i.Description,
 			&i.CoverPicture,
 			&i.CategoryID,
+			&i.TotalFund,
 			&i.StartDate,
 			&i.EndDate,
 			&i.ReceiverNumber,
@@ -390,11 +491,12 @@ func (q *Queries) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]P
 }
 
 const searchProjects = `-- name: SearchProjects :many
-SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.total_fund, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE 
     to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', $1::text)
+AND project.status = 'ongoing'
 GROUP BY projects.ID
 ORDER BY backing_count DESC
 LIMIT $3::integer OFFSET $2::integer
@@ -413,6 +515,7 @@ type SearchProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
+	TotalFund      int64
 	StartDate      time.Time
 	EndDate        time.Time
 	ReceiverNumber string
@@ -441,6 +544,7 @@ func (q *Queries) SearchProjects(ctx context.Context, arg SearchProjectsParams) 
 			&i.Description,
 			&i.CoverPicture,
 			&i.CategoryID,
+			&i.TotalFund,
 			&i.StartDate,
 			&i.EndDate,
 			&i.ReceiverNumber,
@@ -496,21 +600,6 @@ func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDPa
 		arg.Country,
 		arg.EndDate,
 	)
-	return err
-}
-
-const updateProjectFund = `-- name: UpdateProjectFund :exec
-UPDATE projects SET current_amount = current_amount + $2::bigint
-WHERE id = $1
-`
-
-type UpdateProjectFundParams struct {
-	ID            uuid.UUID
-	BackingAmount int64
-}
-
-func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error {
-	_, err := q.db.Exec(ctx, updateProjectFund, arg.ID, arg.BackingAmount)
 	return err
 }
 

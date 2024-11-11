@@ -15,6 +15,7 @@ FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 WHERE 
     to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
+AND project.status = 'ongoing'
 GROUP BY projects.ID
 ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
@@ -36,13 +37,17 @@ WHERE projects.status = 'finished'
 GROUP BY projects.ID
 ORDER BY end_date DESC;
 
+-- name: GetMilestoneByID :one
+SELECT * FROM milestones
+WHERE id = $1;
+
+-- name: GetMilestoneForProject :many
+SELECT * FROM milestones
+WHERE project_id = $1;
+
 -- name: UpdateProjectByID :exec
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, receiver_number=$5, receiver_name=$6, address=$7, district=$8, city=$9, country = $10, end_date = $11
-WHERE id = $1;
-
--- name: UpdateProjectFund :exec
-UPDATE projects SET current_amount = current_amount + @backing_amount::bigint
 WHERE id = $1;
 
 -- name: UpdateProjectStatus :exec
@@ -57,6 +62,14 @@ INSERT INTO projects (
     user_id, category_id, title, description, cover_picture, end_date, receiver_number, receiver_name, address, district, city, country
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+)
+RETURNING *;
+
+-- name: CreateMilestone :one
+INSERT INTO milestones (
+    project_id, title, description, fund_goal, bank_description
+) VALUES (
+    $1, $2, $3, $4, $5
 )
 RETURNING *;
 
