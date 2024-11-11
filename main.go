@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"log/slog"
 	"os"
@@ -10,12 +11,17 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/kanowfy/donorbox/internal/config"
 	"github.com/kanowfy/donorbox/internal/log"
 	"github.com/kanowfy/donorbox/internal/mail"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/google"
+	"github.com/pressly/goose/v3"
 )
+
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
 
 type application struct {
 	cfg       config.Config
@@ -41,6 +47,18 @@ func main() {
 	if err != nil {
 		slog.Error(fmt.Sprintf("error connecting to database: %v", err))
 		os.Exit(1)
+	}
+
+	goose.SetBaseFS(embedMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		panic(err)
+	}
+
+	db := stdlib.OpenDBFromPool(dbpool)
+
+	if err := goose.Up(db, "migrations"); err != nil {
+		panic(err)
 	}
 
 	goth.UseProviders(

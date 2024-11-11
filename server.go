@@ -27,19 +27,15 @@ func (app *application) run() error {
 	authService := service.NewAuth(repository, app.mailer)
 	userService := service.NewUser(repository)
 	escrowService := service.NewEscrow(repository)
-	cardService := service.NewCard(repository)
-	backingService := service.NewBacking(repository, cardService)
+	backingService := service.NewBacking(repository)
 	projectService := service.NewProject(repository, backingService, userService)
-	transactionService := service.NewTransaction(repository)
 
 	// initialize handlers
 	authHandler := handler.NewAuth(authService, app.validator, app.cfg)
 	userHandler := handler.NewUser(userService, app.validator)
 	escrowHandler := handler.NewEscrow(escrowService, app.validator)
-	cardHandler := handler.NewCard(cardService, app.validator)
 	backingHandler := handler.NewBacking(backingService, app.validator)
 	projectHandler := handler.NewProject(projectService, app.validator)
-	transactionHandler := handler.NewTransaction(transactionService, app.validator)
 	imageUploadHandler := handler.NewImageUploader(app.cfg)
 
 	// initialize auth middleware
@@ -48,10 +44,8 @@ func (app *application) run() error {
 	handlers := handler.Handlers{
 		Auth:          authHandler,
 		Backing:       backingHandler,
-		Card:          cardHandler,
 		Escrow:        escrowHandler,
 		Project:       projectHandler,
-		Transaction:   transactionHandler,
 		User:          userHandler,
 		ImageUploader: imageUploadHandler,
 	}

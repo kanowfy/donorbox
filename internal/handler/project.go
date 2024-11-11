@@ -208,8 +208,6 @@ func (p *project) UpdateProject(w http.ResponseWriter, r *http.Request) {
 			httperror.NotFoundResponse(w, r)
 		case errors.Is(err, service.ErrNotOwner):
 			httperror.AuthenticationRequiredResponse(w, r)
-		case errors.Is(err, service.ErrProjectHasFund):
-			httperror.BadRequestResponse(w, r, err)
 		}
 		return
 	}

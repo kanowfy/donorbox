@@ -28,21 +28,17 @@ SELECT * FROM projects
 WHERE user_id = $1
 ORDER BY start_date DESC;
 
--- name: GetEndedProjects :many
+-- name: GetFinishedProjects :many
 SELECT projects.*, COUNT(backings.project_id) as backing_count
 FROM projects
 JOIN backings ON projects.ID = backings.project_id
-WHERE projects.status = 'ended'
+WHERE projects.status = 'finished'
 GROUP BY projects.ID
 ORDER BY end_date DESC;
 
 -- name: UpdateProjectByID :exec
 UPDATE projects
-SET title = $2, description = $3, cover_picture = $4, goal_amount = $5, country = $6, province = $7, end_date = $8
-WHERE id = $1;
-
--- name: UpdateProjectCard :exec
-UPDATE projects SET card_id = $2
+SET title = $2, description = $3, cover_picture = $4, receiver_number=$5, receiver_name=$6, address=$7, district=$8, city=$9, country = $10, end_date = $11
 WHERE id = $1;
 
 -- name: UpdateProjectFund :exec
@@ -58,9 +54,9 @@ DELETE FROM projects WHERE id = $1;
 
 -- name: CreateProject :one
 INSERT INTO projects (
-    user_id, category_id, title, description, cover_picture, goal_amount, country, province, end_date
+    user_id, category_id, title, description, cover_picture, end_date, receiver_number, receiver_name, address, district, city, country
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 )
 RETURNING *;
 
@@ -83,7 +79,3 @@ INSERT INTO project_updates (
     $1, $2, $3
 )
 RETURNING *;
-
--- name: UpdateFinishedProjectsStatus :many
-UPDATE projects SET status = 'ended'
-WHERE end_date <= NOW() AND status = 'ongoing' RETURNING *;

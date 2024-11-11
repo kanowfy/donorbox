@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
@@ -15,9 +14,6 @@ import (
 type Escrow interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	GetAuthenticatedEscrow(w http.ResponseWriter, r *http.Request)
-	Payout(w http.ResponseWriter, r *http.Request)
-	Refund(w http.ResponseWriter, r *http.Request)
-	GetStatistics(w http.ResponseWriter, r *http.Request)
 }
 
 type escrow struct {
@@ -65,68 +61,6 @@ func (e *escrow) GetAuthenticatedEscrow(w http.ResponseWriter, r *http.Request) 
 
 	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"user": escrow,
-	}, nil); err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-	}
-}
-
-func (e *escrow) Payout(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		httperror.NotFoundResponse(w, r)
-		return
-	}
-
-	escrow := rcontext.GetEscrowUser(r)
-
-	if err := e.service.Payout(r.Context(), id, escrow); err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-		return
-	}
-
-	// send email to owner
-
-	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"message": "project payout successful",
-	}, nil); err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-	}
-}
-
-func (e *escrow) Refund(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		httperror.NotFoundResponse(w, r)
-		return
-	}
-
-	escrow := rcontext.GetEscrowUser(r)
-
-	if err := e.service.Refund(r.Context(), id, escrow); err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-		return
-	}
-
-	// send email to owner
-
-	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"message": "project refund successful",
-	}, nil); err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-	}
-}
-
-func (e *escrow) GetStatistics(w http.ResponseWriter, r *http.Request) {
-	stats, transactions, err := e.service.GetStatistics(r.Context())
-	if err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-	}
-
-	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"stats":        stats,
-		"transactions": transactions,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

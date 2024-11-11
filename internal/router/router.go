@@ -29,9 +29,6 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 
 	router.HandleFunc("GET /escrow/authenticated", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetAuthenticatedEscrow))
 	router.HandleFunc("POST /escrow/login", handlers.Escrow.Login)
-	router.HandleFunc("POST /escrow/{id}/payout", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.Payout))
-	router.HandleFunc("POST /escrow/{id}/refund", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.Refund))
-	router.HandleFunc("GET /escrow/statistics", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetStatistics))
 
 	router.HandleFunc("GET /projects", handlers.Project.GetAllProjects)
 	router.HandleFunc("POST /projects/search", handlers.Project.SearchProjects)
@@ -46,17 +43,9 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 
 	router.HandleFunc("POST /upload/image", handlers.ImageUploader.UploadImage)
 
-	router.HandleFunc("GET /cards/{id}/project", authMiddleware.RequireUserAuthentication(handlers.Card.GetCard)) //TODO: fix this sh
-	router.HandleFunc("POST /escrow/transfer", authMiddleware.RequireEscrowAuthentication(handlers.Card.SetupEscrowCard))
-	router.HandleFunc("POST /projects/{id}/transfer", authMiddleware.RequireUserAuthentication(handlers.Card.SetupProjectCard))
-
 	router.HandleFunc("GET /projects/{id}/backings", handlers.Backing.GetBackingsForProject)
 	router.HandleFunc("POST /projects/{id}/backings", handlers.Backing.CreateProjectBacking)
 	router.HandleFunc("GET /projects/{id}/backings/stats", handlers.Backing.GetProjectBackingStats)
-
-	router.HandleFunc("GET /transactions", authMiddleware.RequireEscrowAuthentication(handlers.Transaction.GetAllTransactions))
-	router.HandleFunc("GET /transactions/{id}", authMiddleware.RequireEscrowAuthentication(handlers.Transaction.GetOneTransaction))
-	router.HandleFunc("GET /transactions/audit/{id}", authMiddleware.RequireEscrowAuthentication(handlers.Transaction.GetTransactionAudit))
 
 	router.HandleFunc("GET /categories", handlers.Project.GetAllCategories)
 

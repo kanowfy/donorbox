@@ -3,11 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/filters"
@@ -17,7 +14,6 @@ import (
 var (
 	ErrProjectNotFound = errors.New("project not found")
 	ErrNotOwner        = errors.New("user does not own the project")
-	ErrProjectHasFund  = errors.New("project has fund")
 )
 
 type Project interface {
@@ -32,7 +28,7 @@ type Project interface {
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
 	GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]model.ProjectUpdate, error)
 	CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
-	CheckAndUpdateFinishedProjects(ctx context.Context) error
+	//CheckAndUpdateFinishedProjects(ctx context.Context) error
 }
 
 type project struct {
@@ -73,21 +69,21 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 
 	for _, p := range dbProjects {
 		projects = append(projects, model.Project{
-			ID:            p.ID,
-			UserID:        p.UserID,
-			CategoryID:    p.CategoryID,
-			Title:         p.Title,
-			Description:   p.Description,
-			CoverPicture:  p.CoverPicture,
-			GoalAmount:    p.GoalAmount,
-			CurrentAmount: p.CurrentAmount,
-			Country:       p.Country,
-			Province:      p.Province,
-			CardID:        p.CardID,
-			StartDate:     p.StartDate,
-			EndDate:       p.EndDate,
-			Status:        convertProjectStatus(p.Status),
-			BackingCount:  &p.BackingCount,
+			ID:             p.ID,
+			UserID:         p.UserID,
+			CategoryID:     p.CategoryID,
+			Title:          p.Title,
+			Description:    p.Description,
+			CoverPicture:   p.CoverPicture,
+			ReceiverName:   p.ReceiverName,
+			ReceiverNumber: p.ReceiverNumber,
+			Address:        p.Address,
+			District:       p.District,
+			City:           p.City,
+			Country:        p.Country,
+			StartDate:      p.StartDate,
+			EndDate:        p.EndDate,
+			BackingCount:   &p.BackingCount,
 		})
 	}
 
@@ -117,21 +113,21 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 
 	for _, p := range dbProjects {
 		projects = append(projects, model.Project{
-			ID:            p.ID,
-			UserID:        p.UserID,
-			CategoryID:    p.CategoryID,
-			Title:         p.Title,
-			Description:   p.Description,
-			CoverPicture:  p.CoverPicture,
-			GoalAmount:    p.GoalAmount,
-			CurrentAmount: p.CurrentAmount,
-			Country:       p.Country,
-			Province:      p.Province,
-			CardID:        p.CardID,
-			StartDate:     p.StartDate,
-			EndDate:       p.EndDate,
-			Status:        convertProjectStatus(p.Status),
-			BackingCount:  &p.BackingCount,
+			ID:             p.ID,
+			UserID:         p.UserID,
+			CategoryID:     p.CategoryID,
+			Title:          p.Title,
+			Description:    p.Description,
+			CoverPicture:   p.CoverPicture,
+			ReceiverName:   p.ReceiverName,
+			ReceiverNumber: p.ReceiverNumber,
+			Address:        p.Address,
+			District:       p.District,
+			City:           p.City,
+			Country:        p.Country,
+			StartDate:      p.StartDate,
+			EndDate:        p.EndDate,
+			BackingCount:   &p.BackingCount,
 		})
 	}
 
@@ -148,20 +144,20 @@ func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]m
 
 	for _, p := range dbProjects {
 		projects = append(projects, model.Project{
-			ID:            p.ID,
-			UserID:        p.UserID,
-			CategoryID:    p.CategoryID,
-			Title:         p.Title,
-			Description:   p.Description,
-			CoverPicture:  p.CoverPicture,
-			GoalAmount:    p.GoalAmount,
-			CurrentAmount: p.CurrentAmount,
-			Country:       p.Country,
-			Province:      p.Province,
-			CardID:        p.CardID,
-			StartDate:     p.StartDate,
-			EndDate:       p.EndDate,
-			Status:        convertProjectStatus(p.Status),
+			ID:             p.ID,
+			UserID:         p.UserID,
+			CategoryID:     p.CategoryID,
+			Title:          p.Title,
+			Description:    p.Description,
+			CoverPicture:   p.CoverPicture,
+			ReceiverName:   p.ReceiverName,
+			ReceiverNumber: p.ReceiverNumber,
+			Address:        p.Address,
+			District:       p.District,
+			City:           p.City,
+			Country:        p.Country,
+			StartDate:      p.StartDate,
+			EndDate:        p.EndDate,
 		})
 	}
 
@@ -169,7 +165,7 @@ func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]m
 }
 
 func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error) {
-	dbProjects, err := p.repository.GetEndedProjects(ctx)
+	dbProjects, err := p.repository.GetFinishedProjects(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -178,20 +174,20 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 
 	for _, p := range dbProjects {
 		projects = append(projects, model.Project{
-			ID:            p.ID,
-			UserID:        p.UserID,
-			CategoryID:    p.CategoryID,
-			Title:         p.Title,
-			Description:   p.Description,
-			CoverPicture:  p.CoverPicture,
-			GoalAmount:    p.GoalAmount,
-			CurrentAmount: p.CurrentAmount,
-			Country:       p.Country,
-			Province:      p.Province,
-			CardID:        p.CardID,
-			StartDate:     p.StartDate,
-			EndDate:       p.EndDate,
-			Status:        convertProjectStatus(p.Status),
+			ID:             p.ID,
+			UserID:         p.UserID,
+			CategoryID:     p.CategoryID,
+			Title:          p.Title,
+			Description:    p.Description,
+			CoverPicture:   p.CoverPicture,
+			ReceiverName:   p.ReceiverName,
+			ReceiverNumber: p.ReceiverNumber,
+			Address:        p.Address,
+			District:       p.District,
+			City:           p.City,
+			Country:        p.Country,
+			StartDate:      p.StartDate,
+			EndDate:        p.EndDate,
 		})
 	}
 
@@ -220,34 +216,37 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 	}
 
 	return &model.Project{
-		ID:            project.ID,
-		UserID:        project.UserID,
-		CategoryID:    project.CategoryID,
-		Title:         project.Title,
-		Description:   project.Description,
-		CoverPicture:  project.CoverPicture,
-		GoalAmount:    project.GoalAmount,
-		CurrentAmount: project.CurrentAmount,
-		Country:       project.Country,
-		Province:      project.Province,
-		CardID:        project.CardID,
-		StartDate:     project.StartDate,
-		EndDate:       project.EndDate,
-		Status:        convertProjectStatus(project.Status),
+		ID:             project.ID,
+		UserID:         project.UserID,
+		CategoryID:     project.CategoryID,
+		Title:          project.Title,
+		Description:    project.Description,
+		CoverPicture:   project.CoverPicture,
+		ReceiverName:   project.ReceiverName,
+		ReceiverNumber: project.ReceiverNumber,
+		Address:        project.Address,
+		District:       project.District,
+		City:           project.City,
+		Country:        project.Country,
+		StartDate:      project.StartDate,
+		EndDate:        project.EndDate,
 	}, backings, updates, user, nil
 }
 
 func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error) {
 	args := db.CreateProjectParams{
-		UserID:       userID,
-		CategoryID:   int32(req.CategoryID),
-		Title:        req.Title,
-		Description:  req.Description,
-		CoverPicture: req.CoverPicture,
-		GoalAmount:   convert.MustStringToInt64(req.GoalAmount),
-		Country:      req.Country,
-		Province:     req.Province,
-		EndDate:      req.EndDate,
+		UserID:         userID,
+		CategoryID:     int32(req.CategoryID),
+		Title:          req.Title,
+		Description:    req.Description,
+		CoverPicture:   req.CoverPicture,
+		ReceiverNumber: req.ReceiverNumber,
+		ReceiverName:   req.ReceiverName,
+		Address:        req.Address,
+		District:       req.District,
+		City:           req.City,
+		Country:        req.Country,
+		EndDate:        req.EndDate,
 	}
 
 	project, err := p.repository.CreateProject(ctx, args)
@@ -256,20 +255,21 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 	}
 
 	return &model.Project{
-		ID:            project.ID,
-		UserID:        project.UserID,
-		CategoryID:    project.CategoryID,
-		Title:         project.Title,
-		Description:   project.Description,
-		CoverPicture:  project.CoverPicture,
-		GoalAmount:    project.GoalAmount,
-		CurrentAmount: project.CurrentAmount,
-		Country:       project.Country,
-		Province:      project.Province,
-		CardID:        project.CardID,
-		StartDate:     project.StartDate,
-		EndDate:       project.EndDate,
-		Status:        model.ProjectStatusOngoing,
+		ID:             project.ID,
+		UserID:         project.UserID,
+		CategoryID:     project.CategoryID,
+		Title:          project.Title,
+		Description:    project.Description,
+		CoverPicture:   project.CoverPicture,
+		ReceiverNumber: project.ReceiverNumber,
+		ReceiverName:   project.ReceiverName,
+		Address:        project.Address,
+		District:       project.District,
+		City:           project.City,
+		Country:        project.Country,
+		StartDate:      project.StartDate,
+		EndDate:        project.EndDate,
+		Status:         model.ProjectStatusPending,
 	}, nil
 }
 
@@ -283,10 +283,6 @@ func (p *project) UpdateProject(ctx context.Context, userID, projectID uuid.UUID
 
 	if userID != project.UserID {
 		return ErrNotOwner
-	}
-
-	if project.CurrentAmount > 0 {
-		return ErrProjectHasFund
 	}
 
 	var updateParams db.UpdateProjectByIDParams
@@ -310,22 +306,40 @@ func (p *project) UpdateProject(ctx context.Context, userID, projectID uuid.UUID
 		updateParams.CoverPicture = project.CoverPicture
 	}
 
-	if req.GoalAmount != nil {
-		updateParams.GoalAmount = convert.MustStringToInt64(*req.GoalAmount)
+	if req.ReceiverName != nil {
+		updateParams.ReceiverName = *req.ReceiverName
 	} else {
-		updateParams.GoalAmount = project.GoalAmount
+		updateParams.ReceiverName = project.ReceiverName
+	}
+
+	if req.ReceiverNumber != nil {
+		updateParams.ReceiverNumber = *req.ReceiverNumber
+	} else {
+		updateParams.ReceiverNumber = project.ReceiverNumber
+	}
+
+	if req.Address != nil {
+		updateParams.Address = *req.Address
+	} else {
+		updateParams.Address = project.Address
+	}
+
+	if req.District != nil {
+		updateParams.District = *req.District
+	} else {
+		updateParams.District = project.District
+	}
+
+	if req.City != nil {
+		updateParams.City = *req.City
+	} else {
+		updateParams.City = project.City
 	}
 
 	if req.Country != nil {
 		updateParams.Country = *req.Country
 	} else {
 		updateParams.Country = project.Country
-	}
-
-	if req.Province != nil {
-		updateParams.Province = *req.Province
-	} else {
-		updateParams.Province = project.Province
 	}
 
 	if req.EndDate != nil {
@@ -437,21 +451,7 @@ func (p *project) CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req
 	}, err
 }
 
-func (p *project) CheckAndUpdateFinishedProjects(ctx context.Context) error {
-	projects, err := p.repository.UpdateFinishedProjectsStatus(ctx)
-	if err != nil {
-		return err
-	}
-
-	if len(projects) == 0 {
-		slog.Info("No project needs updating", "numProjectUpdateEnded", 0)
-	} else {
-		slog.Info(fmt.Sprintf("Successfully updated %d rows", len(projects)), "numProjectUpdateEnded", len(projects))
-	}
-
-	return nil
-}
-
+/*
 func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {
 	var status model.ProjectStatus
 	switch dbStatus {
@@ -459,10 +459,7 @@ func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {
 		status = model.ProjectStatusOngoing
 	case db.ProjectStatusEnded:
 		status = model.ProjectStatusEnded
-	case db.ProjectStatusCompletedPayout:
-		status = model.ProjectStatusCompletedPayout
-	case db.ProjectStatusCompletedRefund:
-		status = model.ProjectStatusCompletedRefund
 	}
 	return status
 }
+*/

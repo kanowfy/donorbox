@@ -1,6 +1,6 @@
 run/api:
-	@echo 'Running cmd/api...'
-	@go run ./cmd/api
+	@echo 'Running server...'
+	@go run .
 run/client:
 	@echo 'Running frontend...'
 	@npm run dev --prefix frontend/client
