@@ -28,9 +28,9 @@ func (_m *Backing) EXPECT() *Backing_Expecter {
 	return &Backing_Expecter{mock: &_m.Mock}
 }
 
-// AcceptBacking provides a mock function with given fields: ctx, projectID, request
-func (_m *Backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest) error {
-	ret := _m.Called(ctx, projectID, request)
+// AcceptBacking provides a mock function with given fields: ctx, projectID, req
+func (_m *Backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, req dto.BackingRequest) error {
+	ret := _m.Called(ctx, projectID, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AcceptBacking")
@@ -38,7 +38,7 @@ func (_m *Backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, reque
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, dto.BackingRequest) error); ok {
-		r0 = rf(ctx, projectID, request)
+		r0 = rf(ctx, projectID, req)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -54,12 +54,12 @@ type Backing_AcceptBacking_Call struct {
 // AcceptBacking is a helper method to define mock.On call
 //   - ctx context.Context
 //   - projectID uuid.UUID
-//   - request dto.BackingRequest
-func (_e *Backing_Expecter) AcceptBacking(ctx interface{}, projectID interface{}, request interface{}) *Backing_AcceptBacking_Call {
-	return &Backing_AcceptBacking_Call{Call: _e.mock.On("AcceptBacking", ctx, projectID, request)}
+//   - req dto.BackingRequest
+func (_e *Backing_Expecter) AcceptBacking(ctx interface{}, projectID interface{}, req interface{}) *Backing_AcceptBacking_Call {
+	return &Backing_AcceptBacking_Call{Call: _e.mock.On("AcceptBacking", ctx, projectID, req)}
 }
 
-func (_c *Backing_AcceptBacking_Call) Run(run func(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest)) *Backing_AcceptBacking_Call {
+func (_c *Backing_AcceptBacking_Call) Run(run func(ctx context.Context, projectID uuid.UUID, req dto.BackingRequest)) *Backing_AcceptBacking_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(uuid.UUID), args[2].(dto.BackingRequest))
 	})

@@ -914,6 +914,63 @@ func (_c *Querier_GetBackingsForUser_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// GetCurrentMilestone provides a mock function with given fields: ctx, projectID
+func (_m *Querier) GetCurrentMilestone(ctx context.Context, projectID uuid.UUID) (db.Milestone, error) {
+	ret := _m.Called(ctx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCurrentMilestone")
+	}
+
+	var r0 db.Milestone
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (db.Milestone, error)); ok {
+		return rf(ctx, projectID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) db.Milestone); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		r0 = ret.Get(0).(db.Milestone)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = rf(ctx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetCurrentMilestone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCurrentMilestone'
+type Querier_GetCurrentMilestone_Call struct {
+	*mock.Call
+}
+
+// GetCurrentMilestone is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID uuid.UUID
+func (_e *Querier_Expecter) GetCurrentMilestone(ctx interface{}, projectID interface{}) *Querier_GetCurrentMilestone_Call {
+	return &Querier_GetCurrentMilestone_Call{Call: _e.mock.On("GetCurrentMilestone", ctx, projectID)}
+}
+
+func (_c *Querier_GetCurrentMilestone_Call) Run(run func(ctx context.Context, projectID uuid.UUID)) *Querier_GetCurrentMilestone_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID))
+	})
+	return _c
+}
+
+func (_c *Querier_GetCurrentMilestone_Call) Return(_a0 db.Milestone, _a1 error) *Querier_GetCurrentMilestone_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetCurrentMilestone_Call) RunAndReturn(run func(context.Context, uuid.UUID) (db.Milestone, error)) *Querier_GetCurrentMilestone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEscrowUser provides a mock function with given fields: ctx
 func (_m *Querier) GetEscrowUser(ctx context.Context) (db.EscrowUser, error) {
 	ret := _m.Called(ctx)
@@ -1200,7 +1257,7 @@ func (_c *Querier_GetFirstBackingDonor_Call) RunAndReturn(run func(context.Conte
 }
 
 // GetMilestoneByID provides a mock function with given fields: ctx, id
-func (_m *Querier) GetMilestoneByID(ctx context.Context, id uuid.UUID) (db.Milestone, error) {
+func (_m *Querier) GetMilestoneByID(ctx context.Context, id int64) (db.Milestone, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -1209,16 +1266,16 @@ func (_m *Querier) GetMilestoneByID(ctx context.Context, id uuid.UUID) (db.Miles
 
 	var r0 db.Milestone
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (db.Milestone, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (db.Milestone, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) db.Milestone); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) db.Milestone); ok {
 		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Get(0).(db.Milestone)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -1234,14 +1291,14 @@ type Querier_GetMilestoneByID_Call struct {
 
 // GetMilestoneByID is a helper method to define mock.On call
 //   - ctx context.Context
-//   - id uuid.UUID
+//   - id int64
 func (_e *Querier_Expecter) GetMilestoneByID(ctx interface{}, id interface{}) *Querier_GetMilestoneByID_Call {
 	return &Querier_GetMilestoneByID_Call{Call: _e.mock.On("GetMilestoneByID", ctx, id)}
 }
 
-func (_c *Querier_GetMilestoneByID_Call) Run(run func(ctx context.Context, id uuid.UUID)) *Querier_GetMilestoneByID_Call {
+func (_c *Querier_GetMilestoneByID_Call) Run(run func(ctx context.Context, id int64)) *Querier_GetMilestoneByID_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(uuid.UUID))
+		run(args[0].(context.Context), args[1].(int64))
 	})
 	return _c
 }
@@ -1251,7 +1308,7 @@ func (_c *Querier_GetMilestoneByID_Call) Return(_a0 db.Milestone, _a1 error) *Qu
 	return _c
 }
 
-func (_c *Querier_GetMilestoneByID_Call) RunAndReturn(run func(context.Context, uuid.UUID) (db.Milestone, error)) *Querier_GetMilestoneByID_Call {
+func (_c *Querier_GetMilestoneByID_Call) RunAndReturn(run func(context.Context, int64) (db.Milestone, error)) *Querier_GetMilestoneByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1824,6 +1881,53 @@ func (_c *Querier_UpdateEscrowUserByID_Call) RunAndReturn(run func(context.Conte
 	return _c
 }
 
+// UpdateMilestoneFund provides a mock function with given fields: ctx, arg
+func (_m *Querier) UpdateMilestoneFund(ctx context.Context, arg db.UpdateMilestoneFundParams) error {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateMilestoneFund")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateMilestoneFundParams) error); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateMilestoneFund_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateMilestoneFund'
+type Querier_UpdateMilestoneFund_Call struct {
+	*mock.Call
+}
+
+// UpdateMilestoneFund is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.UpdateMilestoneFundParams
+func (_e *Querier_Expecter) UpdateMilestoneFund(ctx interface{}, arg interface{}) *Querier_UpdateMilestoneFund_Call {
+	return &Querier_UpdateMilestoneFund_Call{Call: _e.mock.On("UpdateMilestoneFund", ctx, arg)}
+}
+
+func (_c *Querier_UpdateMilestoneFund_Call) Run(run func(ctx context.Context, arg db.UpdateMilestoneFundParams)) *Querier_UpdateMilestoneFund_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.UpdateMilestoneFundParams))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateMilestoneFund_Call) Return(_a0 error) *Querier_UpdateMilestoneFund_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateMilestoneFund_Call) RunAndReturn(run func(context.Context, db.UpdateMilestoneFundParams) error) *Querier_UpdateMilestoneFund_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateProjectByID provides a mock function with given fields: ctx, arg
 func (_m *Querier) UpdateProjectByID(ctx context.Context, arg db.UpdateProjectByIDParams) error {
 	ret := _m.Called(ctx, arg)
@@ -1867,6 +1971,53 @@ func (_c *Querier_UpdateProjectByID_Call) Return(_a0 error) *Querier_UpdateProje
 }
 
 func (_c *Querier_UpdateProjectByID_Call) RunAndReturn(run func(context.Context, db.UpdateProjectByIDParams) error) *Querier_UpdateProjectByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateProjectFund provides a mock function with given fields: ctx, arg
+func (_m *Querier) UpdateProjectFund(ctx context.Context, arg db.UpdateProjectFundParams) error {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateProjectFund")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateProjectFundParams) error); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateProjectFund_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateProjectFund'
+type Querier_UpdateProjectFund_Call struct {
+	*mock.Call
+}
+
+// UpdateProjectFund is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.UpdateProjectFundParams
+func (_e *Querier_Expecter) UpdateProjectFund(ctx interface{}, arg interface{}) *Querier_UpdateProjectFund_Call {
+	return &Querier_UpdateProjectFund_Call{Call: _e.mock.On("UpdateProjectFund", ctx, arg)}
+}
+
+func (_c *Querier_UpdateProjectFund_Call) Run(run func(ctx context.Context, arg db.UpdateProjectFundParams)) *Querier_UpdateProjectFund_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.UpdateProjectFundParams))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateProjectFund_Call) Return(_a0 error) *Querier_UpdateProjectFund_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateProjectFund_Call) RunAndReturn(run func(context.Context, db.UpdateProjectFundParams) error) *Querier_UpdateProjectFund_Call {
 	_c.Call.Return(run)
 	return _c
 }

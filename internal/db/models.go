@@ -77,7 +77,7 @@ type Certificate struct {
 	ID           uuid.UUID
 	EscrowUserID uuid.UUID
 	UserID       uuid.UUID
-	MilestoneID  uuid.UUID
+	MilestoneID  int64
 	Verified     *bool
 	VerifiedAt   pgtype.Timestamptz
 	CreatedAt    time.Time
@@ -91,7 +91,7 @@ type EscrowUser struct {
 }
 
 type Milestone struct {
-	ID              uuid.UUID
+	ID              int64
 	ProjectID       uuid.UUID
 	Title           string
 	Description     *string

@@ -27,12 +27,13 @@ type Querier interface {
 	GetBackingCountForProject(ctx context.Context, projectID uuid.UUID) (int64, error)
 	GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]GetBackingsForProjectRow, error)
 	GetBackingsForUser(ctx context.Context, userID uuid.UUID) ([]Backing, error)
+	GetCurrentMilestone(ctx context.Context, projectID uuid.UUID) (Milestone, error)
 	GetEscrowUser(ctx context.Context) (EscrowUser, error)
 	GetEscrowUserByEmail(ctx context.Context, email string) (EscrowUser, error)
 	GetEscrowUserByID(ctx context.Context, id uuid.UUID) (EscrowUser, error)
 	GetFinishedProjects(ctx context.Context) ([]GetFinishedProjectsRow, error)
 	GetFirstBackingDonor(ctx context.Context, projectID uuid.UUID) (GetFirstBackingDonorRow, error)
-	GetMilestoneByID(ctx context.Context, id uuid.UUID) (Milestone, error)
+	GetMilestoneByID(ctx context.Context, id int64) (Milestone, error)
 	GetMilestoneForProject(ctx context.Context, projectID uuid.UUID) ([]Milestone, error)
 	GetMostBackingDonor(ctx context.Context, projectID uuid.UUID) (GetMostBackingDonorRow, error)
 	GetMostRecentBackingDonor(ctx context.Context, projectID uuid.UUID) (GetMostRecentBackingDonorRow, error)
@@ -43,7 +44,9 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	SearchProjects(ctx context.Context, arg SearchProjectsParams) ([]SearchProjectsRow, error)
 	UpdateEscrowUserByID(ctx context.Context, arg UpdateEscrowUserByIDParams) error
+	UpdateMilestoneFund(ctx context.Context, arg UpdateMilestoneFundParams) error
 	UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error
+	UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error

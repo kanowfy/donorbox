@@ -92,3 +92,18 @@ INSERT INTO project_updates (
     $1, $2, $3
 )
 RETURNING *;
+
+-- name: GetCurrentMilestone :one
+SELECT * FROM milestones
+WHERE project_id = $1 AND completed IS FALSE 
+LIMIT 1;
+
+-- name: UpdateMilestoneFund :exec
+UPDATE milestones
+SET current_fund = current_fund + @amount::bigint
+WHERE id = $1;
+
+-- name: UpdateProjectFund :exec
+UPDATE projects
+SET total_fund = total_fund + @amount::bigint
+WHERE id = $1;

@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/model"
 )
 
 type Backing interface {
-	AcceptBacking(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest) error
+	AcceptBacking(ctx context.Context, projectID uuid.UUID, req dto.BackingRequest) error
 	GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Backing, error)
 	GetProjectBackingAggregation(ctx context.Context, projectID uuid.UUID) (*BackingAggregation, error)
 }
@@ -25,8 +26,53 @@ func NewBacking(repository db.Querier) Backing {
 	}
 }
 
+func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, req dto.BackingRequest) error {
+	amount := convert.MustStringToInt64(req.Amount)
+	// Stripe, card...
+
+	// Create db backing
+	backingParams := db.CreateBackingParams{
+		ProjectID:     projectID,
+		Amount:        amount,
+		WordOfSupport: req.WordOfSupport,
+	}
+
+	if req.UserID != nil {
+		backingParams.UserID = uuid.MustParse(*req.UserID)
+	}
+
+	_, err := b.repository.CreateBacking(ctx, backingParams)
+	if err != nil {
+		return err
+	}
+
+	// Update project, milestone funds
+	milestone, err := b.repository.GetCurrentMilestone(ctx, projectID)
+	if err != nil {
+		return err
+	}
+
+	if err := b.repository.UpdateMilestoneFund(ctx, db.UpdateMilestoneFundParams{
+		ID:     milestone.ID,
+		Amount: amount,
+	}); err != nil {
+		return err
+	}
+
+	if err := b.repository.UpdateProjectFund(ctx, db.UpdateProjectFundParams{
+		ID:     projectID,
+		Amount: amount,
+	}); err != nil {
+		return err
+	}
+
+	// Blockchain stuff
+
+	return nil
+}
+
+/*
 func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest) error {
-	/*
 		queries := b.repository.(*db.Queries)
 		q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
 		if err != nil {
@@ -78,9 +124,8 @@ func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, reques
 		}
 
 		return tx.Commit(ctx)
-	*/
-	return nil
 }
+*/
 
 func (b *backing) GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Backing, error) {
 	_, err := b.repository.GetProjectByID(ctx, projectID)

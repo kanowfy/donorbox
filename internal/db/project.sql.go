@@ -264,6 +264,28 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 	return items, nil
 }
 
+const getCurrentMilestone = `-- name: GetCurrentMilestone :one
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed FROM milestones
+WHERE project_id = $1 AND completed IS FALSE 
+LIMIT 1
+`
+
+func (q *Queries) GetCurrentMilestone(ctx context.Context, projectID uuid.UUID) (Milestone, error) {
+	row := q.db.QueryRow(ctx, getCurrentMilestone, projectID)
+	var i Milestone
+	err := row.Scan(
+		&i.ID,
+		&i.ProjectID,
+		&i.Title,
+		&i.Description,
+		&i.FundGoal,
+		&i.CurrentFund,
+		&i.BankDescription,
+		&i.Completed,
+	)
+	return i, err
+}
+
 const getFinishedProjects = `-- name: GetFinishedProjects :many
 SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.total_fund, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
@@ -336,7 +358,7 @@ SELECT id, project_id, title, description, fund_goal, current_fund, bank_descrip
 WHERE id = $1
 `
 
-func (q *Queries) GetMilestoneByID(ctx context.Context, id uuid.UUID) (Milestone, error) {
+func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, error) {
 	row := q.db.QueryRow(ctx, getMilestoneByID, id)
 	var i Milestone
 	err := row.Scan(
@@ -566,6 +588,22 @@ func (q *Queries) SearchProjects(ctx context.Context, arg SearchProjectsParams) 
 	return items, nil
 }
 
+const updateMilestoneFund = `-- name: UpdateMilestoneFund :exec
+UPDATE milestones
+SET current_fund = current_fund + $2::bigint
+WHERE id = $1
+`
+
+type UpdateMilestoneFundParams struct {
+	ID     int64
+	Amount int64
+}
+
+func (q *Queries) UpdateMilestoneFund(ctx context.Context, arg UpdateMilestoneFundParams) error {
+	_, err := q.db.Exec(ctx, updateMilestoneFund, arg.ID, arg.Amount)
+	return err
+}
+
 const updateProjectByID = `-- name: UpdateProjectByID :exec
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, receiver_number=$5, receiver_name=$6, address=$7, district=$8, city=$9, country = $10, end_date = $11
@@ -600,6 +638,22 @@ func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDPa
 		arg.Country,
 		arg.EndDate,
 	)
+	return err
+}
+
+const updateProjectFund = `-- name: UpdateProjectFund :exec
+UPDATE projects
+SET total_fund = total_fund + $2::bigint
+WHERE id = $1
+`
+
+type UpdateProjectFundParams struct {
+	ID     uuid.UUID
+	Amount int64
+}
+
+func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error {
+	_, err := q.db.Exec(ctx, updateProjectFund, arg.ID, arg.Amount)
 	return err
 }
 

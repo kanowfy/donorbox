@@ -26,6 +26,53 @@ func (_m *Escrow) EXPECT() *Escrow_Expecter {
 	return &Escrow_Expecter{mock: &_m.Mock}
 }
 
+// ApproveOfProject provides a mock function with given fields: ctx, req
+func (_m *Escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
+	ret := _m.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApproveOfProject")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, dto.ProjectApprovalRequest) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Escrow_ApproveOfProject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApproveOfProject'
+type Escrow_ApproveOfProject_Call struct {
+	*mock.Call
+}
+
+// ApproveOfProject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req dto.ProjectApprovalRequest
+func (_e *Escrow_Expecter) ApproveOfProject(ctx interface{}, req interface{}) *Escrow_ApproveOfProject_Call {
+	return &Escrow_ApproveOfProject_Call{Call: _e.mock.On("ApproveOfProject", ctx, req)}
+}
+
+func (_c *Escrow_ApproveOfProject_Call) Run(run func(ctx context.Context, req dto.ProjectApprovalRequest)) *Escrow_ApproveOfProject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(dto.ProjectApprovalRequest))
+	})
+	return _c
+}
+
+func (_c *Escrow_ApproveOfProject_Call) Return(_a0 error) *Escrow_ApproveOfProject_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Escrow_ApproveOfProject_Call) RunAndReturn(run func(context.Context, dto.ProjectApprovalRequest) error) *Escrow_ApproveOfProject_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEscrowByID provides a mock function with given fields: ctx, id
 func (_m *Escrow) GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.EscrowUser, error) {
 	ret := _m.Called(ctx, id)
