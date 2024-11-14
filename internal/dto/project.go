@@ -1,6 +1,10 @@
 package dto
 
-import "time"
+import (
+	"time"
+
+	"github.com/kanowfy/donorbox/internal/model"
+)
 
 type CreateProjectRequest struct {
 	CategoryID     int                `json:"category_id" validate:"required,min=1,max=7"`
@@ -22,6 +26,11 @@ type MilestoneRequest struct {
 	Description     *string `json:"description,omitempty" validate:"omitnil,min=10"`
 	FundGoal        string  `json:"fund_goal" validate:"required,number"`
 	BankDescription string  `json:"bank_description" validate:"required"`
+}
+
+type CreateProjectResponse struct {
+	Project    model.Project     `json:"project" validate:"required"`
+	Milestones []model.Milestone `json:"milestones" validate:"required"`
 }
 
 type UpdateProjectRequest struct {

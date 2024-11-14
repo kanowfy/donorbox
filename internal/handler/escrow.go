@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
@@ -15,6 +16,7 @@ type Escrow interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	GetAuthenticatedEscrow(w http.ResponseWriter, r *http.Request)
 	ApproveOfProject(w http.ResponseWriter, r *http.Request)
+	ResolveMilestone(w http.ResponseWriter, r *http.Request)
 }
 
 type escrow struct {
@@ -86,7 +88,30 @@ func (e *escrow) ApproveOfProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := json.WriteJSON(w, http.StatusOK, nil, nil); err != nil {
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "project approved successfully",
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (e *escrow) ResolveMilestone(w http.ResponseWriter, r *http.Request) {
+	mid, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		httperror.NotFoundResponse(w, r)
+		return
+	}
+
+	escrow := rcontext.GetEscrowUser(r)
+
+	if err := e.service.ResolveMilestone(r.Context(), escrow.ID, mid); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
+		"message": "confirming milestone resolution",
+	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
 }

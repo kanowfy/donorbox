@@ -37,10 +37,6 @@ WHERE projects.status = 'finished'
 GROUP BY projects.ID
 ORDER BY end_date DESC;
 
--- name: GetMilestoneByID :one
-SELECT * FROM milestones
-WHERE id = $1;
-
 -- name: GetMilestoneForProject :many
 SELECT * FROM milestones
 WHERE project_id = $1;
@@ -93,9 +89,14 @@ INSERT INTO project_updates (
 )
 RETURNING *;
 
+-- name: GetMilestoneByID :one
+SELECT * FROM milestones
+WHERE id = $1;
+
 -- name: GetCurrentMilestone :one
 SELECT * FROM milestones
 WHERE project_id = $1 AND completed IS FALSE 
+ORDER BY created_at ASC
 LIMIT 1;
 
 -- name: UpdateMilestoneFund :exec
@@ -107,3 +108,9 @@ WHERE id = $1;
 UPDATE projects
 SET total_fund = total_fund + @amount::bigint
 WHERE id = $1;
+
+-- name: GetUnresolvedMilestones :many
+SELECT * FROM milestones
+WHERE current_fund >= fund_goal
+AND completed IS FALSE
+ORDER BY created_at ASC;

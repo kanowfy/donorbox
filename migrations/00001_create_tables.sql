@@ -51,14 +51,15 @@ CREATE TABLE IF NOT EXISTS projects (
 );
 
 CREATE TABLE IF NOT EXISTS milestones (
-  id bigserial PRIMARY KEY,
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   title text NOT NULL,
   description text,
   fund_goal bigint NOT NULL,
   current_fund bigint NOT NULL DEFAULT 0,
   bank_description text NOT NULL,
-  completed boolean NOT NULL DEFAULT FALSE
+  completed boolean NOT NULL DEFAULT FALSE,
+  created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS project_updates (
@@ -82,7 +83,7 @@ CREATE TABLE IF NOT EXISTS certificates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   escrow_user_id uuid NOT NULL REFERENCES escrow_users(id),
   user_id uuid NOT NULL REFERENCES users(id),
-  milestone_id bigint NOT NULL references milestones(id),
+  milestone_id uuid NOT NULL references milestones(id),
   verified bool DEFAULT false,
   verified_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT NOW()

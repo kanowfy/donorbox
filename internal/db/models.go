@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type ProjectStatus string
@@ -77,9 +76,9 @@ type Certificate struct {
 	ID           uuid.UUID
 	EscrowUserID uuid.UUID
 	UserID       uuid.UUID
-	MilestoneID  int64
+	MilestoneID  uuid.UUID
 	Verified     *bool
-	VerifiedAt   pgtype.Timestamptz
+	VerifiedAt   time.Time
 	CreatedAt    time.Time
 }
 
@@ -91,7 +90,7 @@ type EscrowUser struct {
 }
 
 type Milestone struct {
-	ID              int64
+	ID              uuid.UUID
 	ProjectID       uuid.UUID
 	Title           string
 	Description     *string
@@ -99,6 +98,7 @@ type Milestone struct {
 	CurrentFund     int64
 	BankDescription string
 	Completed       bool
+	CreatedAt       time.Time
 }
 
 type Project struct {

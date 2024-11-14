@@ -19,7 +19,6 @@ type Project struct {
 	ID             uuid.UUID     `json:"id"`
 	UserID         uuid.UUID     `json:"user_id"`
 	CategoryID     int32         `json:"category_id"`
-	Milestones     []Milestone   `json:"milestones"`
 	Title          string        `json:"title"`
 	Description    string        `json:"description"`
 	TotalFund      int64         `json:"total_fund"`
@@ -37,13 +36,14 @@ type Project struct {
 }
 
 type Milestone struct {
-	ID              int64   `json:"id"`
-	Title           string  `json:"title"`
-	Description     *string `json:"description,omitempty"`
-	FundGoal        int64   `json:"fund_goal"`
-	CurrentFund     int64   `json:"current_fund"`
-	BankDescription string  `json:"bank_description"`
-	Completed       bool    `json:"completed"`
+	ID              uuid.UUID `json:"id"`
+	ProjectID       uuid.UUID `json:"project_id"`
+	Title           string    `json:"title"`
+	Description     *string   `json:"description,omitempty"`
+	FundGoal        int64     `json:"fund_goal"`
+	CurrentFund     int64     `json:"current_fund"`
+	BankDescription string    `json:"bank_description"`
+	Completed       bool      `json:"completed"`
 }
 
 type ProjectUpdate struct {

@@ -16,6 +16,7 @@ type Escrow interface {
 	Login(ctx context.Context, req dto.LoginRequest) (string, error)
 	GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.EscrowUser, error)
 	ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error
+	ResolveMilestone(ctx context.Context, escrowID uuid.UUID, milestoneID uuid.UUID) error
 }
 
 type escrow struct {
@@ -76,5 +77,30 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 		return err
 	}
 
+	return nil
+}
+
+func (e *escrow) ResolveMilestone(ctx context.Context, escrowID uuid.UUID, milestoneID uuid.UUID) error {
+	//TODO: create cert, send confirmation email,...
+	milestone, err := e.repository.GetMilestoneByID(ctx, milestoneID)
+	if err != nil {
+		return err
+	}
+
+	project, err := e.repository.GetProjectByID(ctx, milestone.ProjectID)
+	if err != nil {
+		return err
+	}
+
+	_, err = e.repository.CreateCertificate(ctx, db.CreateCertificateParams{
+		EscrowUserID: escrowID,
+		UserID:       project.UserID,
+		MilestoneID:  milestoneID,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Send mail
 	return nil
 }

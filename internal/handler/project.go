@@ -26,6 +26,7 @@ type Project interface {
 	GetAllCategories(w http.ResponseWriter, r *http.Request)
 	GetProjectUpdates(w http.ResponseWriter, r *http.Request)
 	CreateProjectUpdate(w http.ResponseWriter, r *http.Request)
+	GetUnresolvedMilestones(w http.ResponseWriter, r *http.Request)
 }
 
 type project struct {
@@ -134,17 +135,18 @@ func (p *project) GetProjectDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, backings, updates, user, err := p.service.GetProjectDetails(r.Context(), id)
+	project, milestones, backings, updates, user, err := p.service.GetProjectDetails(r.Context(), id)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
 	}
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"project":  project,
-		"backings": backings,
-		"updates":  updates,
-		"user":     user,
+		"project":    project,
+		"milestones": milestones,
+		"backings":   backings,
+		"updates":    updates,
+		"user":       user,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
@@ -172,7 +174,7 @@ func (p *project) CreateProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
-		"project": project,
+		"result": project,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
@@ -309,6 +311,20 @@ func (p *project) CreateProjectUpdate(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
 		"update": update,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (p *project) GetUnresolvedMilestones(w http.ResponseWriter, r *http.Request) {
+	milestones, err := p.service.GetUnresolvedMilestones(r.Context())
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"milestones": milestones,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

@@ -189,6 +189,54 @@ func (_c *Escrow_Login_Call) RunAndReturn(run func(context.Context, dto.LoginReq
 	return _c
 }
 
+// ResolveMilestone provides a mock function with given fields: ctx, escrowID, milestoneID
+func (_m *Escrow) ResolveMilestone(ctx context.Context, escrowID uuid.UUID, milestoneID uuid.UUID) error {
+	ret := _m.Called(ctx, escrowID, milestoneID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResolveMilestone")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r0 = rf(ctx, escrowID, milestoneID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Escrow_ResolveMilestone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveMilestone'
+type Escrow_ResolveMilestone_Call struct {
+	*mock.Call
+}
+
+// ResolveMilestone is a helper method to define mock.On call
+//   - ctx context.Context
+//   - escrowID uuid.UUID
+//   - milestoneID uuid.UUID
+func (_e *Escrow_Expecter) ResolveMilestone(ctx interface{}, escrowID interface{}, milestoneID interface{}) *Escrow_ResolveMilestone_Call {
+	return &Escrow_ResolveMilestone_Call{Call: _e.mock.On("ResolveMilestone", ctx, escrowID, milestoneID)}
+}
+
+func (_c *Escrow_ResolveMilestone_Call) Run(run func(ctx context.Context, escrowID uuid.UUID, milestoneID uuid.UUID)) *Escrow_ResolveMilestone_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID), args[2].(uuid.UUID))
+	})
+	return _c
+}
+
+func (_c *Escrow_ResolveMilestone_Call) Return(_a0 error) *Escrow_ResolveMilestone_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Escrow_ResolveMilestone_Call) RunAndReturn(run func(context.Context, uuid.UUID, uuid.UUID) error) *Escrow_ResolveMilestone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewEscrow creates a new instance of Escrow. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewEscrow(t interface {

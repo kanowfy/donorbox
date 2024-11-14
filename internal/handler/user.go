@@ -18,6 +18,7 @@ type User interface {
 	GetUserByID(w http.ResponseWriter, r *http.Request)
 	UpdateAccount(w http.ResponseWriter, r *http.Request)
 	ChangePassword(w http.ResponseWriter, r *http.Request)
+	ConfirmResolvedMilestone(w http.ResponseWriter, r *http.Request)
 }
 
 type user struct {
@@ -120,6 +121,24 @@ func (u *user) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "password changed successfully",
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+func (u *user) ConfirmResolvedMilestone(w http.ResponseWriter, r *http.Request) {
+	mid, err := uuid.Parse(r.PathValue("id"))
+	if err != nil {
+		httperror.NotFoundResponse(w, r)
+		return
+	}
+
+	if err := u.service.ConfirmResolvedMilestone(r.Context(), mid); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "confirmed milestone resolution",
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

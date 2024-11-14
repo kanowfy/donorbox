@@ -29,23 +29,23 @@ func (_m *Project) EXPECT() *Project_Expecter {
 }
 
 // CreateProject provides a mock function with given fields: ctx, userID, req
-func (_m *Project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error) {
+func (_m *Project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error) {
 	ret := _m.Called(ctx, userID, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateProject")
 	}
 
-	var r0 *model.Project
+	var r0 *dto.CreateProjectResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, dto.CreateProjectRequest) (*model.Project, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)); ok {
 		return rf(ctx, userID, req)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, dto.CreateProjectRequest) *model.Project); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID, dto.CreateProjectRequest) *dto.CreateProjectResponse); ok {
 		r0 = rf(ctx, userID, req)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Project)
+			r0 = ret.Get(0).(*dto.CreateProjectResponse)
 		}
 	}
 
@@ -78,12 +78,12 @@ func (_c *Project_CreateProject_Call) Run(run func(ctx context.Context, userID u
 	return _c
 }
 
-func (_c *Project_CreateProject_Call) Return(_a0 *model.Project, _a1 error) *Project_CreateProject_Call {
+func (_c *Project_CreateProject_Call) Return(_a0 *dto.CreateProjectResponse, _a1 error) *Project_CreateProject_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Project_CreateProject_Call) RunAndReturn(run func(context.Context, uuid.UUID, dto.CreateProjectRequest) (*model.Project, error)) *Project_CreateProject_Call {
+func (_c *Project_CreateProject_Call) RunAndReturn(run func(context.Context, uuid.UUID, dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)) *Project_CreateProject_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -381,7 +381,7 @@ func (_c *Project_GetEndedProjects_Call) RunAndReturn(run func(context.Context) 
 }
 
 // GetProjectDetails provides a mock function with given fields: ctx, projectID
-func (_m *Project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error) {
+func (_m *Project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error) {
 	ret := _m.Called(ctx, projectID)
 
 	if len(ret) == 0 {
@@ -389,11 +389,12 @@ func (_m *Project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (
 	}
 
 	var r0 *model.Project
-	var r1 []model.Backing
-	var r2 []model.ProjectUpdate
-	var r3 *model.User
-	var r4 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error)); ok {
+	var r1 []model.Milestone
+	var r2 []model.Backing
+	var r3 []model.ProjectUpdate
+	var r4 *model.User
+	var r5 error
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)); ok {
 		return rf(ctx, projectID)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) *model.Project); ok {
@@ -404,37 +405,45 @@ func (_m *Project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) []model.Backing); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) []model.Milestone); ok {
 		r1 = rf(ctx, projectID)
 	} else {
 		if ret.Get(1) != nil {
-			r1 = ret.Get(1).([]model.Backing)
+			r1 = ret.Get(1).([]model.Milestone)
 		}
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, uuid.UUID) []model.ProjectUpdate); ok {
+	if rf, ok := ret.Get(2).(func(context.Context, uuid.UUID) []model.Backing); ok {
 		r2 = rf(ctx, projectID)
 	} else {
 		if ret.Get(2) != nil {
-			r2 = ret.Get(2).([]model.ProjectUpdate)
+			r2 = ret.Get(2).([]model.Backing)
 		}
 	}
 
-	if rf, ok := ret.Get(3).(func(context.Context, uuid.UUID) *model.User); ok {
+	if rf, ok := ret.Get(3).(func(context.Context, uuid.UUID) []model.ProjectUpdate); ok {
 		r3 = rf(ctx, projectID)
 	} else {
 		if ret.Get(3) != nil {
-			r3 = ret.Get(3).(*model.User)
+			r3 = ret.Get(3).([]model.ProjectUpdate)
 		}
 	}
 
-	if rf, ok := ret.Get(4).(func(context.Context, uuid.UUID) error); ok {
+	if rf, ok := ret.Get(4).(func(context.Context, uuid.UUID) *model.User); ok {
 		r4 = rf(ctx, projectID)
 	} else {
-		r4 = ret.Error(4)
+		if ret.Get(4) != nil {
+			r4 = ret.Get(4).(*model.User)
+		}
 	}
 
-	return r0, r1, r2, r3, r4
+	if rf, ok := ret.Get(5).(func(context.Context, uuid.UUID) error); ok {
+		r5 = rf(ctx, projectID)
+	} else {
+		r5 = ret.Error(5)
+	}
+
+	return r0, r1, r2, r3, r4, r5
 }
 
 // Project_GetProjectDetails_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetProjectDetails'
@@ -456,12 +465,12 @@ func (_c *Project_GetProjectDetails_Call) Run(run func(ctx context.Context, proj
 	return _c
 }
 
-func (_c *Project_GetProjectDetails_Call) Return(_a0 *model.Project, _a1 []model.Backing, _a2 []model.ProjectUpdate, _a3 *model.User, _a4 error) *Project_GetProjectDetails_Call {
-	_c.Call.Return(_a0, _a1, _a2, _a3, _a4)
+func (_c *Project_GetProjectDetails_Call) Return(_a0 *model.Project, _a1 []model.Milestone, _a2 []model.Backing, _a3 []model.ProjectUpdate, _a4 *model.User, _a5 error) *Project_GetProjectDetails_Call {
+	_c.Call.Return(_a0, _a1, _a2, _a3, _a4, _a5)
 	return _c
 }
 
-func (_c *Project_GetProjectDetails_Call) RunAndReturn(run func(context.Context, uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error)) *Project_GetProjectDetails_Call {
+func (_c *Project_GetProjectDetails_Call) RunAndReturn(run func(context.Context, uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)) *Project_GetProjectDetails_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -580,6 +589,64 @@ func (_c *Project_GetProjectsForUser_Call) Return(_a0 []model.Project, _a1 error
 }
 
 func (_c *Project_GetProjectsForUser_Call) RunAndReturn(run func(context.Context, uuid.UUID) ([]model.Project, error)) *Project_GetProjectsForUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetUnresolvedMilestones provides a mock function with given fields: ctx
+func (_m *Project) GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUnresolvedMilestones")
+	}
+
+	var r0 []model.Milestone
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]model.Milestone, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []model.Milestone); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.Milestone)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Project_GetUnresolvedMilestones_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUnresolvedMilestones'
+type Project_GetUnresolvedMilestones_Call struct {
+	*mock.Call
+}
+
+// GetUnresolvedMilestones is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Project_Expecter) GetUnresolvedMilestones(ctx interface{}) *Project_GetUnresolvedMilestones_Call {
+	return &Project_GetUnresolvedMilestones_Call{Call: _e.mock.On("GetUnresolvedMilestones", ctx)}
+}
+
+func (_c *Project_GetUnresolvedMilestones_Call) Run(run func(ctx context.Context)) *Project_GetUnresolvedMilestones_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Project_GetUnresolvedMilestones_Call) Return(_a0 []model.Milestone, _a1 error) *Project_GetUnresolvedMilestones_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Project_GetUnresolvedMilestones_Call) RunAndReturn(run func(context.Context) ([]model.Milestone, error)) *Project_GetUnresolvedMilestones_Call {
 	_c.Call.Return(run)
 	return _c
 }

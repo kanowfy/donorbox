@@ -18,7 +18,7 @@ INSERT INTO milestones (
 ) VALUES (
     $1, $2, $3, $4, $5
 )
-RETURNING id, project_id, title, description, fund_goal, current_fund, bank_description, completed
+RETURNING id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at
 `
 
 type CreateMilestoneParams struct {
@@ -47,6 +47,7 @@ func (q *Queries) CreateMilestone(ctx context.Context, arg CreateMilestoneParams
 		&i.CurrentFund,
 		&i.BankDescription,
 		&i.Completed,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -265,8 +266,9 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 }
 
 const getCurrentMilestone = `-- name: GetCurrentMilestone :one
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed FROM milestones
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
 WHERE project_id = $1 AND completed IS FALSE 
+ORDER BY created_at ASC
 LIMIT 1
 `
 
@@ -282,6 +284,7 @@ func (q *Queries) GetCurrentMilestone(ctx context.Context, projectID uuid.UUID) 
 		&i.CurrentFund,
 		&i.BankDescription,
 		&i.Completed,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -354,11 +357,11 @@ func (q *Queries) GetFinishedProjects(ctx context.Context) ([]GetFinishedProject
 }
 
 const getMilestoneByID = `-- name: GetMilestoneByID :one
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed FROM milestones
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
 WHERE id = $1
 `
 
-func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, error) {
+func (q *Queries) GetMilestoneByID(ctx context.Context, id uuid.UUID) (Milestone, error) {
 	row := q.db.QueryRow(ctx, getMilestoneByID, id)
 	var i Milestone
 	err := row.Scan(
@@ -370,12 +373,13 @@ func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, er
 		&i.CurrentFund,
 		&i.BankDescription,
 		&i.Completed,
+		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getMilestoneForProject = `-- name: GetMilestoneForProject :many
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed FROM milestones
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
 WHERE project_id = $1
 `
 
@@ -397,6 +401,7 @@ func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID uuid.UUI
 			&i.CurrentFund,
 			&i.BankDescription,
 			&i.Completed,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -512,6 +517,43 @@ func (q *Queries) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]P
 	return items, nil
 }
 
+const getUnresolvedMilestones = `-- name: GetUnresolvedMilestones :many
+SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
+WHERE current_fund >= fund_goal
+AND completed IS FALSE
+ORDER BY created_at ASC
+`
+
+func (q *Queries) GetUnresolvedMilestones(ctx context.Context) ([]Milestone, error) {
+	rows, err := q.db.Query(ctx, getUnresolvedMilestones)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Milestone
+	for rows.Next() {
+		var i Milestone
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.Title,
+			&i.Description,
+			&i.FundGoal,
+			&i.CurrentFund,
+			&i.BankDescription,
+			&i.Completed,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchProjects = `-- name: SearchProjects :many
 SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.total_fund, projects.start_date, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, COUNT(backings.project_id) as backing_count
 FROM projects
@@ -595,7 +637,7 @@ WHERE id = $1
 `
 
 type UpdateMilestoneFundParams struct {
-	ID     int64
+	ID     uuid.UUID
 	Amount int64
 }
 

@@ -21,13 +21,14 @@ type Project interface {
 	SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error)
 	GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
 	GetEndedProjects(ctx context.Context) ([]model.Project, error)
-	GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error)
-	CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error)
+	GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)
+	CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)
 	UpdateProject(ctx context.Context, userID, projectID uuid.UUID, req dto.UpdateProjectRequest) error
 	DeleteProject(ctx context.Context, userID, projectID uuid.UUID) error
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
 	GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]model.ProjectUpdate, error)
 	CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
+	GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error)
 	//CheckAndUpdateFinishedProjects(ctx context.Context) error
 }
 
@@ -213,6 +214,7 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID uuid.UU
 	for _, m := range dbMilestones {
 		milestones = append(milestones, model.Milestone{
 			ID:              m.ID,
+			ProjectID:       m.ProjectID,
 			Title:           m.Title,
 			Description:     m.Description,
 			FundGoal:        m.FundGoal,
@@ -226,30 +228,30 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID uuid.UU
 }
 
 // TODO: refactor into one struct
-func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Backing, []model.ProjectUpdate, *model.User, error) {
+func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 
 	milestones, err := p.GetMilestonesForProject(ctx, projectID)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 
 	backings, err := p.backingService.GetBackingsForProject(ctx, project.ID)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 
 	updates, err := p.GetProjectUpdates(ctx, project.ID)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 
 	user, err := p.userService.GetUserByID(ctx, project.UserID)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, err
 	}
 
 	return &model.Project{
@@ -258,7 +260,6 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 		CategoryID:     project.CategoryID,
 		Title:          project.Title,
 		Description:    project.Description,
-		Milestones:     milestones,
 		TotalFund:      project.TotalFund,
 		CoverPicture:   project.CoverPicture,
 		ReceiverName:   project.ReceiverName,
@@ -269,11 +270,11 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 		Country:        project.Country,
 		StartDate:      project.StartDate,
 		EndDate:        project.EndDate,
-	}, backings, updates, user, nil
+	}, milestones, backings, updates, user, nil
 }
 
 // TODO: put the queries in transaction
-func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*model.Project, error) {
+func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error) {
 	projectArgs := db.CreateProjectParams{
 		UserID:         userID,
 		CategoryID:     int32(req.CategoryID),
@@ -310,6 +311,7 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 
 		milestones = append(milestones, model.Milestone{
 			ID:              milestone.ID,
+			ProjectID:       milestone.ProjectID,
 			Title:           milestone.Title,
 			Description:     milestone.Description,
 			FundGoal:        milestone.FundGoal,
@@ -318,24 +320,26 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 
 	}
 
-	return &model.Project{
-		ID:             project.ID,
-		UserID:         project.UserID,
-		CategoryID:     project.CategoryID,
-		Milestones:     milestones,
-		Title:          project.Title,
-		Description:    project.Description,
-		TotalFund:      project.TotalFund,
-		CoverPicture:   project.CoverPicture,
-		ReceiverNumber: project.ReceiverNumber,
-		ReceiverName:   project.ReceiverName,
-		Address:        project.Address,
-		District:       project.District,
-		City:           project.City,
-		Country:        project.Country,
-		StartDate:      project.StartDate,
-		EndDate:        project.EndDate,
-		Status:         model.ProjectStatusPending,
+	return &dto.CreateProjectResponse{
+		Project: model.Project{
+			ID:             project.ID,
+			UserID:         project.UserID,
+			CategoryID:     project.CategoryID,
+			Title:          project.Title,
+			Description:    project.Description,
+			TotalFund:      project.TotalFund,
+			CoverPicture:   project.CoverPicture,
+			ReceiverNumber: project.ReceiverNumber,
+			ReceiverName:   project.ReceiverName,
+			Address:        project.Address,
+			District:       project.District,
+			City:           project.City,
+			Country:        project.Country,
+			StartDate:      project.StartDate,
+			EndDate:        project.EndDate,
+			Status:         model.ProjectStatusPending,
+		},
+		Milestones: milestones,
 	}, nil
 }
 
@@ -515,6 +519,10 @@ func (p *project) CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req
 		Description:     update.Description,
 		CreatedAt:       update.CreatedAt,
 	}, err
+}
+
+func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error) {
+	return nil, nil
 }
 
 /*
