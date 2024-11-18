@@ -1659,22 +1659,22 @@ func (_c *Querier_GetMostRecentBackingDonor_Call) RunAndReturn(run func(context.
 }
 
 // GetProjectByID provides a mock function with given fields: ctx, id
-func (_m *Querier) GetProjectByID(ctx context.Context, id uuid.UUID) (db.Project, error) {
+func (_m *Querier) GetProjectByID(ctx context.Context, id uuid.UUID) (db.GetProjectByIDRow, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetProjectByID")
 	}
 
-	var r0 db.Project
+	var r0 db.GetProjectByIDRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (db.Project, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) (db.GetProjectByIDRow, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) db.Project); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) db.GetProjectByIDRow); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(db.Project)
+		r0 = ret.Get(0).(db.GetProjectByIDRow)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -1705,12 +1705,12 @@ func (_c *Querier_GetProjectByID_Call) Run(run func(ctx context.Context, id uuid
 	return _c
 }
 
-func (_c *Querier_GetProjectByID_Call) Return(_a0 db.Project, _a1 error) *Querier_GetProjectByID_Call {
+func (_c *Querier_GetProjectByID_Call) Return(_a0 db.GetProjectByIDRow, _a1 error) *Querier_GetProjectByID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Querier_GetProjectByID_Call) RunAndReturn(run func(context.Context, uuid.UUID) (db.Project, error)) *Querier_GetProjectByID_Call {
+func (_c *Querier_GetProjectByID_Call) RunAndReturn(run func(context.Context, uuid.UUID) (db.GetProjectByIDRow, error)) *Querier_GetProjectByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1775,23 +1775,23 @@ func (_c *Querier_GetProjectUpdates_Call) RunAndReturn(run func(context.Context,
 }
 
 // GetProjectsForUser provides a mock function with given fields: ctx, userID
-func (_m *Querier) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]db.Project, error) {
+func (_m *Querier) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]db.GetProjectsForUserRow, error) {
 	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetProjectsForUser")
 	}
 
-	var r0 []db.Project
+	var r0 []db.GetProjectsForUserRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]db.Project, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]db.GetProjectsForUserRow, error)); ok {
 		return rf(ctx, userID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) []db.Project); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, uuid.UUID) []db.GetProjectsForUserRow); ok {
 		r0 = rf(ctx, userID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]db.Project)
+			r0 = ret.Get(0).([]db.GetProjectsForUserRow)
 		}
 	}
 
@@ -1823,12 +1823,12 @@ func (_c *Querier_GetProjectsForUser_Call) Run(run func(ctx context.Context, use
 	return _c
 }
 
-func (_c *Querier_GetProjectsForUser_Call) Return(_a0 []db.Project, _a1 error) *Querier_GetProjectsForUser_Call {
+func (_c *Querier_GetProjectsForUser_Call) Return(_a0 []db.GetProjectsForUserRow, _a1 error) *Querier_GetProjectsForUser_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Querier_GetProjectsForUser_Call) RunAndReturn(run func(context.Context, uuid.UUID) ([]db.Project, error)) *Querier_GetProjectsForUser_Call {
+func (_c *Querier_GetProjectsForUser_Call) RunAndReturn(run func(context.Context, uuid.UUID) ([]db.GetProjectsForUserRow, error)) *Querier_GetProjectsForUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

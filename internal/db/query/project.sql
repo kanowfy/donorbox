@@ -1,7 +1,9 @@
 -- name: GetAllProjects :many
-SELECT projects.*, COUNT(backings.project_id) as backing_count
+SELECT projects.*, SUM(milestones.current_fund) AS total_fund,
+SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
+LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE category_id = 
     CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
 AND projects.status = 'ongoing'
@@ -10,9 +12,11 @@ ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: SearchProjects :many
-SELECT projects.*, COUNT(backings.project_id) as backing_count
+SELECT projects.*, SUM(milestones.current_fund) AS total_fund,
+SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
+LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE 
     to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
 AND project.status = 'ongoing'
@@ -21,18 +25,25 @@ ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: GetProjectByID :one
-SELECT * FROM projects
-WHERE id = $1;
+SELECT projects.*, SUM(milestones.current_fund) AS total_fund, SUM(milestones.fund_goal) AS fund_goal
+FROM projects
+LEFT JOIN milestones ON projects.ID = milestones.project_id
+WHERE projects.ID = $1;
 
 -- name: GetProjectsForUser :many
-SELECT * FROM projects
+SELECT projects.*, SUM(milestones.current_fund) AS total_fund, SUM(milestones.fund_goal) AS fund_goal
+FROM projects
+LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE user_id = $1
-ORDER BY start_date DESC;
+GROUP BY projects.ID
+ORDER BY projects.created_at DESC;
 
 -- name: GetFinishedProjects :many
-SELECT projects.*, COUNT(backings.project_id) as backing_count
+SELECT projects.*, SUM(milestones.current_fund) AS total_fund,
+SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count
 FROM projects
 JOIN backings ON projects.ID = backings.project_id
+LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE projects.status = 'finished'
 GROUP BY projects.ID
 ORDER BY end_date DESC;

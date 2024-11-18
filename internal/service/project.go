@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/filters"
@@ -75,6 +76,7 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			FundGoal:       p.FundGoal,
 			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
@@ -83,7 +85,7 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			StartDate:      p.StartDate,
+			CreatedAt:      p.CreatedAt,
 			EndDate:        p.EndDate,
 			BackingCount:   &p.BackingCount,
 		})
@@ -120,6 +122,7 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			FundGoal:       p.FundGoal,
 			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
@@ -128,7 +131,7 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			StartDate:      p.StartDate,
+			CreatedAt:      p.CreatedAt,
 			EndDate:        p.EndDate,
 			BackingCount:   &p.BackingCount,
 		})
@@ -152,6 +155,7 @@ func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]m
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			FundGoal:       p.FundGoal,
 			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
@@ -160,7 +164,7 @@ func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]m
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			StartDate:      p.StartDate,
+			CreatedAt:      p.CreatedAt,
 			EndDate:        p.EndDate,
 		})
 	}
@@ -183,6 +187,7 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 			CategoryID:     p.CategoryID,
 			Title:          p.Title,
 			Description:    p.Description,
+			FundGoal:       p.FundGoal,
 			TotalFund:      p.TotalFund,
 			CoverPicture:   p.CoverPicture,
 			ReceiverName:   p.ReceiverName,
@@ -191,7 +196,7 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			StartDate:      p.StartDate,
+			CreatedAt:      p.CreatedAt,
 			EndDate:        p.EndDate,
 		})
 	}
@@ -260,6 +265,7 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 		CategoryID:     project.CategoryID,
 		Title:          project.Title,
 		Description:    project.Description,
+		FundGoal:       project.FundGoal,
 		TotalFund:      project.TotalFund,
 		CoverPicture:   project.CoverPicture,
 		ReceiverName:   project.ReceiverName,
@@ -268,7 +274,7 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 		District:       project.District,
 		City:           project.City,
 		Country:        project.Country,
-		StartDate:      project.StartDate,
+		CreatedAt:      project.CreatedAt,
 		EndDate:        project.EndDate,
 	}, milestones, backings, updates, user, nil
 }
@@ -296,12 +302,14 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 	}
 
 	var milestones []model.Milestone
+	var fundGoal int64
 
 	for _, m := range req.Milestones {
 		milestone, err := p.repository.CreateMilestone(ctx, db.CreateMilestoneParams{
 			ProjectID:       project.ID,
 			Title:           m.Title,
 			Description:     m.Description,
+			FundGoal:        convert.MustStringToInt64(m.FundGoal),
 			BankDescription: m.BankDescription,
 		})
 
@@ -318,6 +326,7 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 			BankDescription: milestone.BankDescription,
 		})
 
+		fundGoal += milestone.FundGoal
 	}
 
 	return &dto.CreateProjectResponse{
@@ -327,7 +336,8 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 			CategoryID:     project.CategoryID,
 			Title:          project.Title,
 			Description:    project.Description,
-			TotalFund:      project.TotalFund,
+			FundGoal:       fundGoal,
+			TotalFund:      0,
 			CoverPicture:   project.CoverPicture,
 			ReceiverNumber: project.ReceiverNumber,
 			ReceiverName:   project.ReceiverName,
@@ -335,7 +345,7 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 			District:       project.District,
 			City:           project.City,
 			Country:        project.Country,
-			StartDate:      project.StartDate,
+			CreatedAt:      project.CreatedAt,
 			EndDate:        project.EndDate,
 			Status:         model.ProjectStatusPending,
 		},

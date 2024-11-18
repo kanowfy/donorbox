@@ -38,8 +38,6 @@ CREATE TABLE IF NOT EXISTS projects (
   description text NOT NULL,
   cover_picture text NOT NULL,
   category_id int NOT NULL REFERENCES categories(id),
-  total_fund bigint NOT NULL DEFAULT 0,
-  start_date timestamptz NOT NULL DEFAULT NOW(),
   end_date timestamptz NOT NULL,
   receiver_number varchar(64) NOT NULL,
   receiver_name varchar(64) NOT NULL,
@@ -47,7 +45,8 @@ CREATE TABLE IF NOT EXISTS projects (
   district varchar(64) NOT NULL,
   city varchar(64) NOT NULL,
   country varchar(64) NOT NULL,
-  status project_status DEFAULT 'pending'
+  status project_status DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS milestones (

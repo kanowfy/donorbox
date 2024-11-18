@@ -21,6 +21,7 @@ type Project struct {
 	CategoryID     int32         `json:"category_id"`
 	Title          string        `json:"title"`
 	Description    string        `json:"description"`
+	FundGoal       int64         `json:"fund_goal"`
 	TotalFund      int64         `json:"total_fund"`
 	CoverPicture   string        `json:"cover_picture"`
 	ReceiverName   string        `json:"receiver_name"`
@@ -29,10 +30,10 @@ type Project struct {
 	District       string        `json:"district"`
 	City           string        `json:"city"`
 	Country        string        `json:"country"`
-	StartDate      time.Time     `json:"start_date"`
 	EndDate        time.Time     `json:"end_date"`
 	Status         ProjectStatus `json:"status"`
 	BackingCount   *int64        `json:"backing_count,omitempty"`
+	CreatedAt      time.Time     `json:"created_at"`
 }
 
 type Milestone struct {

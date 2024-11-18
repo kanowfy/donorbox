@@ -108,8 +108,6 @@ type Project struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	TotalFund      int64
-	StartDate      time.Time
 	EndDate        time.Time
 	ReceiverNumber string
 	ReceiverName   string
@@ -118,6 +116,7 @@ type Project struct {
 	City           string
 	Country        string
 	Status         NullProjectStatus
+	CreatedAt      time.Time
 }
 
 type ProjectUpdate struct {
