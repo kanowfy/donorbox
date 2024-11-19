@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type ProjectStatus string
@@ -16,8 +14,8 @@ const (
 )
 
 type Project struct {
-	ID             uuid.UUID     `json:"id"`
-	UserID         uuid.UUID     `json:"user_id"`
+	ID             int64         `json:"id"`
+	UserID         int64         `json:"user_id"`
 	CategoryID     int32         `json:"category_id"`
 	Title          string        `json:"title"`
 	Description    string        `json:"description"`
@@ -37,19 +35,19 @@ type Project struct {
 }
 
 type Milestone struct {
-	ID              uuid.UUID `json:"id"`
-	ProjectID       uuid.UUID `json:"project_id"`
-	Title           string    `json:"title"`
-	Description     *string   `json:"description,omitempty"`
-	FundGoal        int64     `json:"fund_goal"`
-	CurrentFund     int64     `json:"current_fund"`
-	BankDescription string    `json:"bank_description"`
-	Completed       bool      `json:"completed"`
+	ID              int64   `json:"id"`
+	ProjectID       int64   `json:"project_id"`
+	Title           string  `json:"title"`
+	Description     *string `json:"description,omitempty"`
+	FundGoal        int64   `json:"fund_goal"`
+	CurrentFund     int64   `json:"current_fund"`
+	BankDescription string  `json:"bank_description"`
+	Completed       bool    `json:"completed"`
 }
 
 type ProjectUpdate struct {
-	ID              uuid.UUID
-	ProjectID       uuid.UUID
+	ID              int64
+	ProjectID       int64
 	AttachmentPhoto *string
 	Description     string
 	CreatedAt       time.Time

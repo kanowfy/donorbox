@@ -8,8 +8,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type ProjectStatus string
@@ -57,9 +55,9 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 }
 
 type Backing struct {
-	ID            uuid.UUID
-	UserID        uuid.UUID
-	ProjectID     uuid.UUID
+	ID            int64
+	UserID        *int64
+	ProjectID     int64
 	Amount        int64
 	WordOfSupport *string
 	CreatedAt     time.Time
@@ -73,25 +71,25 @@ type Category struct {
 }
 
 type Certificate struct {
-	ID           uuid.UUID
-	EscrowUserID uuid.UUID
-	UserID       uuid.UUID
-	MilestoneID  uuid.UUID
+	ID           int64
+	EscrowUserID int64
+	UserID       int64
+	MilestoneID  int64
 	Verified     *bool
 	VerifiedAt   time.Time
 	CreatedAt    time.Time
 }
 
 type EscrowUser struct {
-	ID             uuid.UUID
+	ID             int64
 	Email          string
 	HashedPassword string
 	CreatedAt      time.Time
 }
 
 type Milestone struct {
-	ID              uuid.UUID
-	ProjectID       uuid.UUID
+	ID              int64
+	ProjectID       int64
 	Title           string
 	Description     *string
 	FundGoal        int64
@@ -102,8 +100,8 @@ type Milestone struct {
 }
 
 type Project struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
+	ID             int64
+	UserID         int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -120,15 +118,15 @@ type Project struct {
 }
 
 type ProjectUpdate struct {
-	ID              uuid.UUID
-	ProjectID       uuid.UUID
+	ID              int64
+	ProjectID       int64
 	AttachmentPhoto *string
 	Description     string
 	CreatedAt       time.Time
 }
 
 type User struct {
-	ID             uuid.UUID
+	ID             int64
 	Email          string
 	FirstName      string
 	LastName       string

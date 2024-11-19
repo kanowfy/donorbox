@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 const getEscrowUser = `-- name: GetEscrowUser :one
@@ -50,7 +48,7 @@ SELECT id, email, hashed_password, created_at FROM escrow_users
 WHERE id = $1
 `
 
-func (q *Queries) GetEscrowUserByID(ctx context.Context, id uuid.UUID) (EscrowUser, error) {
+func (q *Queries) GetEscrowUserByID(ctx context.Context, id int64) (EscrowUser, error) {
 	row := q.db.QueryRow(ctx, getEscrowUserByID, id)
 	var i EscrowUser
 	err := row.Scan(
@@ -68,7 +66,7 @@ WHERE id = $1
 `
 
 type UpdateEscrowUserByIDParams struct {
-	ID             uuid.UUID
+	ID             int64
 	Email          string
 	HashedPassword string
 }

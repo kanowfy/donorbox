@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/model"
@@ -17,10 +16,10 @@ var (
 )
 
 type User interface {
-	GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error)
+	GetUserByID(ctx context.Context, userID int64) (*model.User, error)
 	UpdateAccount(ctx context.Context, user *model.User, req dto.UpdateAccountRequest) error
-	ChangePassword(ctx context.Context, userID uuid.UUID, req dto.ChangePasswordRequest) error
-	ConfirmResolvedMilestone(ctx context.Context, milestoneID uuid.UUID) error
+	ChangePassword(ctx context.Context, userID int64, req dto.ChangePasswordRequest) error
+	ConfirmResolvedMilestone(ctx context.Context, milestoneID int64) error
 }
 
 type user struct {
@@ -33,7 +32,7 @@ func NewUser(repository db.Querier) User {
 	}
 }
 
-func (u *user) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
+func (u *user) GetUserByID(ctx context.Context, userID int64) (*model.User, error) {
 	user, err := u.repository.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, ErrUserNotFound
@@ -86,7 +85,7 @@ func (u *user) UpdateAccount(ctx context.Context, user *model.User, req dto.Upda
 	return nil
 }
 
-func (u *user) ChangePassword(ctx context.Context, userID uuid.UUID, req dto.ChangePasswordRequest) error {
+func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangePasswordRequest) error {
 	user, err := u.repository.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
@@ -112,7 +111,7 @@ func (u *user) ChangePassword(ctx context.Context, userID uuid.UUID, req dto.Cha
 	return nil
 }
 
-func (u *user) ConfirmResolvedMilestone(ctx context.Context, milestoneID uuid.UUID) error {
+func (u *user) ConfirmResolvedMilestone(ctx context.Context, milestoneID int64) error {
 	if err := u.repository.UpdateVerifyingCertificate(ctx, db.UpdateVerifyingCertificateParams{
 		MilestoneID: milestoneID,
 		VerifiedAt:  time.Now(),

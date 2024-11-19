@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
@@ -20,15 +21,15 @@ var (
 type Project interface {
 	GetAllProjects(ctx context.Context, pageNum, pageSize, categoryIndex int) ([]model.Project, filters.Metadata, error)
 	SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error)
-	GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error)
+	GetProjectsForUser(ctx context.Context, userID int64) ([]model.Project, error)
 	GetEndedProjects(ctx context.Context) ([]model.Project, error)
-	GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)
-	CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)
-	UpdateProject(ctx context.Context, userID, projectID uuid.UUID, req dto.UpdateProjectRequest) error
-	DeleteProject(ctx context.Context, userID, projectID uuid.UUID) error
+	GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)
+	CreateProject(ctx context.Context, userID int64, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)
+	UpdateProject(ctx context.Context, userID, projectID int64, req dto.UpdateProjectRequest) error
+	DeleteProject(ctx context.Context, userID, projectID int64) error
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
-	GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]model.ProjectUpdate, error)
-	CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
+	GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error)
+	CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
 	GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error)
 	//CheckAndUpdateFinishedProjects(ctx context.Context) error
 }
@@ -62,7 +63,7 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 
 	dbProjects, err := p.repository.GetAllProjects(ctx, args)
 	if err != nil {
-		return nil, filters.Metadata{}, err
+		return nil, filters.Metadata{}, fmt.Errorf("GetAllProjects svc: %w", err)
 	}
 
 	metadata := filters.CalculateMetadata(len(dbProjects), f.Page, f.PageSize)
@@ -140,7 +141,7 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 	return projects, metadata, nil
 }
 
-func (p *project) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]model.Project, error) {
+func (p *project) GetProjectsForUser(ctx context.Context, userID int64) ([]model.Project, error) {
 	dbProjects, err := p.repository.GetProjectsForUser(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -204,7 +205,7 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 	return projects, nil
 }
 
-func (p *project) GetMilestonesForProject(ctx context.Context, projectID uuid.UUID) ([]model.Milestone, error) {
+func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) ([]model.Milestone, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return nil, ErrProjectNotFound
@@ -233,7 +234,7 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID uuid.UU
 }
 
 // TODO: refactor into one struct
-func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error) {
+func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
@@ -280,7 +281,7 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID uuid.UUID) (*
 }
 
 // TODO: put the queries in transaction
-func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error) {
+func (p *project) CreateProject(ctx context.Context, userID int64, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error) {
 	projectArgs := db.CreateProjectParams{
 		UserID:         userID,
 		CategoryID:     int32(req.CategoryID),
@@ -353,7 +354,7 @@ func (p *project) CreateProject(ctx context.Context, userID uuid.UUID, req dto.C
 	}, nil
 }
 
-func (p *project) UpdateProject(ctx context.Context, userID, projectID uuid.UUID, req dto.UpdateProjectRequest) error {
+func (p *project) UpdateProject(ctx context.Context, userID, projectID int64, req dto.UpdateProjectRequest) error {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return ErrProjectNotFound
@@ -435,7 +436,7 @@ func (p *project) UpdateProject(ctx context.Context, userID, projectID uuid.UUID
 	return nil
 }
 
-func (p *project) DeleteProject(ctx context.Context, userID, projectID uuid.UUID) error {
+func (p *project) DeleteProject(ctx context.Context, userID, projectID int64) error {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return ErrProjectNotFound
@@ -471,7 +472,7 @@ func (p *project) GetAllCategories(ctx context.Context) ([]model.Category, error
 	return categories, nil
 }
 
-func (p *project) GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]model.ProjectUpdate, error) {
+func (p *project) GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return nil, ErrProjectNotFound
@@ -496,8 +497,8 @@ func (p *project) GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([
 	return updates, nil
 }
 
-func (p *project) CreateProjectUpdate(ctx context.Context, userID uuid.UUID, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error) {
-	pid, err := uuid.Parse(req.ProjectID)
+func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error) {
+	pid, err := strconv.ParseInt(req.ProjectID, 10, 64)
 	if err != nil {
 		return nil, ErrProjectNotFound
 	}

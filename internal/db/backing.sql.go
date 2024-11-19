@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const createBacking = `-- name: CreateBacking :one
@@ -22,8 +20,8 @@ RETURNING id, user_id, project_id, amount, word_of_support, created_at
 `
 
 type CreateBackingParams struct {
-	ProjectID     uuid.UUID
-	UserID        uuid.UUID
+	ProjectID     int64
+	UserID        *int64
 	Amount        int64
 	WordOfSupport *string
 }
@@ -52,7 +50,7 @@ SELECT id, user_id, project_id, amount, word_of_support, created_at FROM backing
 WHERE id = $1
 `
 
-func (q *Queries) GetBackingByID(ctx context.Context, id uuid.UUID) (Backing, error) {
+func (q *Queries) GetBackingByID(ctx context.Context, id int64) (Backing, error) {
 	row := q.db.QueryRow(ctx, getBackingByID, id)
 	var i Backing
 	err := row.Scan(
@@ -72,7 +70,7 @@ FROM backings
 WHERE project_id = $1
 `
 
-func (q *Queries) GetBackingCountForProject(ctx context.Context, projectID uuid.UUID) (int64, error) {
+func (q *Queries) GetBackingCountForProject(ctx context.Context, projectID int64) (int64, error) {
 	row := q.db.QueryRow(ctx, getBackingCountForProject, projectID)
 	var backing_count int64
 	err := row.Scan(&backing_count)
@@ -89,9 +87,9 @@ ORDER BY backings.created_at DESC
 `
 
 type GetBackingsForProjectRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
-	ProjectID      uuid.UUID
+	ID             int64
+	UserID         *int64
+	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
 	CreatedAt      time.Time
@@ -100,7 +98,7 @@ type GetBackingsForProjectRow struct {
 	ProfilePicture *string
 }
 
-func (q *Queries) GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]GetBackingsForProjectRow, error) {
+func (q *Queries) GetBackingsForProject(ctx context.Context, projectID int64) ([]GetBackingsForProjectRow, error) {
 	rows, err := q.db.Query(ctx, getBackingsForProject, projectID)
 	if err != nil {
 		return nil, err
@@ -135,7 +133,7 @@ SELECT id, user_id, project_id, amount, word_of_support, created_at FROM backing
 WHERE user_id = $1
 `
 
-func (q *Queries) GetBackingsForUser(ctx context.Context, userID uuid.UUID) ([]Backing, error) {
+func (q *Queries) GetBackingsForUser(ctx context.Context, userID *int64) ([]Backing, error) {
 	rows, err := q.db.Query(ctx, getBackingsForUser, userID)
 	if err != nil {
 		return nil, err
@@ -173,9 +171,9 @@ LIMIT 1
 `
 
 type GetFirstBackingDonorRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
-	ProjectID      uuid.UUID
+	ID             int64
+	UserID         *int64
+	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
 	CreatedAt      time.Time
@@ -184,7 +182,7 @@ type GetFirstBackingDonorRow struct {
 	ProfilePicture *string
 }
 
-func (q *Queries) GetFirstBackingDonor(ctx context.Context, projectID uuid.UUID) (GetFirstBackingDonorRow, error) {
+func (q *Queries) GetFirstBackingDonor(ctx context.Context, projectID int64) (GetFirstBackingDonorRow, error) {
 	row := q.db.QueryRow(ctx, getFirstBackingDonor, projectID)
 	var i GetFirstBackingDonorRow
 	err := row.Scan(
@@ -212,9 +210,9 @@ LIMIT 1
 `
 
 type GetMostBackingDonorRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
-	ProjectID      uuid.UUID
+	ID             int64
+	UserID         *int64
+	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
 	CreatedAt      time.Time
@@ -223,7 +221,7 @@ type GetMostBackingDonorRow struct {
 	ProfilePicture *string
 }
 
-func (q *Queries) GetMostBackingDonor(ctx context.Context, projectID uuid.UUID) (GetMostBackingDonorRow, error) {
+func (q *Queries) GetMostBackingDonor(ctx context.Context, projectID int64) (GetMostBackingDonorRow, error) {
 	row := q.db.QueryRow(ctx, getMostBackingDonor, projectID)
 	var i GetMostBackingDonorRow
 	err := row.Scan(
@@ -251,9 +249,9 @@ LIMIT 1
 `
 
 type GetMostRecentBackingDonorRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
-	ProjectID      uuid.UUID
+	ID             int64
+	UserID         *int64
+	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
 	CreatedAt      time.Time
@@ -262,7 +260,7 @@ type GetMostRecentBackingDonorRow struct {
 	ProfilePicture *string
 }
 
-func (q *Queries) GetMostRecentBackingDonor(ctx context.Context, projectID uuid.UUID) (GetMostRecentBackingDonorRow, error) {
+func (q *Queries) GetMostRecentBackingDonor(ctx context.Context, projectID int64) (GetMostRecentBackingDonorRow, error) {
 	row := q.db.QueryRow(ctx, getMostRecentBackingDonor, projectID)
 	var i GetMostRecentBackingDonorRow
 	err := row.Scan(

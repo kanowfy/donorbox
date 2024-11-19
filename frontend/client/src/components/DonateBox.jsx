@@ -4,9 +4,9 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import backingService from "../services/backing";
 import { Avatar, Modal } from "flowbite-react";
-import Donator from "./Donator";
+import Donor from "./Donor";
 
-const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
+const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
   const [recentBacking, setRecentBacking] = useState({});
   const [mostBacking, setMostBacking] = useState({});
   const [firstBacking, setFirstBacking] = useState({});
@@ -41,17 +41,17 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
       </div>
       <div className="flex my-3 gap-2 items-end justify-end mx-2 tracking-tight">
         <span className="block text-xl font-medium">
-          ₫{currentAmount?.toLocaleString()}
+          ₫{totalFund?.toLocaleString()}
         </span>
         <span className="text-sm text-center block text-gray-700">
-          of ₫{goalAmount?.toLocaleString()} raised
+          of ₫{fundGoal?.toLocaleString()} raised
         </span>
       </div>
       <div className="mx-2 my-2 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
         <div
           className="bg-blue-500 h-1.5 rounded-full"
           style={{
-            width: `${utils.calculateProgress(currentAmount, goalAmount)}%`,
+            width: `${utils.calculateProgress(totalFund, fundGoal)}%`,
           }}
         ></div>
       </div>
@@ -187,7 +187,7 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
               <div className="mb-4 underline">List of donations</div>
               <div className="space-y-1">
                 {backings?.map((b) => (
-                  <Donator
+                  <Donor
                     key={b.id}
                     profile_picture={
                       b.profile_picture ? b.profile_picture : "/avatar.svg"
@@ -219,8 +219,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
 
 DonateBox.propTypes = {
   id: PropTypes.string,
-  currentAmount: PropTypes.number,
-  goalAmount: PropTypes.number,
+  totalFund: PropTypes.number,
+  fundGoal: PropTypes.number,
   backings: PropTypes.array,
 };
 

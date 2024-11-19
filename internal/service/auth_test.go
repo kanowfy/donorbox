@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/db"
 	dbmocks "github.com/kanowfy/donorbox/internal/db/mocks"
@@ -42,7 +41,7 @@ func TestLogin(t *testing.T) {
 				Password: "12345678",
 			},
 			dbOutput{
-				user: db.User{ID: uuid.New(), Email: "abc@gmail.com", HashedPassword: string(validHashedPassword)},
+				user: db.User{ID: 1, Email: "abc@gmail.com", HashedPassword: string(validHashedPassword)},
 				err:  nil,
 			},
 			expectedOutput{
@@ -72,7 +71,7 @@ func TestLogin(t *testing.T) {
 				Password: "12345678910",
 			},
 			dbOutput{
-				user: db.User{ID: uuid.New(), Email: "abc@gmail.com", HashedPassword: string(validHashedPassword)},
+				user: db.User{ID: 1, Email: "abc@gmail.com", HashedPassword: string(validHashedPassword)},
 				err:  nil,
 			},
 			expectedOutput{
@@ -101,10 +100,7 @@ func TestLogin(t *testing.T) {
 				id, err := token.VerifyToken(tok)
 				assert.NoError(t, err)
 
-				uuid, err := uuid.Parse(id)
-				assert.NoError(t, err)
-
-				assert.Equal(t, tt.dbOut.user.ID, uuid)
+				assert.Equal(t, tt.dbOut.user.ID, id)
 			}
 		})
 	}

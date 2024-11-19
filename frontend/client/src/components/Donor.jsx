@@ -2,7 +2,7 @@ import { Avatar } from "flowbite-react";
 import utils from "../utils/utils";
 import PropTypes from "prop-types";
 
-const Donator = ({
+const Donor = ({
   profile_picture,
   first_name,
   last_name,
@@ -34,7 +34,7 @@ const Donator = ({
   );
 };
 
-Donator.propTypes = {
+Donor.propTypes = {
   profile_picture: PropTypes.string,
   first_name: PropTypes.string,
   last_name: PropTypes.string,
@@ -42,4 +42,4 @@ Donator.propTypes = {
   created_at: PropTypes.string,
 };
 
-export default Donator;
+export default Donor;

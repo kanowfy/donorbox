@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
@@ -11,9 +11,9 @@ import (
 )
 
 type Backing interface {
-	AcceptBacking(ctx context.Context, projectID uuid.UUID, req dto.BackingRequest) error
-	GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Backing, error)
-	GetProjectBackingAggregation(ctx context.Context, projectID uuid.UUID) (*BackingAggregation, error)
+	AcceptBacking(ctx context.Context, projectID int64, req dto.BackingRequest) error
+	GetBackingsForProject(ctx context.Context, projectID int64) ([]model.Backing, error)
+	GetProjectBackingAggregation(ctx context.Context, projectID int64) (*BackingAggregation, error)
 }
 
 type backing struct {
@@ -26,7 +26,7 @@ func NewBacking(repository db.Querier) Backing {
 	}
 }
 
-func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, req dto.BackingRequest) error {
+func (b *backing) AcceptBacking(ctx context.Context, projectID int64, req dto.BackingRequest) error {
 	amount := convert.MustStringToInt64(req.Amount)
 	// Stripe, card...
 
@@ -38,7 +38,12 @@ func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, req dt
 	}
 
 	if req.UserID != nil {
-		backingParams.UserID = uuid.MustParse(*req.UserID)
+		uid, err := strconv.ParseInt(*req.UserID, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		backingParams.UserID = &uid
 	}
 
 	_, err := b.repository.CreateBacking(ctx, backingParams)
@@ -72,7 +77,7 @@ func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, req dt
 }
 
 /*
-func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest) error {
+func (b *backing) AcceptBacking(ctx context.Context, projectID int64, request dto.BackingRequest) error {
 		queries := b.repository.(*db.Queries)
 		q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
 		if err != nil {
@@ -127,7 +132,7 @@ func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, reques
 }
 */
 
-func (b *backing) GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Backing, error) {
+func (b *backing) GetBackingsForProject(ctx context.Context, projectID int64) ([]model.Backing, error) {
 	_, err := b.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return nil, ErrProjectNotFound
@@ -164,7 +169,7 @@ type BackingAggregation struct {
 	TotalBacking      int64
 }
 
-func (b *backing) GetProjectBackingAggregation(ctx context.Context, projectID uuid.UUID) (*BackingAggregation, error) {
+func (b *backing) GetProjectBackingAggregation(ctx context.Context, projectID int64) (*BackingAggregation, error) {
 	mostBacking, err := b.repository.GetMostBackingDonor(ctx, projectID)
 	if err != nil {
 		return nil, err

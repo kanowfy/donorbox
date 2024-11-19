@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/kanowfy/donorbox/pkg/httperror"
@@ -31,7 +31,7 @@ func NewBacking(service service.Backing, validator *validator.Validate) Backing 
 }
 
 func (b *backing) GetBackingsForProject(w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -55,7 +55,7 @@ func (b *backing) GetBackingsForProject(w http.ResponseWriter, r *http.Request) 
 }
 
 func (b *backing) CreateProjectBacking(w http.ResponseWriter, r *http.Request) {
-	pid, err := uuid.Parse(r.PathValue("id"))
+	pid, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -87,7 +87,7 @@ func (b *backing) CreateProjectBacking(w http.ResponseWriter, r *http.Request) {
 }
 
 func (b *backing) GetProjectBackingStats(w http.ResponseWriter, r *http.Request) {
-	pid, err := uuid.Parse(r.PathValue("id"))
+	pid, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return

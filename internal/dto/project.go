@@ -37,7 +37,6 @@ type UpdateProjectRequest struct {
 	Title          *string    `json:"title,omitempty" validate:"omitnil,min=8"`
 	Description    *string    `json:"description,omitempty" validate:"omitnil,min=50"`
 	CoverPicture   *string    `json:"cover_picture,omitempty" validate:"omitnil,http_url"`
-	GoalAmount     *string    `json:"goal_amount,omitempty" validate:"omitnil,number"`
 	EndDate        *time.Time `json:"end_date,omitempty"`
 	ReceiverNumber *string    `json:"receiver_number" validate:"required"`
 	ReceiverName   *string    `json:"receiver_name" validate:"required"`
@@ -48,20 +47,20 @@ type UpdateProjectRequest struct {
 }
 
 type CreateProjectUpdateRequest struct {
-	ProjectID       string  `json:"project_id" validate:"required,uuid4"`
+	ProjectID       string  `json:"project_id" validate:"required,number"`
 	AttachmentPhoto *string `json:"attachment_photo" validate:"omitnil,http_url"`
 	Description     string  `json:"description" validate:"required"`
 }
 
 type CreateProjectCommentRequest struct {
-	ProjectID       string  `json:"project_id" validate:"required,uuid4"`
-	BackerID        string  `json:"backer_id" validate:"required,uuid4"`
-	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,uuid4"`
+	ProjectID       string  `json:"project_id" validate:"required,number"`
+	BackerID        string  `json:"backer_id" validate:"required,number"`
+	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,number"`
 	Content         string  `json:"content" validate:"required"`
 }
 
 type ProjectApprovalRequest struct {
-	ProjectID    string  `json:"project_id" validate:"required,uuid4"`
+	ProjectID    string  `json:"project_id" validate:"required,number"`
 	Approved     bool    `json:"approved" validate:"required"`
 	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
 	Description  *string `json:"description,omitempty" validate:"omitnil"`

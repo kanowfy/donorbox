@@ -57,13 +57,13 @@ const Home = () => {
             </div>
             <div className="flex justify-center">
               <div className="grid grid-cols-1 gap-7 md:grid-cols-3 xl:grid-cols-4 mx-16 mt-10 mb-16">
-                {projects.slice(0, 8).map((p) => (
+                {projects && projects.slice(0, 8).map((p) => (
                   <ProjectCard
                     id={p.id}
                     title={p.title}
                     cover={p.cover_picture}
-                    currentAmount={p.current_amount}
-                    goalAmount={p.goal_amount}
+                    totalFund={p.total_fund}
+                    fundGoal={p.fund_goal}
                     numBackings={p.backing_count}
                     key={p.id}
                   />

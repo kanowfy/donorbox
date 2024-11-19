@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const activateUser = `-- name: ActivateUser :exec
@@ -18,7 +16,7 @@ SET activated = TRUE
 WHERE id = $1
 `
 
-func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) ActivateUser(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, activateUser, id)
 	return err
 }
@@ -102,7 +100,7 @@ SELECT id, email, first_name, last_name, profile_picture, created_at FROM users
 `
 
 type GetAllUsersRow struct {
-	ID             uuid.UUID
+	ID             int64
 	Email          string
 	FirstName      string
 	LastName       string
@@ -163,7 +161,7 @@ SELECT id, email, first_name, last_name, profile_picture, hashed_password, activ
 WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
@@ -186,7 +184,7 @@ WHERE id = $1
 `
 
 type UpdateUserByIDParams struct {
-	ID             uuid.UUID
+	ID             int64
 	Email          string
 	FirstName      string
 	LastName       string
@@ -211,7 +209,7 @@ WHERE id = $1
 `
 
 type UpdateUserPasswordParams struct {
-	ID             uuid.UUID
+	ID             int64
 	HashedPassword string
 }
 

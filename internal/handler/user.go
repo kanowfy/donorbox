@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
@@ -44,8 +44,7 @@ func (u *user) GetAuthenticatedUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *user) GetUserByID(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -126,7 +125,7 @@ func (u *user) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (u *user) ConfirmResolvedMilestone(w http.ResponseWriter, r *http.Request) {
-	mid, err := uuid.Parse(r.PathValue("id"))
+	mid, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return

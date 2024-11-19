@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type BackingStatus string
@@ -15,8 +13,8 @@ const (
 )
 
 type Backing struct {
-	ID            uuid.UUID `json:"id"`
-	ProjectID     uuid.UUID `json:"project_id"`
+	ID            int64     `json:"id"`
+	ProjectID     int64     `json:"project_id"`
 	Amount        int64     `json:"amount"`
 	WordOfSupport *string   `json:"word_of_support,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`

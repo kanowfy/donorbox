@@ -161,7 +161,7 @@ const Search = () => {
                   onClick={() => {
                     setFiltered(
                       filtered.filter(
-                        (p) => p.goal_amount - p.current_amount < 1000000
+                        (p) => p.fund_goal - p.total_fund < 1000000
                       )
                     );
                   }}
@@ -233,7 +233,7 @@ const Search = () => {
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => {
-                      sortList("-current_amount");
+                      sortList("-total_fund");
                     }}
                   >
                     <ImSortAlphaAsc className="mr-2 h-5 w-5" />
@@ -241,7 +241,7 @@ const Search = () => {
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => {
-                      sortList("current_amount");
+                      sortList("total_fund");
                     }}
                   >
                     <ImSortAlphaDesc className="mr-2 h-5 w-5" />
@@ -268,8 +268,8 @@ const Search = () => {
                       id={p.id}
                       title={p.title}
                       cover={p.cover_picture}
-                      currentAmount={p.current_amount}
-                      goalAmount={p.goal_amount}
+                      totalFund={p.total_fund}
+                      fundGoal={p.fund_goal}
                       numBackings={p.backing_count}
                       key={p.id}
                     />

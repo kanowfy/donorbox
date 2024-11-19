@@ -3,9 +3,9 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
@@ -128,8 +128,7 @@ func (p *project) GetEndedProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *project) GetProjectDetails(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -181,8 +180,7 @@ func (p *project) CreateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *project) UpdateProject(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -222,8 +220,7 @@ func (p *project) UpdateProject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *project) DeleteProject(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -259,8 +256,7 @@ func (p *project) GetAllCategories(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *project) GetProjectUpdates(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := uuid.Parse(idStr)
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return

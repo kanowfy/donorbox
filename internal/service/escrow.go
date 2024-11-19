@@ -2,9 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/model"
@@ -14,9 +15,9 @@ import (
 
 type Escrow interface {
 	Login(ctx context.Context, req dto.LoginRequest) (string, error)
-	GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.EscrowUser, error)
+	GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser, error)
 	ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error
-	ResolveMilestone(ctx context.Context, escrowID uuid.UUID, milestoneID uuid.UUID) error
+	ResolveMilestone(ctx context.Context, escrowID int64, milestoneID int64) error
 }
 
 type escrow struct {
@@ -40,7 +41,7 @@ func (e *escrow) Login(ctx context.Context, req dto.LoginRequest) (string, error
 		return "", ErrWrongPassword
 	}
 
-	token, err := token.GenerateToken(escrow.ID.String(), time.Hour*3*24)
+	token, err := token.GenerateToken(escrow.ID, time.Hour*3*24)
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +49,7 @@ func (e *escrow) Login(ctx context.Context, req dto.LoginRequest) (string, error
 	return token, nil
 }
 
-func (e *escrow) GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.EscrowUser, error) {
+func (e *escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser, error) {
 	escrow, err := e.repository.GetEscrowUserByID(ctx, id)
 	if err != nil {
 		return nil, ErrUserNotFound
@@ -63,6 +64,11 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id uuid.UUID) (*model.Escrow
 }
 
 func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
+	pid, err := strconv.ParseInt(req.ProjectID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("ApproveOfProject svc: %w")
+	}
+
 	var status db.NullProjectStatus
 	if req.Approved {
 		status.Scan(db.ProjectStatusOngoing)
@@ -71,7 +77,7 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 		status.Scan(db.ProjectStatusRejected)
 	}
 	if err := e.repository.UpdateProjectStatus(ctx, db.UpdateProjectStatusParams{
-		ID:     uuid.MustParse(req.ProjectID),
+		ID:     pid,
 		Status: status,
 	}); err != nil {
 		return err
@@ -80,7 +86,7 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 	return nil
 }
 
-func (e *escrow) ResolveMilestone(ctx context.Context, escrowID uuid.UUID, milestoneID uuid.UUID) error {
+func (e *escrow) ResolveMilestone(ctx context.Context, escrowID int64, milestoneID int64) error {
 	//TODO: create cert, send confirmation email,...
 	milestone, err := e.repository.GetMilestoneByID(ctx, milestoneID)
 	if err != nil {

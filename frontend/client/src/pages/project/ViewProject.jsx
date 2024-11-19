@@ -160,8 +160,8 @@ const Project = () => {
         <div className="col-span-1">
           <DonateBox
             id={params.id}
-            currentAmount={project.current_amount}
-            goalAmount={project.goal_amount}
+            totalFund={project.total_fund}
+            fundGoal={project.fund_goal}
             backings={backings}
           />
         </div>

@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const createCertificate = `-- name: CreateCertificate :one
@@ -22,9 +20,9 @@ RETURNING id, escrow_user_id, user_id, milestone_id, verified, verified_at, crea
 `
 
 type CreateCertificateParams struct {
-	EscrowUserID uuid.UUID
-	UserID       uuid.UUID
-	MilestoneID  uuid.UUID
+	EscrowUserID int64
+	UserID       int64
+	MilestoneID  int64
 }
 
 func (q *Queries) CreateCertificate(ctx context.Context, arg CreateCertificateParams) (Certificate, error) {
@@ -81,7 +79,7 @@ SELECT id, escrow_user_id, user_id, milestone_id, verified, verified_at, created
 WHERE id = $1
 `
 
-func (q *Queries) GetCerificateByID(ctx context.Context, id uuid.UUID) (Certificate, error) {
+func (q *Queries) GetCerificateByID(ctx context.Context, id int64) (Certificate, error) {
 	row := q.db.QueryRow(ctx, getCerificateByID, id)
 	var i Certificate
 	err := row.Scan(
@@ -103,7 +101,7 @@ WHERE milestone_id = $1
 `
 
 type UpdateVerifyingCertificateParams struct {
-	MilestoneID uuid.UUID
+	MilestoneID int64
 	VerifiedAt  time.Time
 }
 

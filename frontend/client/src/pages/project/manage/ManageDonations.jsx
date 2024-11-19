@@ -1,4 +1,4 @@
-import Donator from "../../../components/Donator";
+import Donor from "../../../components/Donor";
 import { useOutletContext } from "react-router-dom";
 
 const ManageDonations = () => {
@@ -11,7 +11,7 @@ const ManageDonations = () => {
       </div>
       <div className="my-10 grid grid-cols-2 gap-5">
         {backings?.map((b) => (
-          <Donator
+          <Donor
             key={b.id}
             profile_picture={b?.profile_picture}
             first_name={b.first_name ? b.first_name : "Anonymous"}

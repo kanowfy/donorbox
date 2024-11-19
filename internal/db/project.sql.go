@@ -8,8 +8,6 @@ package db
 import (
 	"context"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const createMilestone = `-- name: CreateMilestone :one
@@ -22,7 +20,7 @@ RETURNING id, project_id, title, description, fund_goal, current_fund, bank_desc
 `
 
 type CreateMilestoneParams struct {
-	ProjectID       uuid.UUID
+	ProjectID       int64
 	Title           string
 	Description     *string
 	FundGoal        int64
@@ -62,7 +60,7 @@ RETURNING id, user_id, title, description, cover_picture, category_id, end_date,
 `
 
 type CreateProjectParams struct {
-	UserID         uuid.UUID
+	UserID         int64
 	CategoryID     int32
 	Title          string
 	Description    string
@@ -122,7 +120,7 @@ RETURNING id, project_id, attachment_photo, description, created_at
 `
 
 type CreateProjectUpdateParams struct {
-	ProjectID       uuid.UUID
+	ProjectID       int64
 	AttachmentPhoto *string
 	Description     string
 }
@@ -144,7 +142,7 @@ const deleteProjectByID = `-- name: DeleteProjectByID :exec
 DELETE FROM projects WHERE id = $1
 `
 
-func (q *Queries) DeleteProjectByID(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteProjectByID(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteProjectByID, id)
 	return err
 }
@@ -154,7 +152,7 @@ DELETE FROM project_updates
 WHERE id = $1
 `
 
-func (q *Queries) DeleteProjectUpdate(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteProjectUpdate(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteProjectUpdate, id)
 	return err
 }
@@ -209,8 +207,8 @@ type GetAllProjectsParams struct {
 }
 
 type GetAllProjectsRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
+	ID             int64
+	UserID         int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -275,7 +273,7 @@ ORDER BY created_at ASC
 LIMIT 1
 `
 
-func (q *Queries) GetCurrentMilestone(ctx context.Context, projectID uuid.UUID) (Milestone, error) {
+func (q *Queries) GetCurrentMilestone(ctx context.Context, projectID int64) (Milestone, error) {
 	row := q.db.QueryRow(ctx, getCurrentMilestone, projectID)
 	var i Milestone
 	err := row.Scan(
@@ -304,8 +302,8 @@ ORDER BY end_date DESC
 `
 
 type GetFinishedProjectsRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
+	ID             int64
+	UserID         int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -368,7 +366,7 @@ SELECT id, project_id, title, description, fund_goal, current_fund, bank_descrip
 WHERE id = $1
 `
 
-func (q *Queries) GetMilestoneByID(ctx context.Context, id uuid.UUID) (Milestone, error) {
+func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, error) {
 	row := q.db.QueryRow(ctx, getMilestoneByID, id)
 	var i Milestone
 	err := row.Scan(
@@ -390,7 +388,7 @@ SELECT id, project_id, title, description, fund_goal, current_fund, bank_descrip
 WHERE project_id = $1
 `
 
-func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID uuid.UUID) ([]Milestone, error) {
+func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) ([]Milestone, error) {
 	rows, err := q.db.Query(ctx, getMilestoneForProject, projectID)
 	if err != nil {
 		return nil, err
@@ -428,8 +426,8 @@ WHERE projects.ID = $1
 `
 
 type GetProjectByIDRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
+	ID             int64
+	UserID         int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -447,7 +445,7 @@ type GetProjectByIDRow struct {
 	FundGoal       int64
 }
 
-func (q *Queries) GetProjectByID(ctx context.Context, id uuid.UUID) (GetProjectByIDRow, error) {
+func (q *Queries) GetProjectByID(ctx context.Context, id int64) (GetProjectByIDRow, error) {
 	row := q.db.QueryRow(ctx, getProjectByID, id)
 	var i GetProjectByIDRow
 	err := row.Scan(
@@ -478,7 +476,7 @@ WHERE project_id = $1
 ORDER BY created_at DESC
 `
 
-func (q *Queries) GetProjectUpdates(ctx context.Context, projectID uuid.UUID) ([]ProjectUpdate, error) {
+func (q *Queries) GetProjectUpdates(ctx context.Context, projectID int64) ([]ProjectUpdate, error) {
 	rows, err := q.db.Query(ctx, getProjectUpdates, projectID)
 	if err != nil {
 		return nil, err
@@ -514,8 +512,8 @@ ORDER BY projects.created_at DESC
 `
 
 type GetProjectsForUserRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
+	ID             int64
+	UserID         int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -533,7 +531,7 @@ type GetProjectsForUserRow struct {
 	FundGoal       int64
 }
 
-func (q *Queries) GetProjectsForUser(ctx context.Context, userID uuid.UUID) ([]GetProjectsForUserRow, error) {
+func (q *Queries) GetProjectsForUser(ctx context.Context, userID int64) ([]GetProjectsForUserRow, error) {
 	rows, err := q.db.Query(ctx, getProjectsForUser, userID)
 	if err != nil {
 		return nil, err
@@ -629,8 +627,8 @@ type SearchProjectsParams struct {
 }
 
 type SearchProjectsRow struct {
-	ID             uuid.UUID
-	UserID         uuid.UUID
+	ID             int64
+	UserID         int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -695,7 +693,7 @@ WHERE id = $1
 `
 
 type UpdateMilestoneFundParams struct {
-	ID     uuid.UUID
+	ID     int64
 	Amount int64
 }
 
@@ -711,7 +709,7 @@ WHERE id = $1
 `
 
 type UpdateProjectByIDParams struct {
-	ID             uuid.UUID
+	ID             int64
 	Title          string
 	Description    string
 	CoverPicture   string
@@ -748,7 +746,7 @@ WHERE id = $1
 `
 
 type UpdateProjectFundParams struct {
-	ID     uuid.UUID
+	ID     int64
 	Amount int64
 }
 
@@ -763,7 +761,7 @@ WHERE id = $1
 `
 
 type UpdateProjectStatusParams struct {
-	ID     uuid.UUID
+	ID     int64
 	Status NullProjectStatus
 }
 

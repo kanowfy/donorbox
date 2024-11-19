@@ -6,8 +6,8 @@ const ProjectCard = ({
   id,
   cover,
   title,
-  currentAmount,
-  goalAmount,
+  totalFund,
+  fundGoal,
   numBackings,
 }) => {
   return (
@@ -27,7 +27,7 @@ const ProjectCard = ({
               {numBackings} donations
             </p>
             <p className="block text-sm antialiased font-medium text-gray-600">
-              ₫{currentAmount.toLocaleString()} raised
+              ₫{totalFund.toLocaleString()} raised
             </p>
           </div>
         </div>
@@ -35,7 +35,7 @@ const ProjectCard = ({
           <div
             className="bg-blue-500 h-1.5 rounded-full"
             style={{
-              width: `${utils.calculateProgress(currentAmount, goalAmount)}%`,
+              width: `${utils.calculateProgress(totalFund, fundGoal)}%`,
             }}
           ></div>
         </div>
@@ -48,8 +48,8 @@ ProjectCard.propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   cover: PropTypes.string.isRequired,
-  currentAmount: PropTypes.number,
-  goalAmount: PropTypes.number,
+  totalFund: PropTypes.number,
+  fundGoal: PropTypes.number,
   numBackings: PropTypes.number,
 };
 

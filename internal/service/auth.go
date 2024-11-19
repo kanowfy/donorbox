@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/mail"
@@ -56,7 +55,7 @@ func (a *auth) Login(ctx context.Context, req dto.LoginRequest) (string, error) 
 		return "", ErrWrongPassword
 	}
 
-	token, err := token.GenerateToken(user.ID.String(), time.Hour*3*24)
+	token, err := token.GenerateToken(user.ID, time.Hour*3*24)
 	if err != nil {
 		return "", err
 	}
@@ -79,7 +78,7 @@ func (a *auth) Register(ctx context.Context, req dto.RegisterAccountRequest, hos
 		return nil, err
 	}
 
-	token, err := token.GenerateToken(user.ID.String(), time.Hour*3*24)
+	token, err := token.GenerateToken(user.ID, time.Hour*3*24)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +111,7 @@ func (a *auth) ActivateAccount(ctx context.Context, activationToken string) erro
 		return err
 	}
 
-	user, err := a.repository.GetUserByID(ctx, uuid.MustParse(userID))
+	user, err := a.repository.GetUserByID(ctx, userID)
 	if err != nil {
 		return ErrUserNotFound
 	}
@@ -134,7 +133,7 @@ func (a *auth) SendResetPasswordToken(ctx context.Context, email string, hostPat
 		return ErrEmailNotExists
 	}
 
-	token, err := token.GenerateToken(user.ID.String(), time.Minute*15)
+	token, err := token.GenerateToken(user.ID, time.Minute*15)
 	if err != nil {
 		return err
 	}
@@ -159,7 +158,7 @@ func (a *auth) ResetPassword(ctx context.Context, req dto.ResetPasswordRequest) 
 		return err
 	}
 
-	user, err := a.repository.GetUserByID(ctx, uuid.MustParse(id))
+	user, err := a.repository.GetUserByID(ctx, id)
 	if err != nil {
 		return ErrUserNotFound
 	}
@@ -202,7 +201,7 @@ func (a *auth) LoginOAuth(ctx context.Context, oauthUser goth.User) (string, err
 		}
 	}
 
-	token, err := token.GenerateToken(user.ID.String(), time.Hour*3*24)
+	token, err := token.GenerateToken(user.ID, time.Hour*3*24)
 	if err != nil {
 		return "", err
 	}

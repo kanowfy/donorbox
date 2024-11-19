@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/kanowfy/donorbox/internal/token"
@@ -41,7 +40,7 @@ func (a *auth) RequireUserAuthentication(next http.HandlerFunc) http.HandlerFunc
 			return
 		}
 
-		user, err := a.userService.GetUserByID(r.Context(), uuid.MustParse(id))
+		user, err := a.userService.GetUserByID(r.Context(), id)
 		if err != nil {
 			httperror.InvalidCredentialsResponse(w, r)
 			return
@@ -64,7 +63,7 @@ func (a *auth) RequireEscrowAuthentication(next http.HandlerFunc) http.HandlerFu
 			return
 		}
 
-		user, err := a.escrowService.GetEscrowByID(r.Context(), uuid.MustParse(id))
+		user, err := a.escrowService.GetEscrowByID(r.Context(), id)
 		if err != nil {
 			httperror.InvalidCredentialsResponse(w, r)
 			return
