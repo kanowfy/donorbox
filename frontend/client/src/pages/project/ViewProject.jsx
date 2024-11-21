@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import projectService from "../../services/project";
 import utils from "../../utils/utils";
 import { IoFlag } from "react-icons/io5";
+import MilestoneTL from "../../components/MilestoneTL";
 
 const Project = () => {
   const params = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState({});
+  const [milestones, setMilestones] = useState([]);
   const [owner, setOwner] = useState({});
   const [backings, setBackings] = useState();
   const [updates, setUpdates] = useState();
@@ -22,6 +24,7 @@ const Project = () => {
         const projectResponse = await projectService.getOne(params.id);
         console.log(projectResponse);
         setProject(projectResponse.project);
+        setMilestones(projectResponse.milestones);
         setBackings(projectResponse.backings);
         setUpdates(projectResponse.updates);
         setOwner(projectResponse.user);
@@ -41,11 +44,11 @@ const Project = () => {
   }, [params.id, navigate]);
 
   return (
-    <div className="mx-auto mb-10">
-      <div className="text-3xl font-bold m-5">{project.title}</div>
-      <div className="grid grid-cols-3 gap-4 ">
+    <div className="mb-10">
+      <div className="grid grid-cols-3 gap-7 max-w-7xl mx-auto">
         <div className="col-span-2">
-          <div className="rounded-xl overflow-hidden h-128 aspect-[4/3] object-cover">
+          <div className="text-3xl font-bold m-5">{project.title}</div>
+          <div className="rounded-xl overflow-hidden h-128 aspect-[5/3] object-cover">
             <img
               src={project.cover_picture}
               className="w-full h-full m-auto object-cover"
@@ -68,7 +71,7 @@ const Project = () => {
                   Created{" "}
                   {utils.calculateDayDifference(
                     Date.now(),
-                    utils.parseDateFromRFC3339(project.start_date)
+                    utils.parseDateFromRFC3339(project.created_at)
                   )}
                   d ago.
                 </span>
@@ -76,7 +79,7 @@ const Project = () => {
             </Avatar>
             <div className="flex flex-col items-end">
               <div className="font-medium">
-                {project.province}, {project.country}
+                {project.city}, {project.country}
               </div>
               <div className="flex space-x-1 items-end text-gray-500 text-sm">
                 <div>Fundraiser ends on </div>
@@ -149,7 +152,7 @@ const Project = () => {
           </div>
           <div className="h-px bg-gray-300"></div>
           <div className="my-5">
-            <Link to={`/${params.id}/report`} className="w-fit">
+            <Link to={`/fundraiser/${params.id}/report`} className="w-fit">
               <Button color="light" pill size="lg">
                 <IoFlag className="w-5 h-5 mr-1" />
                 Report Fundraiser
@@ -157,13 +160,19 @@ const Project = () => {
             </Link>
           </div>
         </div>
-        <div className="col-span-1">
+        <div className="mt-20 space-y-10">
+          <div>
           <DonateBox
             id={params.id}
             totalFund={project.total_fund}
             fundGoal={project.fund_goal}
             backings={backings}
           />
+          </div>
+          <div className="p-4">
+            <div className="text-2xl mb-4">Milestones</div>
+            <MilestoneTL milestones={milestones}/>
+          </div>
         </div>
       </div>
     </div>

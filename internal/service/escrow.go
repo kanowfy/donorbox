@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -66,7 +65,7 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser
 func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
 	pid, err := strconv.ParseInt(req.ProjectID, 10, 64)
 	if err != nil {
-		return fmt.Errorf("ApproveOfProject svc: %w")
+		return err
 	}
 
 	var status db.NullProjectStatus

@@ -9,8 +9,10 @@ const ManageDonations = () => {
       <div className="text-gray-600 text-sm mt-1">
         See all donations in your fundraiser
       </div>
-      <div className="my-10 grid grid-cols-2 gap-5">
-        {backings?.map((b) => (
+      {
+        backings ?
+      (<div className="my-10 grid grid-cols-2 gap-5">
+        {backings.map((b) => (
           <Donor
             key={b.id}
             profile_picture={b?.profile_picture}
@@ -20,7 +22,10 @@ const ManageDonations = () => {
             created_at={b.created_at}
           />
         ))}
-      </div>
+      </div>) : (
+        <div className="my-5 text-2xl text-gray-800">This project has not received any funds yet.</div>
+      )
+      }
     </div>
   );
 };

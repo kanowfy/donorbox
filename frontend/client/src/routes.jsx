@@ -16,7 +16,6 @@ import ProjectList from "./pages/project/manage/ProjectList";
 import ManageDashboard from "./pages/project/manage/ManageDashboard";
 import ManageDonations from "./pages/project/manage/ManageDonations";
 import ManageUpdates from "./pages/project/manage/ManageUpdates";
-import ManageTransfer from "./pages/project/manage/ManageTransfer";
 import ManageLayout from "./pages/project/manage/ManageLayout";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -33,14 +32,13 @@ const AppRoutes = () => {
         <Route path="/fundraiser/:id" element={<ViewProject />} />
         <Route path="/start-fundraiser" element={<CreateProject />} />
         <Route path="/fundraisers" element={<ProjectList />} />
-        <Route path="/:id/report" element={<ReportProject />} />
+        <Route path="/fundraiser/:id/report" element={<ReportProject />} />
         <Route path="*" element={<NotFound />} />
 
         <Route path="/manage/:id" element={<ManageLayout />}>
           <Route index element={<ManageDashboard />} />
           <Route path="donations" element={<ManageDonations />} />
           <Route path="updates" element={<ManageUpdates />} />
-          <Route path="transfer" element={<ManageTransfer />} />
         </Route>
       </Route>
       <Route path="/register" element={<Register />} />
@@ -51,7 +49,7 @@ const AppRoutes = () => {
       <Route path="/password/forgot" element={<ForgotPassword />} />
       <Route path="/password/reset" element={<ResetPassword />} />
       <Route path="/verify" element={<Verify />} />
-      <Route path="/:id/donate" element={<Donate />} />
+      <Route path="/fundraiser/:id/donate" element={<Donate />} />
     </Routes>
   );
 };

@@ -18,17 +18,17 @@ FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE 
-    to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
-AND project.status = 'ongoing'
+    to_tsvector('english', projects.title || ' ' || projects.description || ' ' || city || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
+AND projects.status = 'ongoing'
 GROUP BY projects.ID
-ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
 -- name: GetProjectByID :one
 SELECT projects.*, SUM(milestones.current_fund) AS total_fund, SUM(milestones.fund_goal) AS fund_goal
 FROM projects
 LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE projects.ID = $1;
+WHERE projects.ID = $1
+GROUP BY projects.ID;
 
 -- name: GetProjectsForUser :many
 SELECT projects.*, SUM(milestones.current_fund) AS total_fund, SUM(milestones.fund_goal) AS fund_goal

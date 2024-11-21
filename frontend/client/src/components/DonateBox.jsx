@@ -31,32 +31,25 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
   }, [id]);
 
   return (
-    <div className="shadow-xl p-6 rounded-lg">
-      <div>
-        <Link to={`/${id}/donate`}>
+    <div className="w-full shadow-xl p-6 rounded-lg">
+      <div className="space-y-2">
+        <Link to={`/fundraiser/${id}/donate`}>
           <div className="py-3 px-10 bg-gradient-to-b from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 flex items-center justify-center font-semibold text-lg rounded-xl">
             Donate
           </div>
         </Link>
+        <div className="py-3 px-10 border-gray-900 border flex items-center justify-center font-semibold text-lg rounded-xl">Share</div>
       </div>
-      <div className="flex my-3 gap-2 items-end justify-end mx-2 tracking-tight">
-        <span className="block text-xl font-medium">
+      <div className="flex flex-col my-5 space-y-1 justify-center items-center">
+        <div className="block text-4xl font-bold text-teal-500">
           ₫{totalFund?.toLocaleString()}
-        </span>
-        <span className="text-sm text-center block text-gray-700">
-          of ₫{fundGoal?.toLocaleString()} raised
-        </span>
-      </div>
-      <div className="mx-2 my-2 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
-        <div
-          className="bg-blue-500 h-1.5 rounded-full"
-          style={{
-            width: `${utils.calculateProgress(totalFund, fundGoal)}%`,
-          }}
-        ></div>
-      </div>
-      <div className="flex justify-end font-sans text-sm antialiased font-normal text-gray-700 mx-2">
-        {backingCount} donations
+        </div>
+        <div className="text-gray-700">
+          raised of <span className="text-teal-500">₫{fundGoal?.toLocaleString()}</span> target
+        </div>
+        <div className="text-gray-700">
+        from <span className="text-yellow-500">{backingCount}</span> donations
+        </div>
       </div>
 
       {backingCount ? (
@@ -206,7 +199,7 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
         <div className="flex items-center justify-center space-x-1 mt-5">
           <div>Be the first to help!</div>
           <Link
-            to={`/${id}/donate`}
+            to={`/fundraiser/${id}/donate`}
             className="font-semibold text-gray-600 underline hover:text-black"
           >
             Donate now

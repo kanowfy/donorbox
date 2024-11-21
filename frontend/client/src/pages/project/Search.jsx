@@ -38,8 +38,9 @@ const Search = () => {
       try {
         const response = await projectService.search(q, 1, 50);
         // change to ssp
-        setProjects(response.projects.filter((p) => p.status === "ongoing"));
-        setFiltered(response.projects.filter((p) => p.status === "ongoing"));
+        console.log(response.projects);
+        setProjects(response.projects);
+        setFiltered(response.projects);
       } catch (err) {
         console.log(err);
       }
@@ -263,7 +264,7 @@ const Search = () => {
               </div>
               <div className="flex justify-center">
                 <div className="grid grid-cols-1 gap-7 md:grid-cols-3 xl:grid-cols-4 mx-16 mt-10 mb-16">
-                  {filtered.map((p) => (
+                  {filtered?.map((p) => (
                     <ProjectCard
                       id={p.id}
                       title={p.title}

@@ -7,6 +7,7 @@ const ManageLayout = () => {
   const params = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState();
+  const [milestones, setMilestones] = useState();
   const [backings, setBackings] = useState();
 
   useEffect(() => {
@@ -14,8 +15,8 @@ const ManageLayout = () => {
       try {
         const response = await projectService.getOne(params.id);
         setProject(response.project);
+        setMilestones(response.milestones);
         setBackings(response.backings);
-        console.log(response.project);
       } catch (err) {
         navigate("/not-found");
         console.error(err);
@@ -31,7 +32,7 @@ const ManageLayout = () => {
           <ManageProjectSidebar id={params.id} />
         </div>
         <div className="col-span-7 space-y-10">
-          <Outlet context={{ project, backings }} />
+          <Outlet context={{ project, milestones, backings }} />
         </div>
       </div>
     </section>

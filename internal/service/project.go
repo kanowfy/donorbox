@@ -237,27 +237,27 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, fmt.Errorf("fetching project: %w", err)
 	}
 
 	milestones, err := p.GetMilestonesForProject(ctx, projectID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, fmt.Errorf("fetching milestones: %w", err)
 	}
 
 	backings, err := p.backingService.GetBackingsForProject(ctx, project.ID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, fmt.Errorf("fetching backings: %w", err)
 	}
 
 	updates, err := p.GetProjectUpdates(ctx, project.ID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, fmt.Errorf("fetching project updates: %w", err)
 	}
 
 	user, err := p.userService.GetUserByID(ctx, project.UserID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, fmt.Errorf("fetching user: %w", err)
 	}
 
 	return &model.Project{
@@ -277,6 +277,7 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*mode
 		Country:        project.Country,
 		CreatedAt:      project.CreatedAt,
 		EndDate:        project.EndDate,
+		Status:         convertProjectStatus(project.Status.ProjectStatus),
 	}, milestones, backings, updates, user, nil
 }
 
@@ -536,15 +537,15 @@ func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]model.Mileston
 	return nil, nil
 }
 
-/*
 func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {
 	var status model.ProjectStatus
 	switch dbStatus {
+	case db.ProjectStatusPending:
+		status = model.ProjectStatusPending
 	case db.ProjectStatusOngoing:
 		status = model.ProjectStatusOngoing
-	case db.ProjectStatusEnded:
-		status = model.ProjectStatusEnded
+	case db.ProjectStatusFinished:
+		status = model.ProjectStatusFinished
 	}
 	return status
 }
-*/

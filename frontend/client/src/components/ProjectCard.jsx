@@ -45,7 +45,7 @@ const ProjectCard = ({
 };
 
 ProjectCard.propTypes = {
-  id: PropTypes.string.isRequired,
+  id: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
   cover: PropTypes.string.isRequired,
   totalFund: PropTypes.number,

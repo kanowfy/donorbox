@@ -1,7 +1,6 @@
 import { Sidebar } from "flowbite-react";
 import { IoMdHome } from "react-icons/io";
 import { FaClover } from "react-icons/fa6";
-import { BsBank2 } from "react-icons/bs";
 import { MdChat } from "react-icons/md";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
@@ -23,9 +22,6 @@ const ManageProjectSidebar = ({ id }) => {
           </Sidebar.Item>
           <Sidebar.Item as={Link} to={`/manage/${id}/updates`} icon={MdChat}>
             <span className="font-medium">Updates</span>
-          </Sidebar.Item>
-          <Sidebar.Item as={Link} to={`/manage/${id}/transfer`} icon={BsBank2}>
-            <span className="font-medium">Transfer</span>
           </Sidebar.Item>
         </Sidebar.ItemGroup>
       </Sidebar.Items>

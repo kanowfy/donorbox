@@ -423,6 +423,7 @@ SELECT projects.id, projects.user_id, projects.title, projects.description, proj
 FROM projects
 LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE projects.ID = $1
+GROUP BY projects.ID
 `
 
 type GetProjectByIDRow struct {
@@ -613,10 +614,9 @@ FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE 
-    to_tsvector('english', title || ' ' || description || ' ' || province || ' ' || country) @@ plainto_tsquery('english', $1::text)
-AND project.status = 'ongoing'
+    to_tsvector('english', projects.title || ' ' || projects.description || ' ' || city || ' ' || country) @@ plainto_tsquery('english', $1::text)
+AND projects.status = 'ongoing'
 GROUP BY projects.ID
-ORDER BY backing_count DESC
 LIMIT $3::integer OFFSET $2::integer
 `
 
