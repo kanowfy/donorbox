@@ -18,6 +18,7 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/google"
 	"github.com/pressly/goose/v3"
+	"github.com/stripe/stripe-go/v81"
 )
 
 //go:embed migrations/*.sql
@@ -68,6 +69,8 @@ func main() {
 			fmt.Sprintf("http://%s:%d/api/v1/users/auth/google/callback", cfg.Host, cfg.Port),
 		),
 	)
+
+	stripe.Key = cfg.StripeSecretKey
 
 	app := &application{
 		cfg:       cfg,

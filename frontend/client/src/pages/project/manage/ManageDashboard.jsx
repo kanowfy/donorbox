@@ -48,7 +48,7 @@ const ManageDashboard = () => {
 
       <div className="mt-10">
         <Timeline horizontal>
-            {milestones?.map((m) => (
+            {milestones?.sort((a, b) => a.id - b.id).map((m) => (
             <Timeline.Item key={m.id}>
                 <Timeline.Point icon={HiCalendar}/>
                 <Timeline.Content>

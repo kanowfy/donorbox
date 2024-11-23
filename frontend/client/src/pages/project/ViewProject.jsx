@@ -31,7 +31,7 @@ const Project = () => {
 
         if (projectResponse.backings) {
           setWosList(
-            projectResponse.backings.filter((b) => b.word_of_support !== null)
+            projectResponse.backings.filter((b) => b.word_of_support !== undefined)
           );
         }
       } catch (err) {
@@ -45,10 +45,10 @@ const Project = () => {
 
   return (
     <div className="mb-10">
-      <div className="grid grid-cols-3 gap-7 max-w-7xl mx-auto">
+      <div className="grid grid-cols-3 gap-7 max-w-7xl min-w-1/2 mx-auto">
         <div className="col-span-2">
           <div className="text-3xl font-bold m-5">{project.title}</div>
-          <div className="rounded-xl overflow-hidden h-128 aspect-[5/3] object-cover">
+          <div className="rounded-xl overflow-hidden min-h-80 max-h-128 aspect-[5/3] object-cover">
             <img
               src={project.cover_picture}
               className="w-full h-full m-auto object-cover"
@@ -141,9 +141,9 @@ const Project = () => {
             {wosList?.map((b) => (
               <Support
                 key={b.id}
-                avatar={b.profile_picture ? b.profile_picture : "/avatar.svg"}
-                first_name={b.first_name ? b.first_name : "Anonymous"}
-                last_name={b.last_name ? b.last_name : ""}
+                avatar={b.backer.profile_picture ? b.backer.profile_picture : "/avatar.svg"}
+                first_name={b.backer.first_name ? b.backer.first_name : "Anonymous"}
+                last_name={b.backer.last_name ? b.backer.last_name : ""}
                 amount={b.amount}
                 day_since={utils.getDaySince(b.created_at)}
                 comment={b.word_of_support}

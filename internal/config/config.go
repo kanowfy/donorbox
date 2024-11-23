@@ -33,6 +33,8 @@ type Config struct {
 	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET"`
 
 	CloudinaryAPIUrl string `env:"CLOUDINARY_API_URL"`
+
+	StripeSecretKey string `env:"STRIPE_SK"`
 }
 
 func Load() (Config, error) {

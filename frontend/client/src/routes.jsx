@@ -10,7 +10,7 @@ import SocialLogin from "./pages/auth/SocialLogin";
 import RegisterSuccess from "./pages/auth/RegisterSuccess";
 import Verify from "./pages/auth/Verify";
 import CreateProject from "./pages/project/manage/CreateProject";
-import Donate from "./pages/project/Donate";
+import Donate from "./pages/project/donation/Donate";
 import AccountSettings from "./pages/AccountSettings";
 import ProjectList from "./pages/project/manage/ProjectList";
 import ManageDashboard from "./pages/project/manage/ManageDashboard";
@@ -21,6 +21,8 @@ import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
 import ReportProject from "./pages/project/ReportProject";
+import Payment from "./pages/project/donation/Payment";
+import CheckoutForm from "./pages/project/donation/CheckoutForm";
 
 const AppRoutes = () => {
   return (
@@ -50,6 +52,9 @@ const AppRoutes = () => {
       <Route path="/password/reset" element={<ResetPassword />} />
       <Route path="/verify" element={<Verify />} />
       <Route path="/fundraiser/:id/donate" element={<Donate />} />
+      <Route path="/fundraiser/:id/payment" element={<Payment/>}>
+        <Route path="checkout" element={<CheckoutForm />} />
+      </Route>
     </Routes>
   );
 };

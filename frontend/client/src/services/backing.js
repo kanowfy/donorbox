@@ -6,9 +6,14 @@ const getProjectStats = async (projectID) => {
     return response.data;
 }
 
-const backProject = async (projectID, req) => {
+const createBacking = async (projectID, req) => {
     const response = await axios.post(`${BASE_URL}/projects/${projectID}/backings`, req);
     return response.data;
 }
 
-export default { getProjectStats, backProject }
+const fetchPaymentIntent = async(amount) => {
+    const response = await axios.post(`${BASE_URL}/projects/paymentIntent`, { amount });
+    return response.data;
+}
+
+export default { getProjectStats, createBacking, fetchPaymentIntent }

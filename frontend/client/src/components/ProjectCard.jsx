@@ -18,7 +18,7 @@ const ProjectCard = ({
         </div>
         <div className="px-4 pt-3">
           <div className="h-12 mb-5">
-            <h5 className="block mb-2 text-base tracking-tight antialiased font-medium leading-tight text-blue-gray-900 line-clamp-2 text-ellipsis">
+            <h5 className="block mb-2 text-base tracking-tight antialiased font-semibold leading-tight text-blue-gray-900 line-clamp-2 text-ellipsis">
               {title}
             </h5>
           </div>

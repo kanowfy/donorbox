@@ -48,6 +48,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 
 	router.HandleFunc("POST /upload/image", handlers.ImageUploader.UploadImage)
 
+	router.HandleFunc("POST /projects/paymentIntent", handlers.Backing.CreatePaymentIntent)
 	router.HandleFunc("GET /projects/{id}/backings", handlers.Backing.GetBackingsForProject)
 	router.HandleFunc("POST /projects/{id}/backings", handlers.Backing.CreateProjectBacking)
 	router.HandleFunc("GET /projects/{id}/backings/stats", handlers.Backing.GetProjectBackingStats)

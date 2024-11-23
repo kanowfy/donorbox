@@ -41,14 +41,14 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
         <div className="py-3 px-10 border-gray-900 border flex items-center justify-center font-semibold text-lg rounded-xl">Share</div>
       </div>
       <div className="flex flex-col my-5 space-y-1 justify-center items-center">
-        <div className="block text-4xl font-bold text-teal-500">
+        <div className="block text-4xl font-bold text-yellow-400">
           ₫{totalFund?.toLocaleString()}
         </div>
         <div className="text-gray-700">
-          raised of <span className="text-teal-500">₫{fundGoal?.toLocaleString()}</span> target
+          raised of <span className="text-yellow-500">₫{fundGoal?.toLocaleString()}</span> target
         </div>
         <div className="text-gray-700">
-        from <span className="text-yellow-500">{backingCount}</span> donations
+        from <span className="text-teal-500">{backingCount}</span> donations
         </div>
       </div>
 
@@ -59,8 +59,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
               <Avatar
                 alt="avatar"
                 img={
-                  recentBacking.profile_picture
-                    ? recentBacking.profile_picture
+                  recentBacking.backer.profile_picture
+                    ? recentBacking.backer.profile_picture
                     : "/avatar.svg"
                 }
                 rounded
@@ -68,8 +68,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
             </div>
             <div className="col-span-10 flex flex-col">
               <div className="font-normal">
-                {recentBacking.first_name
-                  ? `${recentBacking.first_name} ${recentBacking.last_name}`
+                {recentBacking.backer.first_name
+                  ? `${recentBacking.backer.first_name} ${recentBacking.backer.last_name}`
                   : "Anonymous"}
               </div>
               <div className="flex gap-2 my-1">
@@ -95,8 +95,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
               <Avatar
                 alt="avatar"
                 img={
-                  mostBacking.profile_picture
-                    ? mostBacking.profile_picture
+                  mostBacking.backer.profile_picture
+                    ? mostBacking.backer.profile_picture
                     : "/avatar.svg"
                 }
                 rounded
@@ -104,8 +104,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
             </div>
             <div className="col-span-10 flex flex-col">
               <div className="font-normal">
-                {mostBacking.first_name
-                  ? `${mostBacking.first_name} ${mostBacking.last_name}`
+                {mostBacking.backer.first_name
+                  ? `${mostBacking.backer.first_name} ${mostBacking.backer.last_name}`
                   : "Anonymous"}
               </div>
               <div className="flex gap-2 my-1">
@@ -131,8 +131,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
               <Avatar
                 alt="avatar"
                 img={
-                  firstBacking.profile_picture
-                    ? firstBacking.profile_picture
+                  firstBacking.backer.profile_picture
+                    ? firstBacking.backer.profile_picture
                     : "/avatar.svg"
                 }
                 rounded
@@ -140,8 +140,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
             </div>
             <div className="col-span-10 flex flex-col">
               <div className="font-normal">
-                {firstBacking.first_name
-                  ? `${firstBacking.first_name} ${firstBacking.last_name}`
+                {firstBacking.backer.first_name
+                  ? `${firstBacking.backer.first_name} ${firstBacking.backer.last_name}`
                   : "Anonymous"}
               </div>
               <div className="flex gap-2 my-1">
@@ -183,10 +183,10 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
                   <Donor
                     key={b.id}
                     profile_picture={
-                      b.profile_picture ? b.profile_picture : "/avatar.svg"
+                      b.backer.profile_picture ? b.backer.profile_picture : "/avatar.svg"
                     }
-                    first_name={b.first_name ? b.first_name : "Anonymous"}
-                    last_name={b.last_name ? b.last_name : ""}
+                    first_name={b.backer.first_name ? b.backer.first_name : "Anonymous"}
+                    last_name={b.backer.last_name ? b.backer.last_name : ""}
                     amount={b.amount}
                     created_at={b.created_at}
                   />

@@ -268,8 +268,8 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 
 const getCurrentMilestone = `-- name: GetCurrentMilestone :one
 SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
-WHERE project_id = $1 AND completed IS FALSE 
-ORDER BY created_at ASC
+WHERE project_id = $1 AND current_fund < fund_goal
+ORDER BY id ASC
 LIMIT 1
 `
 
@@ -736,22 +736,6 @@ func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDPa
 		arg.Country,
 		arg.EndDate,
 	)
-	return err
-}
-
-const updateProjectFund = `-- name: UpdateProjectFund :exec
-UPDATE projects
-SET total_fund = total_fund + $2::bigint
-WHERE id = $1
-`
-
-type UpdateProjectFundParams struct {
-	ID     int64
-	Amount int64
-}
-
-func (q *Queries) UpdateProjectFund(ctx context.Context, arg UpdateProjectFundParams) error {
-	_, err := q.db.Exec(ctx, updateProjectFund, arg.ID, arg.Amount)
 	return err
 }
 

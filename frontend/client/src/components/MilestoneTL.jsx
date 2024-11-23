@@ -5,7 +5,7 @@ import utils from "../utils/utils";
 const MilestoneTL = ({milestones}) => {
     return (
         <Timeline>
-            {milestones?.map((m) => (
+            {milestones?.sort((a, b) => a.id -b.id).map((m) => (
             <Timeline.Item key={m.id}>
                 <Timeline.Point icon={HiCalendar}/>
                 <Timeline.Content>

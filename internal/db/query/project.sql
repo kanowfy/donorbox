@@ -106,18 +106,13 @@ WHERE id = $1;
 
 -- name: GetCurrentMilestone :one
 SELECT * FROM milestones
-WHERE project_id = $1 AND completed IS FALSE 
-ORDER BY created_at ASC
+WHERE project_id = $1 AND current_fund < fund_goal
+ORDER BY id ASC
 LIMIT 1;
 
 -- name: UpdateMilestoneFund :exec
 UPDATE milestones
 SET current_fund = current_fund + @amount::bigint
-WHERE id = $1;
-
--- name: UpdateProjectFund :exec
-UPDATE projects
-SET total_fund = total_fund + @amount::bigint
 WHERE id = $1;
 
 -- name: GetUnresolvedMilestones :many

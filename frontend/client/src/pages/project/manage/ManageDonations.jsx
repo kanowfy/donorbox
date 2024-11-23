@@ -15,9 +15,9 @@ const ManageDonations = () => {
         {backings.map((b) => (
           <Donor
             key={b.id}
-            profile_picture={b?.profile_picture}
-            first_name={b.first_name ? b.first_name : "Anonymous"}
-            last_name={b.last_name ? b.last_name : ""}
+            profile_picture={b?.backer.profile_picture}
+            first_name={b.backer.first_name ? b.backer.first_name : "Anonymous"}
+            last_name={b.backer.last_name ? b.backer.last_name : ""}
             amount={b.amount}
             created_at={b.created_at}
           />
