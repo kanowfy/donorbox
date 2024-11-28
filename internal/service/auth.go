@@ -25,7 +25,8 @@ var (
 
 type Auth interface {
 	Login(ctx context.Context, request dto.LoginRequest) (string, error)
-	Register(ctx context.Context, request dto.RegisterAccountRequest, hostPath string) (*model.User, error)
+	Register(ctx context.Context, request dto.UserRegisterRequest, hostPath string) (*model.User, error)
+	RegisterEscrow(ctx context.Context, req dto.EscrowRegisterRequest) (*model.EscrowUser, error)
 	ActivateAccount(ctx context.Context, activationToken string) error
 	SendResetPasswordToken(ctx context.Context, email string, hostPath string) error
 	ResetPassword(ctx context.Context, request dto.ResetPasswordRequest) error
@@ -63,7 +64,7 @@ func (a *auth) Login(ctx context.Context, req dto.LoginRequest) (string, error) 
 	return token, nil
 }
 
-func (a *auth) Register(ctx context.Context, req dto.RegisterAccountRequest, hostPath string) (*model.User, error) {
+func (a *auth) Register(ctx context.Context, req dto.UserRegisterRequest, hostPath string) (*model.User, error) {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 
 	args := db.CreateUserParams{
@@ -102,6 +103,27 @@ func (a *auth) Register(ctx context.Context, req dto.RegisterAccountRequest, hos
 		Activated:      user.Activated,
 		UserType:       model.REGULAR,
 		CreatedAt:      user.CreatedAt,
+	}, nil
+}
+
+func (a *auth) RegisterEscrow(ctx context.Context, req dto.EscrowRegisterRequest) (*model.EscrowUser, error) {
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+
+	args := db.CreateEscrowUserParams{
+		Email:          req.Email,
+		HashedPassword: string(hashedPassword),
+	}
+
+	escrow, err := a.repository.CreateEscrowUser(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.EscrowUser{
+		ID:        escrow.ID,
+		Email:     escrow.Email,
+		UserType:  model.ESCROW,
+		CreatedAt: escrow.CreatedAt,
 	}, nil
 }
 

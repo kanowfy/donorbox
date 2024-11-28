@@ -6,9 +6,10 @@ WHERE id = $1;
 SELECT * FROM escrow_users
 WHERE email = $1;
 
--- name: GetEscrowUser :one
-SELECT * FROM escrow_users
-LIMIT 1;
+-- name: CreateEscrowUser :one
+INSERT INTO escrow_users (email, hashed_password)
+VALUES ($1, $2)
+RETURNING *;
 
 -- name: UpdateEscrowUserByID :exec
 UPDATE escrow_users SET email = $2, hashed_password = $3

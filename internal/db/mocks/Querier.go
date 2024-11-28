@@ -183,6 +183,63 @@ func (_c *Querier_CreateCertificate_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
+// CreateEscrowUser provides a mock function with given fields: ctx, arg
+func (_m *Querier) CreateEscrowUser(ctx context.Context, arg db.CreateEscrowUserParams) (db.EscrowUser, error) {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateEscrowUser")
+	}
+
+	var r0 db.EscrowUser
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateEscrowUserParams) (db.EscrowUser, error)); ok {
+		return rf(ctx, arg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateEscrowUserParams) db.EscrowUser); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Get(0).(db.EscrowUser)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.CreateEscrowUserParams) error); ok {
+		r1 = rf(ctx, arg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_CreateEscrowUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateEscrowUser'
+type Querier_CreateEscrowUser_Call struct {
+	*mock.Call
+}
+
+// CreateEscrowUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.CreateEscrowUserParams
+func (_e *Querier_Expecter) CreateEscrowUser(ctx interface{}, arg interface{}) *Querier_CreateEscrowUser_Call {
+	return &Querier_CreateEscrowUser_Call{Call: _e.mock.On("CreateEscrowUser", ctx, arg)}
+}
+
+func (_c *Querier_CreateEscrowUser_Call) Run(run func(ctx context.Context, arg db.CreateEscrowUserParams)) *Querier_CreateEscrowUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.CreateEscrowUserParams))
+	})
+	return _c
+}
+
+func (_c *Querier_CreateEscrowUser_Call) Return(_a0 db.EscrowUser, _a1 error) *Querier_CreateEscrowUser_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_CreateEscrowUser_Call) RunAndReturn(run func(context.Context, db.CreateEscrowUserParams) (db.EscrowUser, error)) *Querier_CreateEscrowUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateMilestone provides a mock function with given fields: ctx, arg
 func (_m *Querier) CreateMilestone(ctx context.Context, arg db.CreateMilestoneParams) (db.Milestone, error) {
 	ret := _m.Called(ctx, arg)
@@ -1084,119 +1141,6 @@ func (_c *Querier_GetCerificateByID_Call) RunAndReturn(run func(context.Context,
 	return _c
 }
 
-// GetCurrentMilestone provides a mock function with given fields: ctx, projectID
-func (_m *Querier) GetCurrentMilestone(ctx context.Context, projectID int64) (db.Milestone, error) {
-	ret := _m.Called(ctx, projectID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetCurrentMilestone")
-	}
-
-	var r0 db.Milestone
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (db.Milestone, error)); ok {
-		return rf(ctx, projectID)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) db.Milestone); ok {
-		r0 = rf(ctx, projectID)
-	} else {
-		r0 = ret.Get(0).(db.Milestone)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, projectID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Querier_GetCurrentMilestone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCurrentMilestone'
-type Querier_GetCurrentMilestone_Call struct {
-	*mock.Call
-}
-
-// GetCurrentMilestone is a helper method to define mock.On call
-//   - ctx context.Context
-//   - projectID int64
-func (_e *Querier_Expecter) GetCurrentMilestone(ctx interface{}, projectID interface{}) *Querier_GetCurrentMilestone_Call {
-	return &Querier_GetCurrentMilestone_Call{Call: _e.mock.On("GetCurrentMilestone", ctx, projectID)}
-}
-
-func (_c *Querier_GetCurrentMilestone_Call) Run(run func(ctx context.Context, projectID int64)) *Querier_GetCurrentMilestone_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
-	})
-	return _c
-}
-
-func (_c *Querier_GetCurrentMilestone_Call) Return(_a0 db.Milestone, _a1 error) *Querier_GetCurrentMilestone_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Querier_GetCurrentMilestone_Call) RunAndReturn(run func(context.Context, int64) (db.Milestone, error)) *Querier_GetCurrentMilestone_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetEscrowUser provides a mock function with given fields: ctx
-func (_m *Querier) GetEscrowUser(ctx context.Context) (db.EscrowUser, error) {
-	ret := _m.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetEscrowUser")
-	}
-
-	var r0 db.EscrowUser
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (db.EscrowUser, error)); ok {
-		return rf(ctx)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context) db.EscrowUser); ok {
-		r0 = rf(ctx)
-	} else {
-		r0 = ret.Get(0).(db.EscrowUser)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Querier_GetEscrowUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEscrowUser'
-type Querier_GetEscrowUser_Call struct {
-	*mock.Call
-}
-
-// GetEscrowUser is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *Querier_Expecter) GetEscrowUser(ctx interface{}) *Querier_GetEscrowUser_Call {
-	return &Querier_GetEscrowUser_Call{Call: _e.mock.On("GetEscrowUser", ctx)}
-}
-
-func (_c *Querier_GetEscrowUser_Call) Run(run func(ctx context.Context)) *Querier_GetEscrowUser_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
-	})
-	return _c
-}
-
-func (_c *Querier_GetEscrowUser_Call) Return(_a0 db.EscrowUser, _a1 error) *Querier_GetEscrowUser_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Querier_GetEscrowUser_Call) RunAndReturn(run func(context.Context) (db.EscrowUser, error)) *Querier_GetEscrowUser_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetEscrowUserByEmail provides a mock function with given fields: ctx, email
 func (_m *Querier) GetEscrowUserByEmail(ctx context.Context, email string) (db.EscrowUser, error) {
 	ret := _m.Called(ctx, email)
@@ -1652,6 +1596,64 @@ func (_c *Querier_GetMostRecentBackingDonor_Call) Return(_a0 db.GetMostRecentBac
 }
 
 func (_c *Querier_GetMostRecentBackingDonor_Call) RunAndReturn(run func(context.Context, int64) (db.GetMostRecentBackingDonorRow, error)) *Querier_GetMostRecentBackingDonor_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetPendingProjects provides a mock function with given fields: ctx
+func (_m *Querier) GetPendingProjects(ctx context.Context) ([]db.GetPendingProjectsRow, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetPendingProjects")
+	}
+
+	var r0 []db.GetPendingProjectsRow
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]db.GetPendingProjectsRow, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []db.GetPendingProjectsRow); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.GetPendingProjectsRow)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetPendingProjects_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetPendingProjects'
+type Querier_GetPendingProjects_Call struct {
+	*mock.Call
+}
+
+// GetPendingProjects is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Querier_Expecter) GetPendingProjects(ctx interface{}) *Querier_GetPendingProjects_Call {
+	return &Querier_GetPendingProjects_Call{Call: _e.mock.On("GetPendingProjects", ctx)}
+}
+
+func (_c *Querier_GetPendingProjects_Call) Run(run func(ctx context.Context)) *Querier_GetPendingProjects_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Querier_GetPendingProjects_Call) Return(_a0 []db.GetPendingProjectsRow, _a1 error) *Querier_GetPendingProjects_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetPendingProjects_Call) RunAndReturn(run func(context.Context) ([]db.GetPendingProjectsRow, error)) *Querier_GetPendingProjects_Call {
 	_c.Call.Return(run)
 	return _c
 }

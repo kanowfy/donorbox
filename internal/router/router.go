@@ -29,12 +29,14 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 
 	router.HandleFunc("GET /escrow/authenticated", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetAuthenticatedEscrow))
 	router.HandleFunc("POST /escrow/login", handlers.Escrow.Login)
+	router.HandleFunc("POST /escrow/register", handlers.Auth.RegisterEscrow)
 	router.HandleFunc("POST /escrow/approve", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveOfProject))
 	router.HandleFunc("POST /escrow/{id}/resolve", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ResolveMilestone))
 
 	router.HandleFunc("GET /projects", handlers.Project.GetAllProjects)
 	router.HandleFunc("POST /projects/search", handlers.Project.SearchProjects)
 	router.HandleFunc("GET /projects/ended", handlers.Project.GetEndedProjects)
+	router.HandleFunc("GET /projects/pending", authMiddleware.RequireEscrowAuthentication(handlers.Project.GetPendingProjects))
 	router.HandleFunc("GET /projects/{id}", handlers.Project.GetProjectDetails)
 	router.HandleFunc("POST /projects", authMiddleware.RequireUserAuthentication(handlers.Project.CreateProject))
 	router.HandleFunc("GET /projects/authenticated", authMiddleware.RequireUserAuthentication(handlers.Project.GetProjectsForUser))

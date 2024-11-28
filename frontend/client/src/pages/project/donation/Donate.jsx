@@ -18,7 +18,6 @@ const Donate = () => {
     handleSubmit,
     setValue,
     formState: { errors },
-    reset,
   } = useForm();
   const [project, setProject] = useState();
 
@@ -110,7 +109,7 @@ const Donate = () => {
               />
             </div>
             {errors.amount?.type === "required" && (
-              <p className="text-red-600 text-sm">errors.amount.message</p>
+              <p className="text-red-600 text-sm">{errors.amount.message}</p>
             )}
             {errors.amount?.type === "min" && (
               <p className="text-red-600 text-sm">

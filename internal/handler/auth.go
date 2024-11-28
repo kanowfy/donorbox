@@ -20,6 +20,7 @@ import (
 type Auth interface {
 	Login(w http.ResponseWriter, r *http.Request)
 	Register(w http.ResponseWriter, r *http.Request)
+	RegisterEscrow(w http.ResponseWriter, r *http.Request)
 	ActivateUser(w http.ResponseWriter, r *http.Request)
 	ForgotPassword(w http.ResponseWriter, r *http.Request)
 	ResetPassword(w http.ResponseWriter, r *http.Request)
@@ -78,7 +79,7 @@ func (a *auth) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *auth) Register(w http.ResponseWriter, r *http.Request) {
-	var req dto.RegisterAccountRequest
+	var req dto.UserRegisterRequest
 
 	err := json.ReadJSON(w, r, &req)
 	if err != nil {
@@ -99,6 +100,34 @@ func (a *auth) Register(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusAccepted, map[string]interface{}{
 		"user": user,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+// TODO: Add route protection
+func (a *auth) RegisterEscrow(w http.ResponseWriter, r *http.Request) {
+	var req dto.EscrowRegisterRequest
+
+	err := json.ReadJSON(w, r, &req)
+	if err != nil {
+		httperror.BadRequestResponse(w, r, err)
+		return
+	}
+
+	if err = a.validator.Struct(req); err != nil {
+		httperror.FailedValidationResponse(w, r, err)
+		return
+	}
+
+	user, err := a.service.RegisterEscrow(r.Context(), req)
+	if err != nil {
+		httperror.BadRequestResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusAccepted, map[string]interface{}{
+		"escrow_user": user,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

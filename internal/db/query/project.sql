@@ -4,7 +4,7 @@ SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_co
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE category_id = 
+WHERE category_id =
     CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
 AND projects.status = 'ongoing'
 GROUP BY projects.ID
@@ -17,7 +17,7 @@ SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_co
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE 
+WHERE
     to_tsvector('english', projects.title || ' ' || projects.description || ' ' || city || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
 AND projects.status = 'ongoing'
 GROUP BY projects.ID
@@ -48,9 +48,18 @@ WHERE projects.status = 'finished'
 GROUP BY projects.ID
 ORDER BY end_date DESC;
 
+-- name: GetPendingProjects :many
+SELECT projects.*, SUM(milestones.fund_goal) AS fund_goal
+FROM projects
+LEFT JOIN milestones ON projects.ID = milestones.project_id
+WHERE status = 'pending'
+GROUP BY projects.ID
+ORDER BY projects.created_at DESC;
+
 -- name: GetMilestoneForProject :many
 SELECT * FROM milestones
-WHERE project_id = $1;
+WHERE project_id = $1
+ORDER BY id;
 
 -- name: UpdateProjectByID :exec
 UPDATE projects
@@ -104,12 +113,6 @@ RETURNING *;
 SELECT * FROM milestones
 WHERE id = $1;
 
--- name: GetCurrentMilestone :one
-SELECT * FROM milestones
-WHERE project_id = $1 AND current_fund < fund_goal
-ORDER BY id ASC
-LIMIT 1;
-
 -- name: UpdateMilestoneFund :exec
 UPDATE milestones
 SET current_fund = current_fund + @amount::bigint
@@ -118,5 +121,4 @@ WHERE id = $1;
 -- name: GetUnresolvedMilestones :many
 SELECT * FROM milestones
 WHERE current_fund >= fund_goal
-AND completed IS FALSE
-ORDER BY created_at ASC;
+AND completed IS FALSE;

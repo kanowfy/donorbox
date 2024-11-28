@@ -192,7 +192,7 @@ SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_co
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE category_id = 
+WHERE category_id =
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
 AND projects.status = 'ongoing'
 GROUP BY projects.ID
@@ -220,7 +220,7 @@ type GetAllProjectsRow struct {
 	District       string
 	City           string
 	Country        string
-	Status         NullProjectStatus
+	Status         ProjectStatus
 	CreatedAt      time.Time
 	TotalFund      int64
 	FundGoal       int64
@@ -266,30 +266,6 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 	return items, nil
 }
 
-const getCurrentMilestone = `-- name: GetCurrentMilestone :one
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
-WHERE project_id = $1 AND current_fund < fund_goal
-ORDER BY id ASC
-LIMIT 1
-`
-
-func (q *Queries) GetCurrentMilestone(ctx context.Context, projectID int64) (Milestone, error) {
-	row := q.db.QueryRow(ctx, getCurrentMilestone, projectID)
-	var i Milestone
-	err := row.Scan(
-		&i.ID,
-		&i.ProjectID,
-		&i.Title,
-		&i.Description,
-		&i.FundGoal,
-		&i.CurrentFund,
-		&i.BankDescription,
-		&i.Completed,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const getFinishedProjects = `-- name: GetFinishedProjects :many
 SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, projects.created_at, SUM(milestones.current_fund) AS total_fund,
 SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count
@@ -315,7 +291,7 @@ type GetFinishedProjectsRow struct {
 	District       string
 	City           string
 	Country        string
-	Status         NullProjectStatus
+	Status         ProjectStatus
 	CreatedAt      time.Time
 	TotalFund      int64
 	FundGoal       int64
@@ -386,6 +362,7 @@ func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, er
 const getMilestoneForProject = `-- name: GetMilestoneForProject :many
 SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
 WHERE project_id = $1
+ORDER BY id
 `
 
 func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) ([]Milestone, error) {
@@ -407,6 +384,71 @@ func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) (
 			&i.BankDescription,
 			&i.Completed,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPendingProjects = `-- name: GetPendingProjects :many
+SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, projects.created_at, SUM(milestones.fund_goal) AS fund_goal
+FROM projects
+LEFT JOIN milestones ON projects.ID = milestones.project_id
+WHERE status = 'pending'
+GROUP BY projects.ID
+ORDER BY projects.created_at DESC
+`
+
+type GetPendingProjectsRow struct {
+	ID             int64
+	UserID         int64
+	Title          string
+	Description    string
+	CoverPicture   string
+	CategoryID     int32
+	EndDate        time.Time
+	ReceiverNumber string
+	ReceiverName   string
+	Address        string
+	District       string
+	City           string
+	Country        string
+	Status         ProjectStatus
+	CreatedAt      time.Time
+	FundGoal       int64
+}
+
+func (q *Queries) GetPendingProjects(ctx context.Context) ([]GetPendingProjectsRow, error) {
+	rows, err := q.db.Query(ctx, getPendingProjects)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingProjectsRow
+	for rows.Next() {
+		var i GetPendingProjectsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Title,
+			&i.Description,
+			&i.CoverPicture,
+			&i.CategoryID,
+			&i.EndDate,
+			&i.ReceiverNumber,
+			&i.ReceiverName,
+			&i.Address,
+			&i.District,
+			&i.City,
+			&i.Country,
+			&i.Status,
+			&i.CreatedAt,
+			&i.FundGoal,
 		); err != nil {
 			return nil, err
 		}
@@ -440,7 +482,7 @@ type GetProjectByIDRow struct {
 	District       string
 	City           string
 	Country        string
-	Status         NullProjectStatus
+	Status         ProjectStatus
 	CreatedAt      time.Time
 	TotalFund      int64
 	FundGoal       int64
@@ -526,7 +568,7 @@ type GetProjectsForUserRow struct {
 	District       string
 	City           string
 	Country        string
-	Status         NullProjectStatus
+	Status         ProjectStatus
 	CreatedAt      time.Time
 	TotalFund      int64
 	FundGoal       int64
@@ -574,7 +616,6 @@ const getUnresolvedMilestones = `-- name: GetUnresolvedMilestones :many
 SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
 WHERE current_fund >= fund_goal
 AND completed IS FALSE
-ORDER BY created_at ASC
 `
 
 func (q *Queries) GetUnresolvedMilestones(ctx context.Context) ([]Milestone, error) {
@@ -613,7 +654,7 @@ SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_co
 FROM projects
 LEFT JOIN backings ON projects.ID = backings.project_id
 LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE 
+WHERE
     to_tsvector('english', projects.title || ' ' || projects.description || ' ' || city || ' ' || country) @@ plainto_tsquery('english', $1::text)
 AND projects.status = 'ongoing'
 GROUP BY projects.ID
@@ -640,7 +681,7 @@ type SearchProjectsRow struct {
 	District       string
 	City           string
 	Country        string
-	Status         NullProjectStatus
+	Status         ProjectStatus
 	CreatedAt      time.Time
 	TotalFund      int64
 	FundGoal       int64
@@ -746,7 +787,7 @@ WHERE id = $1
 
 type UpdateProjectStatusParams struct {
 	ID     int64
-	Status NullProjectStatus
+	Status ProjectStatus
 }
 
 func (q *Queries) UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error {

@@ -27,6 +27,13 @@ func NewBacking(repository db.Querier) Backing {
 }
 
 func (b *backing) CreateBacking(ctx context.Context, projectID int64, req dto.BackingRequest) error {
+	queries := b.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
 	// Create db backing
 	backingParams := db.CreateBackingParams{
 		ProjectID: projectID,
@@ -41,24 +48,50 @@ func (b *backing) CreateBacking(ctx context.Context, projectID int64, req dto.Ba
 		backingParams.UserID = req.UserID
 	}
 
-	_, err := b.repository.CreateBacking(ctx, backingParams)
+	_, err = q.CreateBacking(ctx, backingParams)
 	if err != nil {
 		return err
 	}
 
-	milestone, err := b.repository.GetCurrentMilestone(ctx, projectID)
+	// assuming the milestones are sorted
+	milestones, err := q.GetMilestoneForProject(ctx, projectID)
 	if err != nil {
 		return err
 	}
 
-	if err := b.repository.UpdateMilestoneFund(ctx, db.UpdateMilestoneFundParams{
-		ID:     milestone.ID,
-		Amount: req.Amount,
-	}); err != nil {
-		return err
+	remainingAmount := req.Amount
+	for _, m := range milestones {
+		backAmount := remainingAmount
+		if m.CurrentFund < m.FundGoal {
+			gap := m.FundGoal - m.CurrentFund
+			if gap < backAmount {
+				backAmount = gap
+			}
+			remainingAmount -= backAmount
+			if err := q.UpdateMilestoneFund(ctx, db.UpdateMilestoneFundParams{
+				ID:     m.ID,
+				Amount: backAmount,
+			}); err != nil {
+				return err
+			}
+
+			if remainingAmount == 0 {
+				break
+			}
+		}
 	}
 
-	return nil
+	// any remaining fund will go to the last milestone
+	if remainingAmount > 0 {
+		if err := q.UpdateMilestoneFund(ctx, db.UpdateMilestoneFundParams{
+			ID:     milestones[len(milestones)-1].ID,
+			Amount: remainingAmount,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit(ctx)
 }
 
 /*

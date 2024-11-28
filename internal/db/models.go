@@ -113,7 +113,7 @@ type Project struct {
 	District       string
 	City           string
 	Country        string
-	Status         NullProjectStatus
+	Status         ProjectStatus
 	CreatedAt      time.Time
 }
 

@@ -29,8 +29,13 @@ type MilestoneRequest struct {
 }
 
 type CreateProjectResponse struct {
-	Project    model.Project     `json:"project" validate:"required"`
-	Milestones []model.Milestone `json:"milestones" validate:"required"`
+	Project    model.Project     `json:"project"`
+	Milestones []model.Milestone `json:"milestones"`
+}
+
+type PendingProjectResponse struct {
+	Project    model.Project     `json:"project"`
+	Milestones []model.Milestone `json:"milestones"`
 }
 
 type UpdateProjectRequest struct {
@@ -47,21 +52,20 @@ type UpdateProjectRequest struct {
 }
 
 type CreateProjectUpdateRequest struct {
-	ProjectID       string  `json:"project_id" validate:"required,number"`
+	ProjectID       int64   `json:"project_id" validate:"required,number"`
 	AttachmentPhoto *string `json:"attachment_photo" validate:"omitnil,http_url"`
 	Description     string  `json:"description" validate:"required"`
 }
 
 type CreateProjectCommentRequest struct {
-	ProjectID       string  `json:"project_id" validate:"required,number"`
+	ProjectID       int64   `json:"project_id" validate:"required,number"`
 	BackerID        string  `json:"backer_id" validate:"required,number"`
 	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,number"`
 	Content         string  `json:"content" validate:"required"`
 }
 
 type ProjectApprovalRequest struct {
-	ProjectID    string  `json:"project_id" validate:"required,number"`
-	Approved     bool    `json:"approved" validate:"required"`
+	ProjectID    int64   `json:"project_id" validate:"required,number"`
+	Approved     *bool   `json:"approved,omitempty" validate:"omitnil"`
 	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
-	Description  *string `json:"description,omitempty" validate:"omitnil"`
 }

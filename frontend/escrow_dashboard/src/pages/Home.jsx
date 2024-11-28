@@ -35,20 +35,20 @@ const Home = () => {
     <div className="p-10 bg-slate-200 w-full space-y-7 min-h-screen">
       <div className="grid lg:grid-cols-4 gap-7 sm:grid-cols-2">
         <InfoCard
-          title="Balance"
+          title="Total donated fund"
           content={stats?.balance && `₫${utils.formatNumber(stats?.balance)}`}
         />
         <InfoCard
-          title="Total active Fundraisers"
-          content={`${stats?.ongoing}`}
+          title="Number of donations"
+          content={`${stats?.ongoing ?? 0}`}
         />
         <InfoCard
-          title="Number of Successful Payouts"
-          content={`${stats?.completed_payout}`}
+          title="Number of pending projects"
+          content={`${stats?.completed_payout ?? 0}`}
         />
         <InfoCard
-          title="Number of Refunded Projects"
-          content={`${stats?.completed_refund}`}
+          title="Number of finished projects"
+          content={`${stats?.completed_refund ?? 0}`}
         />
       </div>
       <div className="grid grid-cols-2">

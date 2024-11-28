@@ -1,10 +1,15 @@
 package dto
 
-type RegisterAccountRequest struct {
+type UserRegisterRequest struct {
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8,max=50"`
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name" validate:"required"`
+}
+
+type EscrowRegisterRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8,max=50"`
 }
 
 type LoginRequest struct {

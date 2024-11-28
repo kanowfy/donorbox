@@ -188,7 +188,7 @@ func (_c *Auth_LoginOAuth_Call) RunAndReturn(run func(context.Context, goth.User
 }
 
 // Register provides a mock function with given fields: ctx, request, hostPath
-func (_m *Auth) Register(ctx context.Context, request dto.RegisterAccountRequest, hostPath string) (*model.User, error) {
+func (_m *Auth) Register(ctx context.Context, request dto.UserRegisterRequest, hostPath string) (*model.User, error) {
 	ret := _m.Called(ctx, request, hostPath)
 
 	if len(ret) == 0 {
@@ -197,10 +197,10 @@ func (_m *Auth) Register(ctx context.Context, request dto.RegisterAccountRequest
 
 	var r0 *model.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, dto.RegisterAccountRequest, string) (*model.User, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, dto.UserRegisterRequest, string) (*model.User, error)); ok {
 		return rf(ctx, request, hostPath)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, dto.RegisterAccountRequest, string) *model.User); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, dto.UserRegisterRequest, string) *model.User); ok {
 		r0 = rf(ctx, request, hostPath)
 	} else {
 		if ret.Get(0) != nil {
@@ -208,7 +208,7 @@ func (_m *Auth) Register(ctx context.Context, request dto.RegisterAccountRequest
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, dto.RegisterAccountRequest, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, dto.UserRegisterRequest, string) error); ok {
 		r1 = rf(ctx, request, hostPath)
 	} else {
 		r1 = ret.Error(1)
@@ -224,15 +224,15 @@ type Auth_Register_Call struct {
 
 // Register is a helper method to define mock.On call
 //   - ctx context.Context
-//   - request dto.RegisterAccountRequest
+//   - request dto.UserRegisterRequest
 //   - hostPath string
 func (_e *Auth_Expecter) Register(ctx interface{}, request interface{}, hostPath interface{}) *Auth_Register_Call {
 	return &Auth_Register_Call{Call: _e.mock.On("Register", ctx, request, hostPath)}
 }
 
-func (_c *Auth_Register_Call) Run(run func(ctx context.Context, request dto.RegisterAccountRequest, hostPath string)) *Auth_Register_Call {
+func (_c *Auth_Register_Call) Run(run func(ctx context.Context, request dto.UserRegisterRequest, hostPath string)) *Auth_Register_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(dto.RegisterAccountRequest), args[2].(string))
+		run(args[0].(context.Context), args[1].(dto.UserRegisterRequest), args[2].(string))
 	})
 	return _c
 }
@@ -242,7 +242,66 @@ func (_c *Auth_Register_Call) Return(_a0 *model.User, _a1 error) *Auth_Register_
 	return _c
 }
 
-func (_c *Auth_Register_Call) RunAndReturn(run func(context.Context, dto.RegisterAccountRequest, string) (*model.User, error)) *Auth_Register_Call {
+func (_c *Auth_Register_Call) RunAndReturn(run func(context.Context, dto.UserRegisterRequest, string) (*model.User, error)) *Auth_Register_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RegisterEscrow provides a mock function with given fields: ctx, req
+func (_m *Auth) RegisterEscrow(ctx context.Context, req dto.EscrowRegisterRequest) (*model.EscrowUser, error) {
+	ret := _m.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RegisterEscrow")
+	}
+
+	var r0 *model.EscrowUser
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, dto.EscrowRegisterRequest) (*model.EscrowUser, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, dto.EscrowRegisterRequest) *model.EscrowUser); ok {
+		r0 = rf(ctx, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.EscrowUser)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, dto.EscrowRegisterRequest) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Auth_RegisterEscrow_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterEscrow'
+type Auth_RegisterEscrow_Call struct {
+	*mock.Call
+}
+
+// RegisterEscrow is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req dto.EscrowRegisterRequest
+func (_e *Auth_Expecter) RegisterEscrow(ctx interface{}, req interface{}) *Auth_RegisterEscrow_Call {
+	return &Auth_RegisterEscrow_Call{Call: _e.mock.On("RegisterEscrow", ctx, req)}
+}
+
+func (_c *Auth_RegisterEscrow_Call) Run(run func(ctx context.Context, req dto.EscrowRegisterRequest)) *Auth_RegisterEscrow_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(dto.EscrowRegisterRequest))
+	})
+	return _c
+}
+
+func (_c *Auth_RegisterEscrow_Call) Return(_a0 *model.EscrowUser, _a1 error) *Auth_RegisterEscrow_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Auth_RegisterEscrow_Call) RunAndReturn(run func(context.Context, dto.EscrowRegisterRequest) (*model.EscrowUser, error)) *Auth_RegisterEscrow_Call {
 	_c.Call.Return(run)
 	return _c
 }

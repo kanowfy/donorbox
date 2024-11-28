@@ -9,13 +9,19 @@ import (
 	"context"
 )
 
-const getEscrowUser = `-- name: GetEscrowUser :one
-SELECT id, email, hashed_password, created_at FROM escrow_users
-LIMIT 1
+const createEscrowUser = `-- name: CreateEscrowUser :one
+INSERT INTO escrow_users (email, hashed_password)
+VALUES ($1, $2)
+RETURNING id, email, hashed_password, created_at
 `
 
-func (q *Queries) GetEscrowUser(ctx context.Context) (EscrowUser, error) {
-	row := q.db.QueryRow(ctx, getEscrowUser)
+type CreateEscrowUserParams struct {
+	Email          string
+	HashedPassword string
+}
+
+func (q *Queries) CreateEscrowUser(ctx context.Context, arg CreateEscrowUserParams) (EscrowUser, error) {
+	row := q.db.QueryRow(ctx, createEscrowUser, arg.Email, arg.HashedPassword)
 	var i EscrowUser
 	err := row.Scan(
 		&i.ID,

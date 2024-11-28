@@ -19,6 +19,7 @@ type Project interface {
 	SearchProjects(w http.ResponseWriter, r *http.Request)
 	GetProjectsForUser(w http.ResponseWriter, r *http.Request)
 	GetEndedProjects(w http.ResponseWriter, r *http.Request)
+	GetPendingProjects(w http.ResponseWriter, r *http.Request)
 	GetProjectDetails(w http.ResponseWriter, r *http.Request)
 	CreateProject(w http.ResponseWriter, r *http.Request)
 	UpdateProject(w http.ResponseWriter, r *http.Request)
@@ -122,6 +123,20 @@ func (p *project) GetEndedProjects(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"projects": projects,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (p *project) GetPendingProjects(w http.ResponseWriter, r *http.Request) {
+	projects, err := p.service.GetPendingProjects(r.Context())
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"result": projects,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

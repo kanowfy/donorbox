@@ -31,30 +31,38 @@ const CheckoutForm = () => {
 
     const { error } = await stripe.confirmPayment({
       elements,
-      confirmParams: {
-      },
+      confirmParams: {},
       redirect: "if_required",
     });
 
     if (error) {
-      setIsfFailed({
+      setIsFailed({
         status: true,
         message: error.message,
-    });
+      });
     } else {
-      console.log("amount ", amount, "user_id", user_id, "project_id", project_id, "wos", word_of_support);
+      console.log(
+        "amount ",
+        amount,
+        "user_id",
+        user_id,
+        "project_id",
+        project_id,
+        "wos",
+        word_of_support,
+      );
       setIsSuccessful(true);
       const response = await backingService.createBacking(project_id, {
         amount: Number(amount),
         user_id: Number(user_id),
         word_of_support: word_of_support,
-      })
+      });
       console.log(response);
     }
     setIsLoading(false);
     setTimeout(() => {
       navigate("/fundraiser/" + params.id);
-    }, 5000)
+    }, 5000);
   };
 
   const paymentElementOptions = {
@@ -81,40 +89,50 @@ const CheckoutForm = () => {
               {isLoading ? <Spinner /> : "Pay now"}
             </Button>
           </form>
-      <Modal
-        show={isSuccessful}
-        size="md"
-        onClose={() => setIsSuccessful(false)}
-        popup
-      >
-        <Modal.Header />
-        <Modal.Body>
-          <div className="text-center flex flex-col space-y-2">
-            <img
-              src="/success.svg"
-              height={32}
-              width={32}
-              className="mx-auto"
-            />
-            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-              Thanks for supporting! You will be navigated to the fundraiser
-              page in a short time...
-            </h3>
-          </div>
-        </Modal.Body>
-      </Modal>
-      <Modal show={isFailed.status} size="md" onClose={() => setIsFailed(false)} popup>
-        <Modal.Header />
-        <Modal.Body>
-          <div className="text-center flex flex-col space-y-2">
-            <img src="/fail.svg" height={32} width={32} className="mx-auto" />
-            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-              Failed to process payment. Make sure you have entered correct
-              payment details.
-            </h3>
-          </div>
-        </Modal.Body>
-      </Modal>
+          <Modal
+            show={isSuccessful}
+            size="md"
+            onClose={() => setIsSuccessful(false)}
+            popup
+          >
+            <Modal.Header />
+            <Modal.Body>
+              <div className="text-center flex flex-col space-y-2">
+                <img
+                  src="/success.svg"
+                  height={32}
+                  width={32}
+                  className="mx-auto"
+                />
+                <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                  Thanks for supporting! You will be navigated to the fundraiser
+                  page in a short time...
+                </h3>
+              </div>
+            </Modal.Body>
+          </Modal>
+          <Modal
+            show={isFailed.status}
+            size="md"
+            onClose={() => setIsFailed(false)}
+            popup
+          >
+            <Modal.Header />
+            <Modal.Body>
+              <div className="text-center flex flex-col space-y-2">
+                <img
+                  src="/fail.svg"
+                  height={32}
+                  width={32}
+                  className="mx-auto"
+                />
+                <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                  Failed to process payment. Make sure you have entered correct
+                  payment details.
+                </h3>
+              </div>
+            </Modal.Body>
+          </Modal>
         </div>
       </div>
     </div>

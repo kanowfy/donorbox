@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { LuLogOut } from "react-icons/lu";
 import { RxDashboard } from "react-icons/rx";
-import { MdPayments } from "react-icons/md";
-import { RiRefund2Fill } from "react-icons/ri";
 import { AiOutlineAudit } from "react-icons/ai";
+import { MdOutlinePostAdd } from "react-icons/md";
+import { GoMilestone } from "react-icons/go";
 
 const customSidenavTheme = {
   root: {
@@ -113,15 +113,19 @@ const Sidenav = () => {
                 <Sidebar.Item as={Link} to="/" icon={RxDashboard}>
                   Dashboard
                 </Sidebar.Item>
-                <Sidebar.Item as={Link} to="/manage/payout" icon={MdPayments}>
-                  Manage Payouts
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/applications"
+                  icon={MdOutlinePostAdd}
+                >
+                  Manage Applications
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}
-                  to="/manage/refund"
-                  icon={RiRefund2Fill}
+                  to="/manage/milestones"
+                  icon={GoMilestone}
                 >
-                  Manage Refunds
+                  Manage Milestones 
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}

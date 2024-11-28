@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"github.com/kanowfy/donorbox/internal/db"
@@ -63,22 +62,17 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser
 }
 
 func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
-	pid, err := strconv.ParseInt(req.ProjectID, 10, 64)
-	if err != nil {
-		return err
+	params := db.UpdateProjectStatusParams{
+		ID: req.ProjectID,
 	}
 
-	var status db.NullProjectStatus
-	if req.Approved {
-		status.Scan(db.ProjectStatusOngoing)
+	if req.Approved != nil {
+		params.Status = db.ProjectStatusOngoing
 	} else {
 		//TODO: do something with other req fields
-		status.Scan(db.ProjectStatusRejected)
+		params.Status = db.ProjectStatusRejected
 	}
-	if err := e.repository.UpdateProjectStatus(ctx, db.UpdateProjectStatusParams{
-		ID:     pid,
-		Status: status,
-	}); err != nil {
+	if err := e.repository.UpdateProjectStatus(ctx, params); err != nil {
 		return err
 	}
 

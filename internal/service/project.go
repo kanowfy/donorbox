@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
@@ -23,6 +22,7 @@ type Project interface {
 	SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error)
 	GetProjectsForUser(ctx context.Context, userID int64) ([]model.Project, error)
 	GetEndedProjects(ctx context.Context) ([]model.Project, error)
+	GetPendingProjects(ctx context.Context) ([]dto.PendingProjectResponse, error)
 	GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)
 	CreateProject(ctx context.Context, userID int64, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)
 	UpdateProject(ctx context.Context, userID, projectID int64, req dto.UpdateProjectRequest) error
@@ -205,6 +205,58 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 	return projects, nil
 }
 
+func (p *project) GetPendingProjects(ctx context.Context) ([]dto.PendingProjectResponse, error) {
+	dbProjects, err := p.repository.GetPendingProjects(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []dto.PendingProjectResponse
+
+	for _, pj := range dbProjects {
+		dbMilestones, err := p.repository.GetMilestoneForProject(ctx, pj.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		var milestones []model.Milestone
+
+		for _, m := range dbMilestones {
+			milestones = append(milestones, model.Milestone{
+				ID:              m.ID,
+				ProjectID:       m.ProjectID,
+				Title:           m.Title,
+				Description:     m.Description,
+				FundGoal:        m.FundGoal,
+				BankDescription: m.BankDescription,
+			})
+		}
+
+		projects = append(projects, dto.PendingProjectResponse{
+			Project: model.Project{
+				ID:             pj.ID,
+				UserID:         pj.UserID,
+				CategoryID:     pj.CategoryID,
+				Title:          pj.Title,
+				Description:    pj.Description,
+				FundGoal:       pj.FundGoal,
+				CoverPicture:   pj.CoverPicture,
+				ReceiverName:   pj.ReceiverName,
+				ReceiverNumber: pj.ReceiverNumber,
+				Address:        pj.Address,
+				District:       pj.District,
+				City:           pj.City,
+				Country:        pj.Country,
+				EndDate:        pj.EndDate,
+				CreatedAt:      pj.CreatedAt,
+			},
+			Milestones: milestones,
+		})
+	}
+
+	return projects, nil
+}
+
 func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) ([]model.Milestone, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
@@ -277,7 +329,7 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*mode
 		Country:        project.Country,
 		CreatedAt:      project.CreatedAt,
 		EndDate:        project.EndDate,
-		Status:         convertProjectStatus(project.Status.ProjectStatus),
+		Status:         convertProjectStatus(project.Status),
 	}, milestones, backings, updates, user, nil
 }
 
@@ -499,12 +551,7 @@ func (p *project) GetProjectUpdates(ctx context.Context, projectID int64) ([]mod
 }
 
 func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error) {
-	pid, err := strconv.ParseInt(req.ProjectID, 10, 64)
-	if err != nil {
-		return nil, ErrProjectNotFound
-	}
-
-	project, err := p.repository.GetProjectByID(ctx, pid)
+	project, err := p.repository.GetProjectByID(ctx, req.ProjectID)
 	if err != nil {
 		return nil, ErrProjectNotFound
 	}
@@ -534,7 +581,25 @@ func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto
 }
 
 func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error) {
-	return nil, nil
+	dbMilestones, err := p.repository.GetUnresolvedMilestones(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var milestones []model.Milestone
+	for _, m := range dbMilestones {
+		milestones = append(milestones, model.Milestone{
+			ID:              m.ID,
+			ProjectID:       m.ProjectID,
+			Title:           m.Title,
+			Description:     m.Description,
+			FundGoal:        m.FundGoal,
+			CurrentFund:     m.CurrentFund,
+			BankDescription: m.BankDescription,
+		})
+	}
+
+	return milestones, nil
 }
 
 func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {

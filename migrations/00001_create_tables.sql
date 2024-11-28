@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS projects (
   district varchar(64) NOT NULL,
   city varchar(64) NOT NULL,
   country varchar(64) NOT NULL,
-  status project_status DEFAULT 'pending',
+  status project_status NOT NULL DEFAULT 'pending',
   created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -95,6 +95,6 @@ DROP TABLE IF EXISTS milestones;
 DROP TABLE IF EXISTS project_updates;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS escrow_users;
-DROP TABLE IF EXISTS users;
+--DROP TABLE IF EXISTS escrow_users;
+--DROP TABLE IF EXISTS users;
 DROP TYPE project_status;
