@@ -11,4 +11,14 @@ const uploadImage = async (data) => {
     return response.data;
 }
 
-export default { uploadImage }
+const uploadDocument = async (token, data) => {
+    const response = await axios.post(`${BASE_URL}/users/uploaddocument`, data, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        }
+    });
+
+    return response.data;
+}
+
+export default { uploadImage, uploadDocument }

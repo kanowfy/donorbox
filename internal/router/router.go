@@ -26,6 +26,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("GET /users/auth/{provider}/token", handlers.Auth.GetAuthenticationToken)
 	router.HandleFunc("POST /users/password/forgot", handlers.Auth.ForgotPassword)
 	router.HandleFunc("POST /users/password/reset", handlers.Auth.ResetPassword)
+	router.HandleFunc("POST /users/uploaddocument", authMiddleware.RequireUserAuthentication(handlers.User.UploadDocument))
 
 	router.HandleFunc("GET /escrow/authenticated", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetAuthenticatedEscrow))
 	router.HandleFunc("POST /escrow/login", handlers.Escrow.Login)

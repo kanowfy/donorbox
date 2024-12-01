@@ -50,6 +50,7 @@ type Querier interface {
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
+	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) error
 }
 
 var _ Querier = (*Queries)(nil)

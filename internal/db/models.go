@@ -55,6 +55,49 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 	return string(ns.ProjectStatus), nil
 }
 
+type VerificationStatus string
+
+const (
+	VerificationStatusUnverified VerificationStatus = "unverified"
+	VerificationStatusPending    VerificationStatus = "pending"
+	VerificationStatusVerified   VerificationStatus = "verified"
+)
+
+func (e *VerificationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = VerificationStatus(s)
+	case string:
+		*e = VerificationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for VerificationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullVerificationStatus struct {
+	VerificationStatus VerificationStatus
+	Valid              bool // Valid is true if VerificationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullVerificationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.VerificationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.VerificationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullVerificationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.VerificationStatus), nil
+}
+
 type Backing struct {
 	ID            int64
 	UserID        *int64
@@ -126,12 +169,14 @@ type ProjectUpdate struct {
 }
 
 type User struct {
-	ID             int64
-	Email          string
-	FirstName      string
-	LastName       string
-	ProfilePicture *string
-	HashedPassword string
-	Activated      bool
-	CreatedAt      pgtype.Timestamptz
+	ID                      int64
+	Email                   string
+	FirstName               string
+	LastName                string
+	ProfilePicture          *string
+	HashedPassword          string
+	Activated               bool
+	VerificationStatus      VerificationStatus
+	VerificationDocumentUrl *string
+	CreatedAt               pgtype.Timestamptz
 }

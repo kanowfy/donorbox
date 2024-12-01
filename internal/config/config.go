@@ -35,6 +35,8 @@ type Config struct {
 	CloudinaryAPIUrl string `env:"CLOUDINARY_API_URL"`
 
 	StripeSecretKey string `env:"STRIPE_SK"`
+
+	DropboxAccessToken string `env:"DROPBOX_ACCESS_TOKEN"`
 }
 
 func Load() (Config, error) {

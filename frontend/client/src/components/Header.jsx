@@ -130,6 +130,11 @@ const Header = () => {
                 <Dropdown.Item>
                   <Link to="/start-fundraiser">Start a Fundraiser</Link>
                 </Dropdown.Item>
+                {user.verification_status !== "verified" && (
+                  <Dropdown.Item>
+                    <Link to="/account/verify">Verify your account</Link>
+                  </Dropdown.Item>
+                )}
                 <Dropdown.Item>
                   <Link to="/account/settings">Account Settings</Link>
                 </Dropdown.Item>

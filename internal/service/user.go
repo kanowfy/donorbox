@@ -19,6 +19,7 @@ type User interface {
 	GetUserByID(ctx context.Context, userID int64) (*model.User, error)
 	UpdateAccount(ctx context.Context, user *model.User, req dto.UpdateAccountRequest) error
 	ChangePassword(ctx context.Context, userID int64, req dto.ChangePasswordRequest) error
+	UploadDocument(ctx context.Context, userID int64, docLink string) error
 }
 
 type user struct {
@@ -38,14 +39,15 @@ func (u *user) GetUserByID(ctx context.Context, userID int64) (*model.User, erro
 	}
 
 	return &model.User{
-		ID:             user.ID,
-		Email:          user.Email,
-		FirstName:      user.FirstName,
-		LastName:       user.LastName,
-		ProfilePicture: user.ProfilePicture,
-		Activated:      user.Activated,
-		UserType:       model.REGULAR,
-		CreatedAt:      convert.MustPgTimestampToTime(user.CreatedAt),
+		ID:                 user.ID,
+		Email:              user.Email,
+		FirstName:          user.FirstName,
+		LastName:           user.LastName,
+		ProfilePicture:     user.ProfilePicture,
+		Activated:          user.Activated,
+		VerificationStatus: model.VerificationStatus(user.VerificationStatus),
+		UserType:           model.REGULAR,
+		CreatedAt:          convert.MustPgTimestampToTime(user.CreatedAt),
 	}, nil
 }
 
@@ -104,6 +106,18 @@ func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangeP
 	}
 
 	if err = u.repository.UpdateUserPassword(ctx, args); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *user) UploadDocument(ctx context.Context, userID int64, docLink string) error {
+	if err := u.repository.UpdateVerificationStatus(ctx, db.UpdateVerificationStatusParams{
+		ID:                      userID,
+		VerificationStatus:      db.VerificationStatusPending,
+		VerificationDocumentUrl: &docLink,
+	}); err != nil {
 		return err
 	}
 

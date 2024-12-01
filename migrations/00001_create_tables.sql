@@ -102,7 +102,7 @@ DROP TABLE IF EXISTS milestones;
 DROP TABLE IF EXISTS project_updates;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS escrow_users;
+--DROP TABLE IF EXISTS escrow_users;
 DROP TABLE IF EXISTS users;
 DROP TYPE verification_status;
 DROP TYPE project_status;

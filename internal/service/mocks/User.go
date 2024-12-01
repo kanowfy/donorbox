@@ -179,6 +179,54 @@ func (_c *User_UpdateAccount_Call) RunAndReturn(run func(context.Context, *model
 	return _c
 }
 
+// UploadDocument provides a mock function with given fields: ctx, userID, docLink
+func (_m *User) UploadDocument(ctx context.Context, userID int64, docLink string) error {
+	ret := _m.Called(ctx, userID, docLink)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UploadDocument")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, string) error); ok {
+		r0 = rf(ctx, userID, docLink)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// User_UploadDocument_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UploadDocument'
+type User_UploadDocument_Call struct {
+	*mock.Call
+}
+
+// UploadDocument is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID int64
+//   - docLink string
+func (_e *User_Expecter) UploadDocument(ctx interface{}, userID interface{}, docLink interface{}) *User_UploadDocument_Call {
+	return &User_UploadDocument_Call{Call: _e.mock.On("UploadDocument", ctx, userID, docLink)}
+}
+
+func (_c *User_UploadDocument_Call) Run(run func(ctx context.Context, userID int64, docLink string)) *User_UploadDocument_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *User_UploadDocument_Call) Return(_a0 error) *User_UploadDocument_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *User_UploadDocument_Call) RunAndReturn(run func(context.Context, int64, string) error) *User_UploadDocument_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewUser creates a new instance of User. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewUser(t interface {

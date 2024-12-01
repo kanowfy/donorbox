@@ -28,7 +28,7 @@ INSERT INTO users (
 ) VALUES (
     $1, 'xxxxxxxx', $2, $3, $4, TRUE
 )
-RETURNING id, email, first_name, last_name, profile_picture, hashed_password, activated, created_at
+RETURNING id, email, first_name, last_name, profile_picture, hashed_password, activated, verification_status, verification_document_url, created_at
 `
 
 type CreateSocialLoginUserParams struct {
@@ -54,6 +54,8 @@ func (q *Queries) CreateSocialLoginUser(ctx context.Context, arg CreateSocialLog
 		&i.ProfilePicture,
 		&i.HashedPassword,
 		&i.Activated,
+		&i.VerificationStatus,
+		&i.VerificationDocumentUrl,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -65,7 +67,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id, email, first_name, last_name, profile_picture, hashed_password, activated, created_at
+RETURNING id, email, first_name, last_name, profile_picture, hashed_password, activated, verification_status, verification_document_url, created_at
 `
 
 type CreateUserParams struct {
@@ -91,22 +93,26 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ProfilePicture,
 		&i.HashedPassword,
 		&i.Activated,
+		&i.VerificationStatus,
+		&i.VerificationDocumentUrl,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, email, first_name, last_name, profile_picture, created_at FROM users
+SELECT id, email, first_name, last_name, profile_picture, activated, verification_status, created_at FROM users
 `
 
 type GetAllUsersRow struct {
-	ID             int64
-	Email          string
-	FirstName      string
-	LastName       string
-	ProfilePicture *string
-	CreatedAt      pgtype.Timestamptz
+	ID                 int64
+	Email              string
+	FirstName          string
+	LastName           string
+	ProfilePicture     *string
+	Activated          bool
+	VerificationStatus VerificationStatus
+	CreatedAt          pgtype.Timestamptz
 }
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
@@ -124,6 +130,8 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 			&i.FirstName,
 			&i.LastName,
 			&i.ProfilePicture,
+			&i.Activated,
+			&i.VerificationStatus,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -137,7 +145,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, first_name, last_name, profile_picture, hashed_password, activated, created_at FROM users
+SELECT id, email, first_name, last_name, profile_picture, hashed_password, activated, verification_status, verification_document_url, created_at FROM users
 WHERE email = $1
 `
 
@@ -152,13 +160,15 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ProfilePicture,
 		&i.HashedPassword,
 		&i.Activated,
+		&i.VerificationStatus,
+		&i.VerificationDocumentUrl,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, first_name, last_name, profile_picture, hashed_password, activated, created_at FROM users
+SELECT id, email, first_name, last_name, profile_picture, hashed_password, activated, verification_status, verification_document_url, created_at FROM users
 WHERE id = $1
 `
 
@@ -173,6 +183,8 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.ProfilePicture,
 		&i.HashedPassword,
 		&i.Activated,
+		&i.VerificationStatus,
+		&i.VerificationDocumentUrl,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -216,5 +228,22 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
 	_, err := q.db.Exec(ctx, updateUserPassword, arg.ID, arg.HashedPassword)
+	return err
+}
+
+const updateVerificationStatus = `-- name: UpdateVerificationStatus :exec
+UPDATE users
+SET verification_status = $2, verification_document_url = $3
+WHERE id = $1
+`
+
+type UpdateVerificationStatusParams struct {
+	ID                      int64
+	VerificationStatus      VerificationStatus
+	VerificationDocumentUrl *string
+}
+
+func (q *Queries) UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) error {
+	_, err := q.db.Exec(ctx, updateVerificationStatus, arg.ID, arg.VerificationStatus, arg.VerificationDocumentUrl)
 	return err
 }

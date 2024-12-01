@@ -1,5 +1,5 @@
 -- name: GetAllUsers :many
-SELECT id, email, first_name, last_name, profile_picture, activated, verfication_status, created_at FROM users;
+SELECT id, email, first_name, last_name, profile_picture, activated, verification_status, created_at FROM users;
 
 -- name: GetUserByID :one
 SELECT * FROM users

@@ -2278,6 +2278,53 @@ func (_c *Querier_UpdateUserPassword_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// UpdateVerificationStatus provides a mock function with given fields: ctx, arg
+func (_m *Querier) UpdateVerificationStatus(ctx context.Context, arg db.UpdateVerificationStatusParams) error {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateVerificationStatus")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateVerificationStatusParams) error); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateVerificationStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateVerificationStatus'
+type Querier_UpdateVerificationStatus_Call struct {
+	*mock.Call
+}
+
+// UpdateVerificationStatus is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.UpdateVerificationStatusParams
+func (_e *Querier_Expecter) UpdateVerificationStatus(ctx interface{}, arg interface{}) *Querier_UpdateVerificationStatus_Call {
+	return &Querier_UpdateVerificationStatus_Call{Call: _e.mock.On("UpdateVerificationStatus", ctx, arg)}
+}
+
+func (_c *Querier_UpdateVerificationStatus_Call) Run(run func(ctx context.Context, arg db.UpdateVerificationStatusParams)) *Querier_UpdateVerificationStatus_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.UpdateVerificationStatusParams))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateVerificationStatus_Call) Return(_a0 error) *Querier_UpdateVerificationStatus_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateVerificationStatus_Call) RunAndReturn(run func(context.Context, db.UpdateVerificationStatusParams) error) *Querier_UpdateVerificationStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewQuerier creates a new instance of Querier. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewQuerier(t interface {
