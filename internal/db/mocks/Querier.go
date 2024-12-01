@@ -126,63 +126,6 @@ func (_c *Querier_CreateBacking_Call) RunAndReturn(run func(context.Context, db.
 	return _c
 }
 
-// CreateCertificate provides a mock function with given fields: ctx, arg
-func (_m *Querier) CreateCertificate(ctx context.Context, arg db.CreateCertificateParams) (db.Certificate, error) {
-	ret := _m.Called(ctx, arg)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateCertificate")
-	}
-
-	var r0 db.Certificate
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.CreateCertificateParams) (db.Certificate, error)); ok {
-		return rf(ctx, arg)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, db.CreateCertificateParams) db.Certificate); ok {
-		r0 = rf(ctx, arg)
-	} else {
-		r0 = ret.Get(0).(db.Certificate)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, db.CreateCertificateParams) error); ok {
-		r1 = rf(ctx, arg)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Querier_CreateCertificate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateCertificate'
-type Querier_CreateCertificate_Call struct {
-	*mock.Call
-}
-
-// CreateCertificate is a helper method to define mock.On call
-//   - ctx context.Context
-//   - arg db.CreateCertificateParams
-func (_e *Querier_Expecter) CreateCertificate(ctx interface{}, arg interface{}) *Querier_CreateCertificate_Call {
-	return &Querier_CreateCertificate_Call{Call: _e.mock.On("CreateCertificate", ctx, arg)}
-}
-
-func (_c *Querier_CreateCertificate_Call) Run(run func(ctx context.Context, arg db.CreateCertificateParams)) *Querier_CreateCertificate_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.CreateCertificateParams))
-	})
-	return _c
-}
-
-func (_c *Querier_CreateCertificate_Call) Return(_a0 db.Certificate, _a1 error) *Querier_CreateCertificate_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Querier_CreateCertificate_Call) RunAndReturn(run func(context.Context, db.CreateCertificateParams) (db.Certificate, error)) *Querier_CreateCertificate_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // CreateEscrowUser provides a mock function with given fields: ctx, arg
 func (_m *Querier) CreateEscrowUser(ctx context.Context, arg db.CreateEscrowUserParams) (db.EscrowUser, error) {
 	ret := _m.Called(ctx, arg)
@@ -293,6 +236,63 @@ func (_c *Querier_CreateMilestone_Call) Return(_a0 db.Milestone, _a1 error) *Que
 }
 
 func (_c *Querier_CreateMilestone_Call) RunAndReturn(run func(context.Context, db.CreateMilestoneParams) (db.Milestone, error)) *Querier_CreateMilestone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateMilestoneCompletion provides a mock function with given fields: ctx, arg
+func (_m *Querier) CreateMilestoneCompletion(ctx context.Context, arg db.CreateMilestoneCompletionParams) (db.MilestoneCompletion, error) {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateMilestoneCompletion")
+	}
+
+	var r0 db.MilestoneCompletion
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateMilestoneCompletionParams) (db.MilestoneCompletion, error)); ok {
+		return rf(ctx, arg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateMilestoneCompletionParams) db.MilestoneCompletion); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Get(0).(db.MilestoneCompletion)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.CreateMilestoneCompletionParams) error); ok {
+		r1 = rf(ctx, arg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_CreateMilestoneCompletion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateMilestoneCompletion'
+type Querier_CreateMilestoneCompletion_Call struct {
+	*mock.Call
+}
+
+// CreateMilestoneCompletion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.CreateMilestoneCompletionParams
+func (_e *Querier_Expecter) CreateMilestoneCompletion(ctx interface{}, arg interface{}) *Querier_CreateMilestoneCompletion_Call {
+	return &Querier_CreateMilestoneCompletion_Call{Call: _e.mock.On("CreateMilestoneCompletion", ctx, arg)}
+}
+
+func (_c *Querier_CreateMilestoneCompletion_Call) Run(run func(ctx context.Context, arg db.CreateMilestoneCompletionParams)) *Querier_CreateMilestoneCompletion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.CreateMilestoneCompletionParams))
+	})
+	return _c
+}
+
+func (_c *Querier_CreateMilestoneCompletion_Call) Return(_a0 db.MilestoneCompletion, _a1 error) *Querier_CreateMilestoneCompletion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_CreateMilestoneCompletion_Call) RunAndReturn(run func(context.Context, db.CreateMilestoneCompletionParams) (db.MilestoneCompletion, error)) *Querier_CreateMilestoneCompletion_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -794,64 +794,6 @@ func (_c *Querier_GetAllUsers_Call) RunAndReturn(run func(context.Context) ([]db
 	return _c
 }
 
-// GetAllVerifiedCertificates provides a mock function with given fields: ctx
-func (_m *Querier) GetAllVerifiedCertificates(ctx context.Context) ([]db.Certificate, error) {
-	ret := _m.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetAllVerifiedCertificates")
-	}
-
-	var r0 []db.Certificate
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]db.Certificate, error)); ok {
-		return rf(ctx)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context) []db.Certificate); ok {
-		r0 = rf(ctx)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]db.Certificate)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Querier_GetAllVerifiedCertificates_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllVerifiedCertificates'
-type Querier_GetAllVerifiedCertificates_Call struct {
-	*mock.Call
-}
-
-// GetAllVerifiedCertificates is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *Querier_Expecter) GetAllVerifiedCertificates(ctx interface{}) *Querier_GetAllVerifiedCertificates_Call {
-	return &Querier_GetAllVerifiedCertificates_Call{Call: _e.mock.On("GetAllVerifiedCertificates", ctx)}
-}
-
-func (_c *Querier_GetAllVerifiedCertificates_Call) Run(run func(ctx context.Context)) *Querier_GetAllVerifiedCertificates_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context))
-	})
-	return _c
-}
-
-func (_c *Querier_GetAllVerifiedCertificates_Call) Return(_a0 []db.Certificate, _a1 error) *Querier_GetAllVerifiedCertificates_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Querier_GetAllVerifiedCertificates_Call) RunAndReturn(run func(context.Context) ([]db.Certificate, error)) *Querier_GetAllVerifiedCertificates_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetBackingByID provides a mock function with given fields: ctx, id
 func (_m *Querier) GetBackingByID(ctx context.Context, id int64) (db.Backing, error) {
 	ret := _m.Called(ctx, id)
@@ -1080,63 +1022,6 @@ func (_c *Querier_GetBackingsForUser_Call) Return(_a0 []db.Backing, _a1 error) *
 }
 
 func (_c *Querier_GetBackingsForUser_Call) RunAndReturn(run func(context.Context, *int64) ([]db.Backing, error)) *Querier_GetBackingsForUser_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetCerificateByID provides a mock function with given fields: ctx, id
-func (_m *Querier) GetCerificateByID(ctx context.Context, id int64) (db.Certificate, error) {
-	ret := _m.Called(ctx, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetCerificateByID")
-	}
-
-	var r0 db.Certificate
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (db.Certificate, error)); ok {
-		return rf(ctx, id)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) db.Certificate); ok {
-		r0 = rf(ctx, id)
-	} else {
-		r0 = ret.Get(0).(db.Certificate)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, id)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Querier_GetCerificateByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCerificateByID'
-type Querier_GetCerificateByID_Call struct {
-	*mock.Call
-}
-
-// GetCerificateByID is a helper method to define mock.On call
-//   - ctx context.Context
-//   - id int64
-func (_e *Querier_Expecter) GetCerificateByID(ctx interface{}, id interface{}) *Querier_GetCerificateByID_Call {
-	return &Querier_GetCerificateByID_Call{Call: _e.mock.On("GetCerificateByID", ctx, id)}
-}
-
-func (_c *Querier_GetCerificateByID_Call) Run(run func(ctx context.Context, id int64)) *Querier_GetCerificateByID_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
-	})
-	return _c
-}
-
-func (_c *Querier_GetCerificateByID_Call) Return(_a0 db.Certificate, _a1 error) *Querier_GetCerificateByID_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *Querier_GetCerificateByID_Call) RunAndReturn(run func(context.Context, int64) (db.Certificate, error)) *Querier_GetCerificateByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1371,22 +1256,22 @@ func (_c *Querier_GetFirstBackingDonor_Call) RunAndReturn(run func(context.Conte
 }
 
 // GetMilestoneByID provides a mock function with given fields: ctx, id
-func (_m *Querier) GetMilestoneByID(ctx context.Context, id int64) (db.Milestone, error) {
+func (_m *Querier) GetMilestoneByID(ctx context.Context, id int64) (db.GetMilestoneByIDRow, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetMilestoneByID")
 	}
 
-	var r0 db.Milestone
+	var r0 db.GetMilestoneByIDRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (db.Milestone, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (db.GetMilestoneByIDRow, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) db.Milestone); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) db.GetMilestoneByIDRow); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(db.Milestone)
+		r0 = ret.Get(0).(db.GetMilestoneByIDRow)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
@@ -1417,34 +1302,34 @@ func (_c *Querier_GetMilestoneByID_Call) Run(run func(ctx context.Context, id in
 	return _c
 }
 
-func (_c *Querier_GetMilestoneByID_Call) Return(_a0 db.Milestone, _a1 error) *Querier_GetMilestoneByID_Call {
+func (_c *Querier_GetMilestoneByID_Call) Return(_a0 db.GetMilestoneByIDRow, _a1 error) *Querier_GetMilestoneByID_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Querier_GetMilestoneByID_Call) RunAndReturn(run func(context.Context, int64) (db.Milestone, error)) *Querier_GetMilestoneByID_Call {
+func (_c *Querier_GetMilestoneByID_Call) RunAndReturn(run func(context.Context, int64) (db.GetMilestoneByIDRow, error)) *Querier_GetMilestoneByID_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetMilestoneForProject provides a mock function with given fields: ctx, projectID
-func (_m *Querier) GetMilestoneForProject(ctx context.Context, projectID int64) ([]db.Milestone, error) {
+func (_m *Querier) GetMilestoneForProject(ctx context.Context, projectID int64) ([]db.GetMilestoneForProjectRow, error) {
 	ret := _m.Called(ctx, projectID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetMilestoneForProject")
 	}
 
-	var r0 []db.Milestone
+	var r0 []db.GetMilestoneForProjectRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) ([]db.Milestone, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) ([]db.GetMilestoneForProjectRow, error)); ok {
 		return rf(ctx, projectID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) []db.Milestone); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) []db.GetMilestoneForProjectRow); ok {
 		r0 = rf(ctx, projectID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]db.Milestone)
+			r0 = ret.Get(0).([]db.GetMilestoneForProjectRow)
 		}
 	}
 
@@ -1476,12 +1361,12 @@ func (_c *Querier_GetMilestoneForProject_Call) Run(run func(ctx context.Context,
 	return _c
 }
 
-func (_c *Querier_GetMilestoneForProject_Call) Return(_a0 []db.Milestone, _a1 error) *Querier_GetMilestoneForProject_Call {
+func (_c *Querier_GetMilestoneForProject_Call) Return(_a0 []db.GetMilestoneForProjectRow, _a1 error) *Querier_GetMilestoneForProject_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Querier_GetMilestoneForProject_Call) RunAndReturn(run func(context.Context, int64) ([]db.Milestone, error)) *Querier_GetMilestoneForProject_Call {
+func (_c *Querier_GetMilestoneForProject_Call) RunAndReturn(run func(context.Context, int64) ([]db.GetMilestoneForProjectRow, error)) *Querier_GetMilestoneForProject_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1834,23 +1719,23 @@ func (_c *Querier_GetProjectsForUser_Call) RunAndReturn(run func(context.Context
 }
 
 // GetUnresolvedMilestones provides a mock function with given fields: ctx
-func (_m *Querier) GetUnresolvedMilestones(ctx context.Context) ([]db.Milestone, error) {
+func (_m *Querier) GetUnresolvedMilestones(ctx context.Context) ([]db.GetUnresolvedMilestonesRow, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUnresolvedMilestones")
 	}
 
-	var r0 []db.Milestone
+	var r0 []db.GetUnresolvedMilestonesRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]db.Milestone, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]db.GetUnresolvedMilestonesRow, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []db.Milestone); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []db.GetUnresolvedMilestonesRow); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]db.Milestone)
+			r0 = ret.Get(0).([]db.GetUnresolvedMilestonesRow)
 		}
 	}
 
@@ -1881,12 +1766,12 @@ func (_c *Querier_GetUnresolvedMilestones_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *Querier_GetUnresolvedMilestones_Call) Return(_a0 []db.Milestone, _a1 error) *Querier_GetUnresolvedMilestones_Call {
+func (_c *Querier_GetUnresolvedMilestones_Call) Return(_a0 []db.GetUnresolvedMilestonesRow, _a1 error) *Querier_GetUnresolvedMilestones_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Querier_GetUnresolvedMilestones_Call) RunAndReturn(run func(context.Context) ([]db.Milestone, error)) *Querier_GetUnresolvedMilestones_Call {
+func (_c *Querier_GetUnresolvedMilestones_Call) RunAndReturn(run func(context.Context) ([]db.GetUnresolvedMilestonesRow, error)) *Querier_GetUnresolvedMilestones_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -2158,6 +2043,53 @@ func (_c *Querier_UpdateMilestoneFund_Call) RunAndReturn(run func(context.Contex
 	return _c
 }
 
+// UpdateMilestoneStatus provides a mock function with given fields: ctx, id
+func (_m *Querier) UpdateMilestoneStatus(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateMilestoneStatus")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateMilestoneStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateMilestoneStatus'
+type Querier_UpdateMilestoneStatus_Call struct {
+	*mock.Call
+}
+
+// UpdateMilestoneStatus is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int64
+func (_e *Querier_Expecter) UpdateMilestoneStatus(ctx interface{}, id interface{}) *Querier_UpdateMilestoneStatus_Call {
+	return &Querier_UpdateMilestoneStatus_Call{Call: _e.mock.On("UpdateMilestoneStatus", ctx, id)}
+}
+
+func (_c *Querier_UpdateMilestoneStatus_Call) Run(run func(ctx context.Context, id int64)) *Querier_UpdateMilestoneStatus_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateMilestoneStatus_Call) Return(_a0 error) *Querier_UpdateMilestoneStatus_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateMilestoneStatus_Call) RunAndReturn(run func(context.Context, int64) error) *Querier_UpdateMilestoneStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateProjectByID provides a mock function with given fields: ctx, arg
 func (_m *Querier) UpdateProjectByID(ctx context.Context, arg db.UpdateProjectByIDParams) error {
 	ret := _m.Called(ctx, arg)
@@ -2342,53 +2274,6 @@ func (_c *Querier_UpdateUserPassword_Call) Return(_a0 error) *Querier_UpdateUser
 }
 
 func (_c *Querier_UpdateUserPassword_Call) RunAndReturn(run func(context.Context, db.UpdateUserPasswordParams) error) *Querier_UpdateUserPassword_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateVerifyingCertificate provides a mock function with given fields: ctx, arg
-func (_m *Querier) UpdateVerifyingCertificate(ctx context.Context, arg db.UpdateVerifyingCertificateParams) error {
-	ret := _m.Called(ctx, arg)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateVerifyingCertificate")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateVerifyingCertificateParams) error); ok {
-		r0 = rf(ctx, arg)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Querier_UpdateVerifyingCertificate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateVerifyingCertificate'
-type Querier_UpdateVerifyingCertificate_Call struct {
-	*mock.Call
-}
-
-// UpdateVerifyingCertificate is a helper method to define mock.On call
-//   - ctx context.Context
-//   - arg db.UpdateVerifyingCertificateParams
-func (_e *Querier_Expecter) UpdateVerifyingCertificate(ctx interface{}, arg interface{}) *Querier_UpdateVerifyingCertificate_Call {
-	return &Querier_UpdateVerifyingCertificate_Call{Call: _e.mock.On("UpdateVerifyingCertificate", ctx, arg)}
-}
-
-func (_c *Querier_UpdateVerifyingCertificate_Call) Run(run func(ctx context.Context, arg db.UpdateVerifyingCertificateParams)) *Querier_UpdateVerifyingCertificate_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.UpdateVerifyingCertificateParams))
-	})
-	return _c
-}
-
-func (_c *Querier_UpdateVerifyingCertificate_Call) Return(_a0 error) *Querier_UpdateVerifyingCertificate_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *Querier_UpdateVerifyingCertificate_Call) RunAndReturn(run func(context.Context, db.UpdateVerifyingCertificateParams) error) *Querier_UpdateVerifyingCertificate_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -24,7 +24,9 @@ const Home = () => {
   return (
     <>
       <div>
-        <section className="flex flex-col pt-20 items-center h-[33rem] bg-cover bg-gradient-to-b from-white to-sky-200">
+        <section
+          className="flex flex-col pt-20 items-center h-[33rem] bg-cover bg-gradient-to-b from-white to-sky-200"
+        >
           <div className="pb-7 font-semibold text-sky-700 text-6xl">
             Help those in need today
           </div>
@@ -33,7 +35,7 @@ const Home = () => {
           </div>
           <div>
             <Link to="/start-fundraiser">
-              <button className="mt-10 px-8 py-4 text-white font-medium rounded-xl shadow-lg bg-gradient-to-t from-cyan-500 to-blue-500 hover:bg-gradient-to-b">
+              <button className="text-lg mt-10 px-8 py-4 text-white font-semibold rounded-xl shadow-lg bg-gradient-to-t from-cyan-500 to-blue-500 hover:bg-gradient-to-b">
                 Start a Fundraiser
               </button>
             </Link>
@@ -41,7 +43,7 @@ const Home = () => {
         </section>
 
         <section>
-          <div className="min-h-screen px-10 pt-6">
+          <div className="min-h-screen px-10 pt-6 bg-teal-50">
             <div className="flex justify-between mx-48">
               <div className="font-medium text-2xl tracking-tight">
                 Trending fundraisers
@@ -57,17 +59,20 @@ const Home = () => {
             </div>
             <div className="flex justify-center">
               <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-4 mx-16 mt-10 mb-16">
-                {projects && projects.slice(0, 8).map((p) => (
-                  <ProjectCard
-                    id={p.id}
-                    title={p.title}
-                    cover={p.cover_picture}
-                    totalFund={p.total_fund}
-                    fundGoal={p.fund_goal}
-                    numBackings={p.backing_count}
-                    key={p.id}
-                  />
-                ))}
+                {projects &&
+                  projects
+                    .slice(0, 8)
+                    .map((p) => (
+                      <ProjectCard
+                        id={p.id}
+                        title={p.title}
+                        cover={p.cover_picture}
+                        totalFund={p.total_fund}
+                        fundGoal={p.fund_goal}
+                        numBackings={p.backing_count}
+                        key={p.id}
+                      />
+                    ))}
               </div>
             </div>
           </div>

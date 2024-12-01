@@ -17,7 +17,14 @@ import { IoOpenOutline } from "react-icons/io5";
 import { CategoryIndexMap } from "../constants";
 import { IoIosCloseCircle } from "react-icons/io";
 import escrowService from "../services/escrow";
-import { Label, Modal, ModalBody, ModalHeader, Textarea } from "flowbite-react";
+import {
+  Label,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  Textarea,
+  Timeline,
+} from "flowbite-react";
 import { useForm } from "react-hook-form";
 
 const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
@@ -38,6 +45,9 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
         approved: true,
       });
       setIsSuccessful(true);
+      setTimeout(() => {
+        navigate(0);
+      }, 1000);
     } catch (err) {
       console.error(err);
       setIsFailed(true);
@@ -51,6 +61,9 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
         reject_reason: data.reason,
       });
       setIsSuccessful(true);
+      setTimeout(() => {
+        navigate(0);
+      }, 1000);
     } catch (err) {
       console.error(err);
       setIsFailed(true);
@@ -94,7 +107,7 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                       setReview(item);
                     }}
                   >
-                    View
+                    Review
                   </Button>
                 </TableCell>
               </TableRow>
@@ -102,101 +115,146 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
           </TableBody>
         </Table>
       </Card>
-      <Dialog
-        open={isOpenReview}
-        onClose={(val) => setIsOpenReview(val)}
-        static={true}
+      <Modal
+        show={isOpenReview}
+        onClose={() => setIsOpenReview(false)}
+        size="7xl"
       >
-        <DialogPanel className="w-full">
-          <div
-            className="flex justify-end hover:cursor-pointer"
-            onClick={() => setIsOpenReview(false)}
-          >
-            <IoIosCloseCircle className="w-7 h-7" />
-          </div>
-          <div className="space-y-2 grid-cols-2 md:grid-cols-1 w-full">
+        <Modal.Header>Review Project Application</Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-3 space-x-4">
+            <div className="space-y-2 grid-cols-2 md:grid-cols-1 w-full">
+              <div className="border rounded-lg p-5 space-y-2">
+                <div className="font-bold text-lg text-gray-700 underline">Basic Information</div>
+                <div className="rounded-xl overflow-hidden h-72 aspect-[5/3] object-cover mx-auto">
+                  <img
+                    src={review?.project.cover_picture}
+                    className="w-full h-full m-auto object-cover"
+                  />
+                </div>
+                <div className="flex space-x-2 items-baseline">
+                  {/*<div className="font-semibold text-black text-sm">Title: </div>*/}
+                  <h3 className="text-xl font-semibold text-gray-700">
+                    {review?.project.title}
+                  </h3>
+                </div>
+                <div className="flex space-x-2 items-baseline">
+                  <div className="font-semibold text-black text-sm">
+                    Category:{" "}
+                  </div>
+                  <h3 className="text-gray-700">
+                    {Object.keys(CategoryIndexMap).find(
+                      (key) =>
+                        CategoryIndexMap[key] === review?.project.category_id
+                    )}
+                  </h3>
+                </div>
+                <div className="flex space-x-2 items-baseline">
+                  <div className="font-semibold text-black text-sm">
+                    Started at:{" "}
+                  </div>
+                  <h3 className="text-gray-700">
+                    {utils.formatDate(
+                      new Date(
+                        utils.parseDateFromRFC3339(review?.project.created_at)
+                      )
+                    )}
+                  </h3>
+                  <div className="font-semibold text-black text-sm">
+                    Ends at:{" "}
+                  </div>
+                  <h3 className="text-gray-700">
+                    {utils.formatDate(
+                      new Date(
+                        utils.parseDateFromRFC3339(review?.project.end_date)
+                      )
+                    )}
+                  </h3>
+                </div>
+                <div className="flex space-x-2 items-baseline">
+                  <div className="font-semibold text-black text-sm">Link: </div>
+                  <a
+                    target="_blank"
+                    href={`http://localhost:4001/fundraiser/${review?.project.id}`}
+                    className="flex text-gray-700 hover:font-semibold text-sm hover:text-blue-700 hover:underline"
+                  >
+                    Go to Fundraiser
+                    <IoOpenOutline className="ml-1 w-5 h-5" />
+                  </a>
+                </div>
+              </div>
+            </div>
             <div className="border rounded-lg p-5 space-y-2">
-              <div className="rounded-xl overflow-hidden h-72 aspect-[5/3] object-cover mx-auto">
-                <img
-                  src={review?.project.cover_picture}
-                  className="w-full h-full m-auto object-cover"
-                />
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                {/*<div className="font-semibold text-black text-sm">Title: </div>*/}
-                <h3 className="text-xl font-semibold text-gray-700">
-                  {review?.project.title}
-                </h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">
-                  Category:{" "}
-                </div>
-                <h3 className="text-gray-700">
-                  {Object.keys(CategoryIndexMap).find(
-                    (key) =>
-                      CategoryIndexMap[key] === review?.project.category_id
-                  )}
-                </h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">
-                  Location:{" "}
-                </div>
-                <h3 className="text-gray-700">
-                  {`${review?.project.address}, ${review?.project.district}, ${review?.project.city}, ${review?.project.country}`}
-                </h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">
-                  Started at:{" "}
-                </div>
-                <h3 className="text-gray-700">
-                  {utils.formatDate(
-                    new Date(
-                      utils.parseDateFromRFC3339(review?.project.created_at)
-                    )
-                  )}
-                </h3>
-                <div className="font-semibold text-black text-sm">
-                  Ends at:{" "}
-                </div>
-                <h3 className="text-gray-700">
-                  {utils.formatDate(
-                    new Date(
-                      utils.parseDateFromRFC3339(review?.project.end_date)
-                    )
-                  )}
-                </h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">Link: </div>
-                <a
-                  target="_blank"
-                  href={`http://localhost:4001/fundraiser/${review?.project.id}`}
-                  className="flex text-gray-700 hover:font-semibold text-sm hover:text-blue-700 hover:underline"
-                >
-                  Go to Fundraiser
-                  <IoOpenOutline className="ml-1 w-5 h-5" />
-                </a>
-              </div>
+              <div className="font-bold text-lg text-gray-700 underline">Milestones</div>
+              <Timeline>
+                {review?.milestones.map((m) => (
+                  <Timeline.Item>
+                    <Timeline.Point />
+                    <Timeline.Content>
+                      <Timeline.Title>{m.title}</Timeline.Title>
+                      <Timeline.Content>
+                        <div>
+                        <div className="text-blue-600 font-semibold">Fund goal:</div>
+                        <div>{`₫${m.fund_goal.toLocaleString()}`}</div>
+                        </div>
+                        <div>
+                        <div className="text-blue-600 font-semibold">Bank description:</div>
+                        <div>{m.bank_description}</div>
+                        </div>
+                      </Timeline.Content>
+                    </Timeline.Content>
+                  </Timeline.Item>
+                ))}
+              </Timeline>
             </div>
-
-            <div className="mt-8 w-full flex space-x-1">
-              <Button className="w-1/2" onClick={handleApprove}>
-                Approve
-              </Button>
-              <Button
-                className="w-1/2"
-                color="red"
-                onClick={() => setIsOpenReject(true)}
-              >
-                Reject
-              </Button>
-            </div>
+            <div className="border rounded-lg p-5 space-y-1">
+              <div className="font-bold text-lg text-gray-700 underline">Beneficiary Information</div>
+                <div className="flex space-x-2 items-baseline">
+                  <div className="font-semibold text-blue-600 text-sm">
+                    Name:{" "}
+                  </div>
+                  <h3>
+                    {review?.project.receiver_name}
+                  </h3>
+                </div>
+                <div className="flex space-x-2 items-baseline">
+                  <div className="font-semibold text-blue-600 text-sm">
+                    Phone number:{" "}
+                  </div>
+                  <h3>
+                    {review?.project.receiver_number}
+                  </h3>
+                </div>
+                <div className="flex space-x-2 items-baseline">
+                  <div className="font-semibold text-blue-600 text-sm">
+                    Address:{" "}
+                  </div>
+                  <h3>
+                    {`${review?.project.address}, ${review?.project.district}, ${review?.project.city}, ${review?.project.country}`}
+                  </h3>
+                </div>
+              </div>
           </div>
-        </DialogPanel>
-      </Dialog>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full flex justify-center">
+          <div className="w-1/2 flex space-x-1">
+            <Button className="w-1/2" onClick={handleApprove} size="lg">
+              Approve
+            </Button>
+            <Button
+              className="w-1/2"
+              color="red"
+              size="lg"
+              onClick={() => setIsOpenReject(true)}
+            >
+              Reject
+            </Button>
+          </div>
+
+          </div>
+        </Modal.Footer>
+      </Modal>
       <Modal
         show={isOpenReject}
         onClose={() => {

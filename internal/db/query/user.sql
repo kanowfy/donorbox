@@ -1,5 +1,5 @@
 -- name: GetAllUsers :many
-SELECT id, email, first_name, last_name, profile_picture, created_at FROM users;
+SELECT id, email, first_name, last_name, profile_picture, activated, verfication_status, created_at FROM users;
 
 -- name: GetUserByID :one
 SELECT * FROM users
@@ -39,3 +39,8 @@ INSERT INTO users (
     $1, 'xxxxxxxx', $2, $3, $4, TRUE
 )
 RETURNING *;
+
+-- name: UpdateVerificationStatus :exec
+UPDATE users
+SET verification_status = $2, verification_document_url = $3
+WHERE id = $1;

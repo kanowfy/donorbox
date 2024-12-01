@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/model"
@@ -15,7 +17,7 @@ type Escrow interface {
 	Login(ctx context.Context, req dto.LoginRequest) (string, error)
 	GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser, error)
 	ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error
-	ResolveMilestone(ctx context.Context, escrowID int64, milestoneID int64) error
+	ResolveMilestone(ctx context.Context, escrowID int64, req dto.ResolveMilestoneRequest) error
 }
 
 type escrow struct {
@@ -57,7 +59,7 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser
 		ID:        escrow.ID,
 		Email:     escrow.Email,
 		UserType:  model.ESCROW,
-		CreatedAt: escrow.CreatedAt,
+		CreatedAt: convert.MustPgTimestampToTime(escrow.CreatedAt),
 	}, nil
 }
 
@@ -79,27 +81,42 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 	return nil
 }
 
-func (e *escrow) ResolveMilestone(ctx context.Context, escrowID int64, milestoneID int64) error {
-	//TODO: create cert, send confirmation email,...
-	milestone, err := e.repository.GetMilestoneByID(ctx, milestoneID)
+func (e *escrow) ResolveMilestone(ctx context.Context, milestoneID int64, req dto.ResolveMilestoneRequest) error {
+	queries := e.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	//TODO: create milestone completion, send confirmation email,...
+	milestone, err := q.GetMilestoneByID(ctx, milestoneID)
 	if err != nil {
 		return err
 	}
 
-	project, err := e.repository.GetProjectByID(ctx, milestone.ProjectID)
-	if err != nil {
+	if err := q.UpdateMilestoneStatus(ctx, milestone.ID); err != nil {
 		return err
 	}
 
-	_, err = e.repository.CreateCertificate(ctx, db.CreateCertificateParams{
-		EscrowUserID: escrowID,
-		UserID:       project.UserID,
-		MilestoneID:  milestoneID,
-	})
+	params := db.CreateMilestoneCompletionParams{
+		MilestoneID:    milestone.ID,
+		TransferAmount: req.Amount,
+	}
+
+	if req.Description != nil {
+		params.TransferNote = req.Description
+	}
+
+	if req.Image != nil {
+		params.TransferImage = req.Image
+	}
+
+	_, err = q.CreateMilestoneCompletion(ctx, params)
 	if err != nil {
 		return err
 	}
 
 	// Send mail
-	return nil
+	return tx.Commit(ctx)
 }

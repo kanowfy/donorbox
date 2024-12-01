@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const activateUser = `-- name: ActivateUser :exec
@@ -105,7 +106,7 @@ type GetAllUsersRow struct {
 	FirstName      string
 	LastName       string
 	ProfilePicture *string
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 }
 
 func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {

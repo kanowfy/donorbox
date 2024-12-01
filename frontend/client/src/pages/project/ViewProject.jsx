@@ -1,4 +1,4 @@
-import { Avatar, Button } from "flowbite-react";
+import { Avatar, Button, Modal } from "flowbite-react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Support from "../../components/Support";
 import DonateBox from "../../components/DonateBox";
@@ -7,6 +7,7 @@ import projectService from "../../services/project";
 import utils from "../../utils/utils";
 import { IoFlag } from "react-icons/io5";
 import MilestoneTL from "../../components/MilestoneTL";
+import MDEditor from "@uiw/react-md-editor";
 
 const Project = () => {
   const params = useParams();
@@ -17,6 +18,8 @@ const Project = () => {
   const [backings, setBackings] = useState();
   const [updates, setUpdates] = useState();
   const [wosList, setWosList] = useState();
+  const [isOpenMilestone, setIsOpenMilestone] = useState(false);
+  const [milestoneReview, setMilestoneReview] = useState();
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -31,7 +34,9 @@ const Project = () => {
 
         if (projectResponse.backings) {
           setWosList(
-            projectResponse.backings.filter((b) => b.word_of_support !== undefined)
+            projectResponse.backings.filter(
+              (b) => b.word_of_support !== undefined
+            )
           );
         }
       } catch (err) {
@@ -96,7 +101,13 @@ const Project = () => {
           <div className="text-xl font-semibold tracking-tight mb-3">
             About the Fundraiser
           </div>
-          <p className="max-w-2xl tracking-tight">{project.description}</p>
+          {/*<p className="max-w-2xl tracking-tight">{project.description}</p>*/}
+          <div data-color-mode="light">
+            <MDEditor.Markdown
+              source={project.description}
+              style={{ whiteSpace: "pre-wrap" }}
+            />
+          </div>
 
           <div className="h-px bg-gray-300 mt-4"></div>
 
@@ -141,8 +152,14 @@ const Project = () => {
             {wosList?.map((b) => (
               <Support
                 key={b.id}
-                avatar={b.backer.profile_picture ? b.backer.profile_picture : "/avatar.svg"}
-                first_name={b.backer.first_name ? b.backer.first_name : "Anonymous"}
+                avatar={
+                  b.backer.profile_picture
+                    ? b.backer.profile_picture
+                    : "/avatar.svg"
+                }
+                first_name={
+                  b.backer.first_name ? b.backer.first_name : "Anonymous"
+                }
                 last_name={b.backer.last_name ? b.backer.last_name : ""}
                 amount={b.amount}
                 day_since={utils.getDaySince(b.created_at)}
@@ -162,19 +179,51 @@ const Project = () => {
         </div>
         <div className="mt-20 space-y-10">
           <div>
-          <DonateBox
-            id={params.id}
-            totalFund={project.total_fund}
-            fundGoal={project.fund_goal}
-            backings={backings}
-          />
+            <DonateBox
+              id={params.id}
+              totalFund={project.total_fund}
+              fundGoal={project.fund_goal}
+              backings={backings}
+            />
           </div>
           <div className="p-4">
             <div className="text-2xl mb-4">Milestones</div>
-            <MilestoneTL milestones={milestones}/>
+            <MilestoneTL
+              milestones={milestones}
+              setIsOpenMilestone={setIsOpenMilestone}
+              setMilestoneReview={setMilestoneReview}
+            />
           </div>
         </div>
       </div>
+      <Modal show={isOpenMilestone} onClose={() => setIsOpenMilestone(false)} size="xl">
+        <Modal.Header>Milestone Resolution Receipt</Modal.Header>
+        <Modal.Body>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="text-yellow-500 text-5xl">{`₫${milestoneReview?.milestone_completion.transfer_amount.toLocaleString()}`}</div>
+            <div className="text-gray-600">transferred on</div>
+            <div className="text-green-600 text-2xl">
+              {utils.formatDate(
+                new Date(
+                  utils.parseDateFromRFC3339(
+                    milestoneReview?.milestone_completion.completed_at
+                  )
+                )
+              )}
+            </div>
+          </div>
+          <div className="flex justify-center my-7">
+            <img
+              src={milestoneReview?.milestone_completion.transfer_image}
+              className="aspect-auto h-72"
+            ></img>
+          </div>
+          {milestoneReview?.milestone_completion.transfer_note && 
+          (<div className="flex space-x-1 mx-4">
+          <div className="text-gray-900">Note: {milestoneReview?.milestone_completion.transfer_note}</div>
+          </div>)}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

@@ -6,6 +6,12 @@ CREATE TYPE project_status AS ENUM (
   'finished'
 );
 
+CREATE TYPE verification_status AS ENUM (
+  'unverified',
+  'pending',
+  'verified'
+);
+
 CREATE TABLE IF NOT EXISTS users (
   id bigserial PRIMARY KEY,
   email varchar(255) UNIQUE NOT NULL,
@@ -14,6 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
   profile_picture text,
   hashed_password varchar(64) NOT NULL,
   activated boolean NOT NULL DEFAULT false,
+  verification_status verification_status NOT NULL DEFAULT 'unverified',
+  verification_document_url text,
   created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -71,30 +79,30 @@ CREATE TABLE IF NOT EXISTS project_updates (
 
 CREATE TABLE IF NOT EXISTS backings (
   id bigserial PRIMARY KEY,
-  user_id bigint REFERENCES users(id),
-  project_id bigint NOT NULL REFERENCES projects(id),
+  user_id bigint REFERENCES users(id) ON DELETE CASCADE,
+  project_id bigint NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   amount bigint NOT NULL,
   word_of_support text,
   created_at timestamptz NOT NULL DEFAULT NOW() 
 );
 
-CREATE TABLE IF NOT EXISTS certificates (
+CREATE TABLE IF NOT EXISTS milestone_completions (
   id bigserial PRIMARY KEY,
-  escrow_user_id bigint NOT NULL REFERENCES escrow_users(id),
-  user_id bigint NOT NULL REFERENCES users(id),
-  milestone_id bigint NOT NULL references milestones(id),
-  verified bool DEFAULT false,
-  verified_at timestamptz,
-  created_at timestamptz NOT NULL DEFAULT NOW()
+  milestone_id bigserial NOT NULL REFERENCES milestones(id),
+  transfer_amount bigserial NOT NULL,
+  transfer_note text,
+  transfer_image text,
+  completed_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS certificates;
 DROP TABLE IF EXISTS backings;
+DROP TABLE IF EXISTS milestone_completions;
 DROP TABLE IF EXISTS milestones;
 DROP TABLE IF EXISTS project_updates;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
---DROP TABLE IF EXISTS escrow_users;
---DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS escrow_users;
+DROP TABLE IF EXISTS users;
+DROP TYPE verification_status;
 DROP TYPE project_status;

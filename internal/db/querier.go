@@ -11,9 +11,9 @@ import (
 type Querier interface {
 	ActivateUser(ctx context.Context, id int64) error
 	CreateBacking(ctx context.Context, arg CreateBackingParams) (Backing, error)
-	CreateCertificate(ctx context.Context, arg CreateCertificateParams) (Certificate, error)
 	CreateEscrowUser(ctx context.Context, arg CreateEscrowUserParams) (EscrowUser, error)
 	CreateMilestone(ctx context.Context, arg CreateMilestoneParams) (Milestone, error)
+	CreateMilestoneCompletion(ctx context.Context, arg CreateMilestoneCompletionParams) (MilestoneCompletion, error)
 	CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error)
 	CreateProjectUpdate(ctx context.Context, arg CreateProjectUpdateParams) (ProjectUpdate, error)
 	CreateSocialLoginUser(ctx context.Context, arg CreateSocialLoginUserParams) (User, error)
@@ -23,35 +23,33 @@ type Querier interface {
 	GetAllCategories(ctx context.Context) ([]Category, error)
 	GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]GetAllProjectsRow, error)
 	GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error)
-	GetAllVerifiedCertificates(ctx context.Context) ([]Certificate, error)
 	GetBackingByID(ctx context.Context, id int64) (Backing, error)
 	GetBackingCountForProject(ctx context.Context, projectID int64) (int64, error)
 	GetBackingsForProject(ctx context.Context, projectID int64) ([]GetBackingsForProjectRow, error)
 	GetBackingsForUser(ctx context.Context, userID *int64) ([]Backing, error)
-	GetCerificateByID(ctx context.Context, id int64) (Certificate, error)
 	GetEscrowUserByEmail(ctx context.Context, email string) (EscrowUser, error)
 	GetEscrowUserByID(ctx context.Context, id int64) (EscrowUser, error)
 	GetFinishedProjects(ctx context.Context) ([]GetFinishedProjectsRow, error)
 	GetFirstBackingDonor(ctx context.Context, projectID int64) (GetFirstBackingDonorRow, error)
-	GetMilestoneByID(ctx context.Context, id int64) (Milestone, error)
-	GetMilestoneForProject(ctx context.Context, projectID int64) ([]Milestone, error)
+	GetMilestoneByID(ctx context.Context, id int64) (GetMilestoneByIDRow, error)
+	GetMilestoneForProject(ctx context.Context, projectID int64) ([]GetMilestoneForProjectRow, error)
 	GetMostBackingDonor(ctx context.Context, projectID int64) (GetMostBackingDonorRow, error)
 	GetMostRecentBackingDonor(ctx context.Context, projectID int64) (GetMostRecentBackingDonorRow, error)
 	GetPendingProjects(ctx context.Context) ([]GetPendingProjectsRow, error)
 	GetProjectByID(ctx context.Context, id int64) (GetProjectByIDRow, error)
 	GetProjectUpdates(ctx context.Context, projectID int64) ([]ProjectUpdate, error)
 	GetProjectsForUser(ctx context.Context, userID int64) ([]GetProjectsForUserRow, error)
-	GetUnresolvedMilestones(ctx context.Context) ([]Milestone, error)
+	GetUnresolvedMilestones(ctx context.Context) ([]GetUnresolvedMilestonesRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	SearchProjects(ctx context.Context, arg SearchProjectsParams) ([]SearchProjectsRow, error)
 	UpdateEscrowUserByID(ctx context.Context, arg UpdateEscrowUserByIDParams) error
 	UpdateMilestoneFund(ctx context.Context, arg UpdateMilestoneFundParams) error
+	UpdateMilestoneStatus(ctx context.Context, id int64) error
 	UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
-	UpdateVerifyingCertificate(ctx context.Context, arg UpdateVerifyingCertificateParams) error
 }
 
 var _ Querier = (*Queries)(nil)

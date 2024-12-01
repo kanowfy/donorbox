@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/mail"
@@ -102,7 +103,7 @@ func (a *auth) Register(ctx context.Context, req dto.UserRegisterRequest, hostPa
 		ProfilePicture: user.ProfilePicture,
 		Activated:      user.Activated,
 		UserType:       model.REGULAR,
-		CreatedAt:      user.CreatedAt,
+		CreatedAt:      convert.MustPgTimestampToTime(user.CreatedAt),
 	}, nil
 }
 
@@ -123,7 +124,7 @@ func (a *auth) RegisterEscrow(ctx context.Context, req dto.EscrowRegisterRequest
 		ID:        escrow.ID,
 		Email:     escrow.Email,
 		UserType:  model.ESCROW,
-		CreatedAt: escrow.CreatedAt,
+		CreatedAt: convert.MustPgTimestampToTime(escrow.CreatedAt),
 	}, nil
 }
 

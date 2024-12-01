@@ -118,7 +118,7 @@ const Sidenav = () => {
                   to="/manage/applications"
                   icon={MdOutlinePostAdd}
                 >
-                  Manage Applications
+                  Fundraiser Applications
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}

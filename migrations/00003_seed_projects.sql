@@ -241,4 +241,4 @@ VALUES
     'ongoing');
 
 -- +goose Down
-DELETE FROM projects WHERE TRUE;
+--DELETE FROM projects WHERE TRUE;

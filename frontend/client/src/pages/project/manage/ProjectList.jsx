@@ -16,6 +16,7 @@ const ProjectList = () => {
       try {
         const response = await projectService.getForUser(token);
         setProjects(response.projects);
+        console.log(response.projects);
       } catch (err) {
         console.error(err);
       }
@@ -47,8 +48,9 @@ const ProjectList = () => {
                 id={p.id}
                 title={p.title}
                 img={p.cover_picture}
+                status={p.status}
                 date={utils.formatDate(
-                  new Date(utils.parseDateFromRFC3339(p.start_date))
+                  new Date(utils.parseDateFromRFC3339(p.created_at))
                 )}
               />
             ))}

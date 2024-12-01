@@ -33,6 +33,7 @@ const Home = () => {
 
   return (
     <div className="p-10 bg-slate-200 w-full space-y-7 min-h-screen">
+      {/*
       <div className="grid lg:grid-cols-4 gap-7 sm:grid-cols-2">
         <InfoCard
           title="Total donated fund"
@@ -54,7 +55,7 @@ const Home = () => {
       <div className="grid grid-cols-2">
         <DashboardPieChart stats={stats} />
         <DashboardLineChart transactions={transactions} />
-      </div>
+      </div>*/}
     </div>
   );
 };

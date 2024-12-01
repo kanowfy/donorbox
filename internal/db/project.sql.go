@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createMilestone = `-- name: CreateMilestone :one
@@ -50,6 +51,41 @@ func (q *Queries) CreateMilestone(ctx context.Context, arg CreateMilestoneParams
 	return i, err
 }
 
+const createMilestoneCompletion = `-- name: CreateMilestoneCompletion :one
+INSERT INTO milestone_completions (
+    milestone_id, transfer_amount, transfer_note, transfer_image
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING id, milestone_id, transfer_amount, transfer_note, transfer_image, completed_at
+`
+
+type CreateMilestoneCompletionParams struct {
+	MilestoneID    int64
+	TransferAmount int64
+	TransferNote   *string
+	TransferImage  *string
+}
+
+func (q *Queries) CreateMilestoneCompletion(ctx context.Context, arg CreateMilestoneCompletionParams) (MilestoneCompletion, error) {
+	row := q.db.QueryRow(ctx, createMilestoneCompletion,
+		arg.MilestoneID,
+		arg.TransferAmount,
+		arg.TransferNote,
+		arg.TransferImage,
+	)
+	var i MilestoneCompletion
+	err := row.Scan(
+		&i.ID,
+		&i.MilestoneID,
+		&i.TransferAmount,
+		&i.TransferNote,
+		&i.TransferImage,
+		&i.CompletedAt,
+	)
+	return i, err
+}
+
 const createProject = `-- name: CreateProject :one
 INSERT INTO projects (
     user_id, category_id, title, description, cover_picture, end_date, receiver_number, receiver_name, address, district, city, country
@@ -65,7 +101,7 @@ type CreateProjectParams struct {
 	Title          string
 	Description    string
 	CoverPicture   string
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -213,7 +249,7 @@ type GetAllProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -221,7 +257,7 @@ type GetAllProjectsRow struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	TotalFund      int64
 	FundGoal       int64
 	BackingCount   int64
@@ -284,7 +320,7 @@ type GetFinishedProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -292,7 +328,7 @@ type GetFinishedProjectsRow struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	TotalFund      int64
 	FundGoal       int64
 	BackingCount   int64
@@ -338,13 +374,30 @@ func (q *Queries) GetFinishedProjects(ctx context.Context) ([]GetFinishedProject
 }
 
 const getMilestoneByID = `-- name: GetMilestoneByID :one
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
-WHERE id = $1
+SELECT m.id, m.project_id, m.title, m.description, m.fund_goal, m.current_fund, m.bank_description, m.completed, m.created_at, c.transfer_amount, c.transfer_note, c.transfer_image, c.completed_at FROM milestones m
+LEFT JOIN milestone_completions c ON m.id = c.milestone_id
+WHERE m.id = $1
 `
 
-func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, error) {
+type GetMilestoneByIDRow struct {
+	ID              int64
+	ProjectID       int64
+	Title           string
+	Description     *string
+	FundGoal        int64
+	CurrentFund     int64
+	BankDescription string
+	Completed       bool
+	CreatedAt       pgtype.Timestamptz
+	TransferAmount  *int64
+	TransferNote    *string
+	TransferImage   *string
+	CompletedAt     pgtype.Timestamptz
+}
+
+func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (GetMilestoneByIDRow, error) {
 	row := q.db.QueryRow(ctx, getMilestoneByID, id)
-	var i Milestone
+	var i GetMilestoneByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.ProjectID,
@@ -355,25 +408,46 @@ func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (Milestone, er
 		&i.BankDescription,
 		&i.Completed,
 		&i.CreatedAt,
+		&i.TransferAmount,
+		&i.TransferNote,
+		&i.TransferImage,
+		&i.CompletedAt,
 	)
 	return i, err
 }
 
 const getMilestoneForProject = `-- name: GetMilestoneForProject :many
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
-WHERE project_id = $1
-ORDER BY id
+SELECT m.id, m.project_id, m.title, m.description, m.fund_goal, m.current_fund, m.bank_description, m.completed, m.created_at, c.transfer_amount, c.transfer_note, c.transfer_image, c.completed_at FROM milestones m
+LEFT JOIN milestone_completions c ON m.id = c.milestone_id
+WHERE m.project_id = $1
+ORDER BY m.id
 `
 
-func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) ([]Milestone, error) {
+type GetMilestoneForProjectRow struct {
+	ID              int64
+	ProjectID       int64
+	Title           string
+	Description     *string
+	FundGoal        int64
+	CurrentFund     int64
+	BankDescription string
+	Completed       bool
+	CreatedAt       pgtype.Timestamptz
+	TransferAmount  *int64
+	TransferNote    *string
+	TransferImage   *string
+	CompletedAt     pgtype.Timestamptz
+}
+
+func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) ([]GetMilestoneForProjectRow, error) {
 	rows, err := q.db.Query(ctx, getMilestoneForProject, projectID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Milestone
+	var items []GetMilestoneForProjectRow
 	for rows.Next() {
-		var i Milestone
+		var i GetMilestoneForProjectRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProjectID,
@@ -384,6 +458,10 @@ func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) (
 			&i.BankDescription,
 			&i.Completed,
 			&i.CreatedAt,
+			&i.TransferAmount,
+			&i.TransferNote,
+			&i.TransferImage,
+			&i.CompletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -411,7 +489,7 @@ type GetPendingProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -419,7 +497,7 @@ type GetPendingProjectsRow struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	FundGoal       int64
 }
 
@@ -475,7 +553,7 @@ type GetProjectByIDRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -483,7 +561,7 @@ type GetProjectByIDRow struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	TotalFund      int64
 	FundGoal       int64
 }
@@ -561,7 +639,7 @@ type GetProjectsForUserRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -569,7 +647,7 @@ type GetProjectsForUserRow struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	TotalFund      int64
 	FundGoal       int64
 }
@@ -613,20 +691,40 @@ func (q *Queries) GetProjectsForUser(ctx context.Context, userID int64) ([]GetPr
 }
 
 const getUnresolvedMilestones = `-- name: GetUnresolvedMilestones :many
-SELECT id, project_id, title, description, fund_goal, current_fund, bank_description, completed, created_at FROM milestones
+SELECT milestones.id, milestones.project_id, milestones.title, milestones.description, milestones.fund_goal, milestones.current_fund, milestones.bank_description, milestones.completed, milestones.created_at, projects.address, projects.district, projects.city, projects.country, projects.receiver_name, projects.receiver_number
+FROM milestones
+JOIN projects ON milestones.project_id = projects.id
 WHERE current_fund >= fund_goal
 AND completed IS FALSE
 `
 
-func (q *Queries) GetUnresolvedMilestones(ctx context.Context) ([]Milestone, error) {
+type GetUnresolvedMilestonesRow struct {
+	ID              int64
+	ProjectID       int64
+	Title           string
+	Description     *string
+	FundGoal        int64
+	CurrentFund     int64
+	BankDescription string
+	Completed       bool
+	CreatedAt       pgtype.Timestamptz
+	Address         string
+	District        string
+	City            string
+	Country         string
+	ReceiverName    string
+	ReceiverNumber  string
+}
+
+func (q *Queries) GetUnresolvedMilestones(ctx context.Context) ([]GetUnresolvedMilestonesRow, error) {
 	rows, err := q.db.Query(ctx, getUnresolvedMilestones)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Milestone
+	var items []GetUnresolvedMilestonesRow
 	for rows.Next() {
-		var i Milestone
+		var i GetUnresolvedMilestonesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ProjectID,
@@ -637,6 +735,12 @@ func (q *Queries) GetUnresolvedMilestones(ctx context.Context) ([]Milestone, err
 			&i.BankDescription,
 			&i.Completed,
 			&i.CreatedAt,
+			&i.Address,
+			&i.District,
+			&i.City,
+			&i.Country,
+			&i.ReceiverName,
+			&i.ReceiverNumber,
 		); err != nil {
 			return nil, err
 		}
@@ -674,7 +778,7 @@ type SearchProjectsRow struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -682,7 +786,7 @@ type SearchProjectsRow struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	TotalFund      int64
 	FundGoal       int64
 	BackingCount   int64
@@ -743,6 +847,17 @@ func (q *Queries) UpdateMilestoneFund(ctx context.Context, arg UpdateMilestoneFu
 	return err
 }
 
+const updateMilestoneStatus = `-- name: UpdateMilestoneStatus :exec
+UPDATE milestones
+SET completed = TRUE
+WHERE id = $1
+`
+
+func (q *Queries) UpdateMilestoneStatus(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, updateMilestoneStatus, id)
+	return err
+}
+
 const updateProjectByID = `-- name: UpdateProjectByID :exec
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, receiver_number=$5, receiver_name=$6, address=$7, district=$8, city=$9, country = $10, end_date = $11
@@ -760,7 +875,7 @@ type UpdateProjectByIDParams struct {
 	District       string
 	City           string
 	Country        string
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 }
 
 func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error {

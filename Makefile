@@ -14,6 +14,12 @@ watch/css/dashboard:
 migrate/up:
 	@echo 'Running database up migration...'
 	@goose postgres "postgres://postgres:a@localhost:5432/donorbox" up -dir=./migrations/
-migrate/down:
+migrate/reset:
 	@echo 'Running database down migration...'
-	@goose postgres "postgres://postgres:a@localhost:5432/donorbox" down -dir=./migrations/
+	@goose postgres "postgres://postgres:a@localhost:5432/donorbox" reset -dir=./migrations/
+gensql:
+	@echo 'Running sqlc code generation...'
+	@sqlc generate
+genmock:
+	@echo 'Running mockery code generation...'
+	@mockery

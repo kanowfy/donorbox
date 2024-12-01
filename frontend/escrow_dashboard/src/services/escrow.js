@@ -9,10 +9,15 @@ const getStats = async (token) => {
 };
 
 const reviewProject = async (token, data) => {
-  console.log(data);
   await axios.post(`${BASE_URL}/escrow/approve`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
 
-export default { getStats, reviewProject };
+const resolveMilestone = async(token, id, payload) => {
+  await axios.post(`${BASE_URL}/escrow/resolve/${id}`, payload, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export default { getStats, reviewProject, resolveMilestone };

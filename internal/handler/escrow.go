@@ -102,9 +102,20 @@ func (e *escrow) ResolveMilestone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	escrow := rcontext.GetEscrowUser(r)
+	var req dto.ResolveMilestoneRequest
 
-	if err := e.service.ResolveMilestone(r.Context(), escrow.ID, mid); err != nil {
+	err = json.ReadJSON(w, r, &req)
+	if err != nil {
+		httperror.BadRequestResponse(w, r, err)
+		return
+	}
+
+	if err = e.validator.Struct(req); err != nil {
+		httperror.FailedValidationResponse(w, r, err)
+		return
+	}
+
+	if err := e.service.ResolveMilestone(r.Context(), mid, req); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}

@@ -57,9 +57,10 @@ GROUP BY projects.ID
 ORDER BY projects.created_at DESC;
 
 -- name: GetMilestoneForProject :many
-SELECT * FROM milestones
-WHERE project_id = $1
-ORDER BY id;
+SELECT m.*, c.transfer_amount, c.transfer_note, c.transfer_image, c.completed_at FROM milestones m
+LEFT JOIN milestone_completions c ON m.id = c.milestone_id
+WHERE m.project_id = $1
+ORDER BY m.id;
 
 -- name: UpdateProjectByID :exec
 UPDATE projects
@@ -110,15 +111,31 @@ INSERT INTO project_updates (
 RETURNING *;
 
 -- name: GetMilestoneByID :one
-SELECT * FROM milestones
-WHERE id = $1;
+SELECT m.*, c.transfer_amount, c.transfer_note, c.transfer_image, c.completed_at FROM milestones m
+LEFT JOIN milestone_completions c ON m.id = c.milestone_id
+WHERE m.id = $1;
 
 -- name: UpdateMilestoneFund :exec
 UPDATE milestones
 SET current_fund = current_fund + @amount::bigint
 WHERE id = $1;
 
+-- name: UpdateMilestoneStatus :exec
+UPDATE milestones
+SET completed = TRUE
+WHERE id = $1;
+
 -- name: GetUnresolvedMilestones :many
-SELECT * FROM milestones
+SELECT milestones.*, projects.address, projects.district, projects.city, projects.country, projects.receiver_name, projects.receiver_number
+FROM milestones
+JOIN projects ON milestones.project_id = projects.id
 WHERE current_fund >= fund_goal
 AND completed IS FALSE;
+
+-- name: CreateMilestoneCompletion :one
+INSERT INTO milestone_completions (
+    milestone_id, transfer_amount, transfer_note, transfer_image
+) VALUES (
+    $1, $2, $3, $4
+)
+RETURNING *;

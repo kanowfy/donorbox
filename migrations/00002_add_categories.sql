@@ -11,4 +11,4 @@ INSERT INTO categories(name, description, cover_picture) VALUES
     ('business', 'Raise funds for business causes', 'https://images.pexels.com/photos/265087/pexels-photo-265087.jpeg');
 
 -- +goose Down
-DELETE FROM categories WHERE TRUE;
+--DELETE FROM categories WHERE TRUE;

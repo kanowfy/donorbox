@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
-	"time"
 
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/model"
@@ -19,7 +19,6 @@ type User interface {
 	GetUserByID(ctx context.Context, userID int64) (*model.User, error)
 	UpdateAccount(ctx context.Context, user *model.User, req dto.UpdateAccountRequest) error
 	ChangePassword(ctx context.Context, userID int64, req dto.ChangePasswordRequest) error
-	ConfirmResolvedMilestone(ctx context.Context, milestoneID int64) error
 }
 
 type user struct {
@@ -46,7 +45,7 @@ func (u *user) GetUserByID(ctx context.Context, userID int64) (*model.User, erro
 		ProfilePicture: user.ProfilePicture,
 		Activated:      user.Activated,
 		UserType:       model.REGULAR,
-		CreatedAt:      user.CreatedAt,
+		CreatedAt:      convert.MustPgTimestampToTime(user.CreatedAt),
 	}, nil
 }
 
@@ -107,18 +106,6 @@ func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangeP
 	if err = u.repository.UpdateUserPassword(ctx, args); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (u *user) ConfirmResolvedMilestone(ctx context.Context, milestoneID int64) error {
-	if err := u.repository.UpdateVerifyingCertificate(ctx, db.UpdateVerifyingCertificateParams{
-		MilestoneID: milestoneID,
-		VerifiedAt:  time.Now(),
-	}); err != nil {
-		return err
-	}
-	//TODO: Generate blockchain stuff and hash
 
 	return nil
 }

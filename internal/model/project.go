@@ -35,14 +35,22 @@ type Project struct {
 }
 
 type Milestone struct {
-	ID              int64   `json:"id"`
-	ProjectID       int64   `json:"project_id"`
-	Title           string  `json:"title"`
-	Description     *string `json:"description,omitempty"`
-	FundGoal        int64   `json:"fund_goal"`
-	CurrentFund     int64   `json:"current_fund"`
-	BankDescription string  `json:"bank_description"`
-	Completed       bool    `json:"completed"`
+	ID              int64                `json:"id"`
+	ProjectID       int64                `json:"project_id"`
+	Title           string               `json:"title"`
+	Description     *string              `json:"description,omitempty"`
+	FundGoal        int64                `json:"fund_goal"`
+	CurrentFund     int64                `json:"current_fund"`
+	BankDescription string               `json:"bank_description"`
+	Completed       bool                 `json:"completed"`
+	Completion      *MilestoneCompletion `json:"milestone_completion,omitempty"`
+}
+
+type MilestoneCompletion struct {
+	TransferAmount int64     `json:"transfer_amount"`
+	TransferNote   *string   `json:"transfer_note,omitempty"`
+	TransferImage  *string   `json:"transfer_image,omitempty"`
+	CompletedAt    time.Time `json:"completed_at"`
 }
 
 type ProjectUpdate struct {

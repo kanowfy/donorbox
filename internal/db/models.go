@@ -7,7 +7,8 @@ package db
 import (
 	"database/sql/driver"
 	"fmt"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type ProjectStatus string
@@ -60,7 +61,7 @@ type Backing struct {
 	ProjectID     int64
 	Amount        int64
 	WordOfSupport *string
-	CreatedAt     time.Time
+	CreatedAt     pgtype.Timestamptz
 }
 
 type Category struct {
@@ -70,21 +71,11 @@ type Category struct {
 	CoverPicture string
 }
 
-type Certificate struct {
-	ID           int64
-	EscrowUserID int64
-	UserID       int64
-	MilestoneID  int64
-	Verified     *bool
-	VerifiedAt   time.Time
-	CreatedAt    time.Time
-}
-
 type EscrowUser struct {
 	ID             int64
 	Email          string
 	HashedPassword string
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 }
 
 type Milestone struct {
@@ -96,7 +87,16 @@ type Milestone struct {
 	CurrentFund     int64
 	BankDescription string
 	Completed       bool
-	CreatedAt       time.Time
+	CreatedAt       pgtype.Timestamptz
+}
+
+type MilestoneCompletion struct {
+	ID             int64
+	MilestoneID    int64
+	TransferAmount int64
+	TransferNote   *string
+	TransferImage  *string
+	CompletedAt    pgtype.Timestamptz
 }
 
 type Project struct {
@@ -106,7 +106,7 @@ type Project struct {
 	Description    string
 	CoverPicture   string
 	CategoryID     int32
-	EndDate        time.Time
+	EndDate        pgtype.Timestamptz
 	ReceiverNumber string
 	ReceiverName   string
 	Address        string
@@ -114,7 +114,7 @@ type Project struct {
 	City           string
 	Country        string
 	Status         ProjectStatus
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 }
 
 type ProjectUpdate struct {
@@ -122,7 +122,7 @@ type ProjectUpdate struct {
 	ProjectID       int64
 	AttachmentPhoto *string
 	Description     string
-	CreatedAt       time.Time
+	CreatedAt       pgtype.Timestamptz
 }
 
 type User struct {
@@ -133,5 +133,5 @@ type User struct {
 	ProfilePicture *string
 	HashedPassword string
 	Activated      bool
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 }

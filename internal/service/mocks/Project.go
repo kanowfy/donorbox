@@ -650,23 +650,23 @@ func (_c *Project_GetProjectsForUser_Call) RunAndReturn(run func(context.Context
 }
 
 // GetUnresolvedMilestones provides a mock function with given fields: ctx
-func (_m *Project) GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error) {
+func (_m *Project) GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUnresolvedMilestones")
 	}
 
-	var r0 []model.Milestone
+	var r0 []dto.UnresolvedMilestoneDto
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]model.Milestone, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]dto.UnresolvedMilestoneDto, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []model.Milestone); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []dto.UnresolvedMilestoneDto); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]model.Milestone)
+			r0 = ret.Get(0).([]dto.UnresolvedMilestoneDto)
 		}
 	}
 
@@ -697,12 +697,12 @@ func (_c *Project_GetUnresolvedMilestones_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *Project_GetUnresolvedMilestones_Call) Return(_a0 []model.Milestone, _a1 error) *Project_GetUnresolvedMilestones_Call {
+func (_c *Project_GetUnresolvedMilestones_Call) Return(_a0 []dto.UnresolvedMilestoneDto, _a1 error) *Project_GetUnresolvedMilestones_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Project_GetUnresolvedMilestones_Call) RunAndReturn(run func(context.Context) ([]model.Milestone, error)) *Project_GetUnresolvedMilestones_Call {
+func (_c *Project_GetUnresolvedMilestones_Call) RunAndReturn(run func(context.Context) ([]dto.UnresolvedMilestoneDto, error)) *Project_GetUnresolvedMilestones_Call {
 	_c.Call.Return(run)
 	return _c
 }

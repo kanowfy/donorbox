@@ -31,6 +31,7 @@ const ManageMilestones = () => {
       </div>
       <div className="bg-slate-50 px-5 py-2">
         <MilestoneTable
+          token={token}
           data={milestones}
           setIsSuccessful={setIsSuccessful}
           setIsFailed={setIsFailed}

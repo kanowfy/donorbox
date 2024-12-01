@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
@@ -30,7 +31,7 @@ type Project interface {
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
 	GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error)
 	CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
-	GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error)
+	GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error)
 	//CheckAndUpdateFinishedProjects(ctx context.Context) error
 }
 
@@ -86,8 +87,8 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			CreatedAt:      p.CreatedAt,
-			EndDate:        p.EndDate,
+			CreatedAt:      convert.MustPgTimestampToTime(p.CreatedAt),
+			EndDate:        convert.MustPgTimestampToTime(p.EndDate),
 			BackingCount:   &p.BackingCount,
 		})
 	}
@@ -132,8 +133,8 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			CreatedAt:      p.CreatedAt,
-			EndDate:        p.EndDate,
+			CreatedAt:      convert.MustPgTimestampToTime(p.CreatedAt),
+			EndDate:        convert.MustPgTimestampToTime(p.EndDate),
 			BackingCount:   &p.BackingCount,
 		})
 	}
@@ -165,8 +166,9 @@ func (p *project) GetProjectsForUser(ctx context.Context, userID int64) ([]model
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			CreatedAt:      p.CreatedAt,
-			EndDate:        p.EndDate,
+			CreatedAt:      convert.MustPgTimestampToTime(p.CreatedAt),
+			EndDate:        convert.MustPgTimestampToTime(p.EndDate),
+			Status:         model.ProjectStatus(p.Status),
 		})
 	}
 
@@ -197,8 +199,8 @@ func (p *project) GetEndedProjects(ctx context.Context) ([]model.Project, error)
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
-			CreatedAt:      p.CreatedAt,
-			EndDate:        p.EndDate,
+			CreatedAt:      convert.MustPgTimestampToTime(p.CreatedAt),
+			EndDate:        convert.MustPgTimestampToTime(p.EndDate),
 		})
 	}
 
@@ -247,8 +249,8 @@ func (p *project) GetPendingProjects(ctx context.Context) ([]dto.PendingProjectR
 				District:       pj.District,
 				City:           pj.City,
 				Country:        pj.Country,
-				EndDate:        pj.EndDate,
-				CreatedAt:      pj.CreatedAt,
+				CreatedAt:      convert.MustPgTimestampToTime(pj.CreatedAt),
+				EndDate:        convert.MustPgTimestampToTime(pj.EndDate),
 			},
 			Milestones: milestones,
 		})
@@ -265,12 +267,13 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 
 	dbMilestones, err := p.repository.GetMilestoneForProject(ctx, project.ID)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 
 	var milestones []model.Milestone
 	for _, m := range dbMilestones {
-		milestones = append(milestones, model.Milestone{
+		ms := model.Milestone{
 			ID:              m.ID,
 			ProjectID:       m.ProjectID,
 			Title:           m.Title,
@@ -279,7 +282,18 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 			CurrentFund:     m.CurrentFund,
 			BankDescription: m.BankDescription,
 			Completed:       m.Completed,
-		})
+		}
+
+		if ms.Completed {
+			ms.Completion = &model.MilestoneCompletion{
+				TransferAmount: *m.TransferAmount,
+				TransferNote:   m.TransferNote,
+				TransferImage:  m.TransferImage,
+				CompletedAt:    convert.MustPgTimestampToTime(m.CompletedAt),
+			}
+		}
+
+		milestones = append(milestones, ms)
 	}
 
 	return milestones, nil
@@ -327,8 +341,8 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*mode
 		District:       project.District,
 		City:           project.City,
 		Country:        project.Country,
-		CreatedAt:      project.CreatedAt,
-		EndDate:        project.EndDate,
+		CreatedAt:      convert.MustPgTimestampToTime(project.CreatedAt),
+		EndDate:        convert.MustPgTimestampToTime(project.EndDate),
 		Status:         convertProjectStatus(project.Status),
 	}, milestones, backings, updates, user, nil
 }
@@ -347,7 +361,7 @@ func (p *project) CreateProject(ctx context.Context, userID int64, req dto.Creat
 		District:       req.District,
 		City:           req.City,
 		Country:        req.Country,
-		EndDate:        req.EndDate,
+		EndDate:        convert.TimeToPgTimestamp(req.EndDate),
 	}
 
 	project, err := p.repository.CreateProject(ctx, projectArgs)
@@ -399,8 +413,8 @@ func (p *project) CreateProject(ctx context.Context, userID int64, req dto.Creat
 			District:       project.District,
 			City:           project.City,
 			Country:        project.Country,
-			CreatedAt:      project.CreatedAt,
-			EndDate:        project.EndDate,
+			CreatedAt:      convert.MustPgTimestampToTime(project.CreatedAt),
+			EndDate:        convert.MustPgTimestampToTime(project.EndDate),
 			Status:         model.ProjectStatusPending,
 		},
 		Milestones: milestones,
@@ -477,7 +491,7 @@ func (p *project) UpdateProject(ctx context.Context, userID, projectID int64, re
 	}
 
 	if req.EndDate != nil {
-		updateParams.EndDate = *req.EndDate
+		updateParams.EndDate = convert.TimeToPgTimestamp(*req.EndDate)
 	} else {
 		updateParams.EndDate = project.EndDate
 	}
@@ -543,7 +557,7 @@ func (p *project) GetProjectUpdates(ctx context.Context, projectID int64) ([]mod
 			ProjectID:       c.ProjectID,
 			AttachmentPhoto: c.AttachmentPhoto,
 			Description:     c.Description,
-			CreatedAt:       c.CreatedAt,
+			CreatedAt:       convert.MustPgTimestampToTime(c.CreatedAt),
 		})
 	}
 
@@ -576,26 +590,34 @@ func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto
 		ProjectID:       update.ProjectID,
 		AttachmentPhoto: update.AttachmentPhoto,
 		Description:     update.Description,
-		CreatedAt:       update.CreatedAt,
+		CreatedAt:       convert.MustPgTimestampToTime(update.CreatedAt),
 	}, err
 }
 
-func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]model.Milestone, error) {
+func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error) {
 	dbMilestones, err := p.repository.GetUnresolvedMilestones(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var milestones []model.Milestone
+	var milestones []dto.UnresolvedMilestoneDto
 	for _, m := range dbMilestones {
-		milestones = append(milestones, model.Milestone{
-			ID:              m.ID,
-			ProjectID:       m.ProjectID,
-			Title:           m.Title,
-			Description:     m.Description,
-			FundGoal:        m.FundGoal,
-			CurrentFund:     m.CurrentFund,
-			BankDescription: m.BankDescription,
+		milestones = append(milestones, dto.UnresolvedMilestoneDto{
+			Milestone: model.Milestone{
+				ID:              m.ID,
+				ProjectID:       m.ProjectID,
+				Title:           m.Title,
+				Description:     m.Description,
+				CurrentFund:     m.CurrentFund,
+				FundGoal:        m.FundGoal,
+				BankDescription: m.BankDescription,
+			},
+			Address:        m.Address,
+			District:       m.District,
+			City:           m.City,
+			Country:        m.Country,
+			ReceiverName:   m.ReceiverName,
+			ReceiverNumber: m.ReceiverNumber,
 		})
 	}
 

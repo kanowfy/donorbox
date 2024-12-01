@@ -72,53 +72,6 @@ func (_c *User_ChangePassword_Call) RunAndReturn(run func(context.Context, int64
 	return _c
 }
 
-// ConfirmResolvedMilestone provides a mock function with given fields: ctx, milestoneID
-func (_m *User) ConfirmResolvedMilestone(ctx context.Context, milestoneID int64) error {
-	ret := _m.Called(ctx, milestoneID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ConfirmResolvedMilestone")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, milestoneID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// User_ConfirmResolvedMilestone_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ConfirmResolvedMilestone'
-type User_ConfirmResolvedMilestone_Call struct {
-	*mock.Call
-}
-
-// ConfirmResolvedMilestone is a helper method to define mock.On call
-//   - ctx context.Context
-//   - milestoneID int64
-func (_e *User_Expecter) ConfirmResolvedMilestone(ctx interface{}, milestoneID interface{}) *User_ConfirmResolvedMilestone_Call {
-	return &User_ConfirmResolvedMilestone_Call{Call: _e.mock.On("ConfirmResolvedMilestone", ctx, milestoneID)}
-}
-
-func (_c *User_ConfirmResolvedMilestone_Call) Run(run func(ctx context.Context, milestoneID int64)) *User_ConfirmResolvedMilestone_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
-	})
-	return _c
-}
-
-func (_c *User_ConfirmResolvedMilestone_Call) Return(_a0 error) *User_ConfirmResolvedMilestone_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *User_ConfirmResolvedMilestone_Call) RunAndReturn(run func(context.Context, int64) error) *User_ConfirmResolvedMilestone_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetUserByID provides a mock function with given fields: ctx, userID
 func (_m *User) GetUserByID(ctx context.Context, userID int64) (*model.User, error) {
 	ret := _m.Called(ctx, userID)

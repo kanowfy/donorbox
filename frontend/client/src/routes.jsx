@@ -23,6 +23,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import ReportProject from "./pages/project/ReportProject";
 import Payment from "./pages/project/donation/Payment";
 import CheckoutForm from "./pages/project/donation/CheckoutForm";
+import VerifyAccount from "./pages/VerifyAccount";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
         <Route index element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/account/settings" element={<AccountSettings />} />
+        <Route path="/account/verify" element={<VerifyAccount />} />
         <Route path="/fundraiser/:id" element={<ViewProject />} />
         <Route path="/start-fundraiser" element={<CreateProject />} />
         <Route path="/fundraisers" element={<ProjectList />} />

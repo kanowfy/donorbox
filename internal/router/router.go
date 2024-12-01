@@ -31,7 +31,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("POST /escrow/login", handlers.Escrow.Login)
 	router.HandleFunc("POST /escrow/register", handlers.Auth.RegisterEscrow)
 	router.HandleFunc("POST /escrow/approve", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveOfProject))
-	router.HandleFunc("POST /escrow/{id}/resolve", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ResolveMilestone))
+	router.HandleFunc("POST /escrow/resolve/{id}", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ResolveMilestone))
 
 	router.HandleFunc("GET /projects", handlers.Project.GetAllProjects)
 	router.HandleFunc("POST /projects/search", handlers.Project.SearchProjects)
@@ -46,7 +46,6 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("GET /projects/{id}/updates", handlers.Project.GetProjectUpdates)
 
 	router.HandleFunc("GET /milestones/unresolved", authMiddleware.RequireEscrowAuthentication(handlers.Project.GetUnresolvedMilestones))
-	router.HandleFunc("POST /milestones/{id}/confirm", authMiddleware.RequireUserAuthentication(handlers.User.ConfirmResolvedMilestone))
 
 	router.HandleFunc("POST /upload/image", handlers.ImageUploader.UploadImage)
 

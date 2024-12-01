@@ -7,7 +7,8 @@ package db
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createBacking = `-- name: CreateBacking :one
@@ -92,7 +93,7 @@ type GetBackingsForProjectRow struct {
 	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	FirstName      *string
 	LastName       *string
 	ProfilePicture *string
@@ -176,7 +177,7 @@ type GetFirstBackingDonorRow struct {
 	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	FirstName      *string
 	LastName       *string
 	ProfilePicture *string
@@ -215,7 +216,7 @@ type GetMostBackingDonorRow struct {
 	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	FirstName      *string
 	LastName       *string
 	ProfilePicture *string
@@ -254,7 +255,7 @@ type GetMostRecentBackingDonorRow struct {
 	ProjectID      int64
 	Amount         int64
 	WordOfSupport  *string
-	CreatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
 	FirstName      *string
 	LastName       *string
 	ProfilePicture *string

@@ -38,9 +38,9 @@ const parseExpiry = (date) => {
     }
 }
 
-const getProvincesByCountry = (data, country) => {
+const getCitiesByCountry = (data, country) => {
     const record = data.filter(d => d.name === country)[0];
     return record?.states.map(s => s.name);
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getProvincesByCountry }
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry }

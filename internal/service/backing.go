@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/model"
@@ -168,7 +169,7 @@ func (b *backing) GetBackingsForProject(ctx context.Context, projectID int64) ([
 			ProjectID:     b.ProjectID,
 			Amount:        b.Amount,
 			WordOfSupport: b.WordOfSupport,
-			CreatedAt:     b.CreatedAt,
+			CreatedAt:     convert.MustPgTimestampToTime(b.CreatedAt),
 			Backer: &model.Backer{
 				FirstName:      b.FirstName,
 				LastName:       b.LastName,
@@ -222,7 +223,7 @@ func (b *backing) GetProjectBackingStats(ctx context.Context, projectID int64) (
 			ProjectID:     mostBacking.ProjectID,
 			Amount:        mostBacking.Amount,
 			WordOfSupport: mostBacking.WordOfSupport,
-			CreatedAt:     mostBacking.CreatedAt,
+			CreatedAt:     convert.MustPgTimestampToTime(mostBacking.CreatedAt),
 			Backer: &model.Backer{
 				FirstName:      mostBacking.FirstName,
 				LastName:       mostBacking.LastName,
@@ -233,7 +234,7 @@ func (b *backing) GetProjectBackingStats(ctx context.Context, projectID int64) (
 			ProjectID:     firstBacking.ProjectID,
 			Amount:        firstBacking.Amount,
 			WordOfSupport: firstBacking.WordOfSupport,
-			CreatedAt:     firstBacking.CreatedAt,
+			CreatedAt:     convert.MustPgTimestampToTime(firstBacking.CreatedAt),
 			Backer: &model.Backer{
 				FirstName:      firstBacking.FirstName,
 				LastName:       firstBacking.LastName,
@@ -244,7 +245,7 @@ func (b *backing) GetProjectBackingStats(ctx context.Context, projectID int64) (
 			ProjectID:     recentBacking.ProjectID,
 			Amount:        recentBacking.Amount,
 			WordOfSupport: recentBacking.WordOfSupport,
-			CreatedAt:     recentBacking.CreatedAt,
+			CreatedAt:     convert.MustPgTimestampToTime(recentBacking.CreatedAt),
 			Backer: &model.Backer{
 				FirstName:      recentBacking.FirstName,
 				LastName:       recentBacking.LastName,

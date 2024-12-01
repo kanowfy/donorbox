@@ -12,16 +12,6 @@ sql:
         emit_json_tags: false
         emit_pointers_for_null_types: true
         overrides:
-          - db_type: "timestamptz"
-            nullable: true
-            go_type:
-              import: "time"
-              type: "Time"
-          - db_type: "timestamptz"
-            nullable: false
-            go_type:
-              import: "time"
-              type: "Time"
           - db_type: "uuid"
             nullable: true
             go_type:
