@@ -18,6 +18,7 @@ type Escrow interface {
 	GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser, error)
 	ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error
 	ResolveMilestone(ctx context.Context, escrowID int64, req dto.ResolveMilestoneRequest) error
+	ApproveUserVerification(ctx context.Context, req dto.VerificationApprovalRequest) error
 }
 
 type escrow struct {
@@ -119,4 +120,30 @@ func (e *escrow) ResolveMilestone(ctx context.Context, milestoneID int64, req dt
 
 	// Send mail
 	return tx.Commit(ctx)
+}
+
+func (e *escrow) ApproveUserVerification(ctx context.Context, req dto.VerificationApprovalRequest) error {
+	user, err := e.repository.GetUserByID(ctx, req.UserID)
+	if err != nil {
+		return err
+	}
+
+	params := db.UpdateVerificationStatusParams{
+		ID: user.ID,
+	}
+
+	if req.Approved != nil {
+		params.VerificationStatus = db.VerificationStatusVerified
+		params.VerificationDocumentUrl = user.VerificationDocumentUrl
+	} else {
+		params.VerificationStatus = db.VerificationStatusUnverified
+		params.VerificationDocumentUrl = nil
+		// Send email on rejection
+	}
+
+	if err := e.repository.UpdateVerificationStatus(ctx, params); err != nil {
+		return err
+	}
+
+	return nil
 }

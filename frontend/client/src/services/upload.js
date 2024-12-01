@@ -12,7 +12,7 @@ const uploadImage = async (data) => {
 }
 
 const uploadDocument = async (token, data) => {
-    const response = await axios.post(`${BASE_URL}/users/uploaddocument`, data, {
+    const response = await axios.post(`${BASE_URL}/users/uploadDocument`, data, {
         headers: {
             'Authorization': `Bearer ${token}`,
         }

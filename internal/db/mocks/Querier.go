@@ -1543,6 +1543,64 @@ func (_c *Querier_GetPendingProjects_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// GetPendingVerificationUsers provides a mock function with given fields: ctx
+func (_m *Querier) GetPendingVerificationUsers(ctx context.Context) ([]db.GetPendingVerificationUsersRow, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetPendingVerificationUsers")
+	}
+
+	var r0 []db.GetPendingVerificationUsersRow
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]db.GetPendingVerificationUsersRow, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []db.GetPendingVerificationUsersRow); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.GetPendingVerificationUsersRow)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetPendingVerificationUsers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetPendingVerificationUsers'
+type Querier_GetPendingVerificationUsers_Call struct {
+	*mock.Call
+}
+
+// GetPendingVerificationUsers is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Querier_Expecter) GetPendingVerificationUsers(ctx interface{}) *Querier_GetPendingVerificationUsers_Call {
+	return &Querier_GetPendingVerificationUsers_Call{Call: _e.mock.On("GetPendingVerificationUsers", ctx)}
+}
+
+func (_c *Querier_GetPendingVerificationUsers_Call) Run(run func(ctx context.Context)) *Querier_GetPendingVerificationUsers_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Querier_GetPendingVerificationUsers_Call) Return(_a0 []db.GetPendingVerificationUsersRow, _a1 error) *Querier_GetPendingVerificationUsers_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetPendingVerificationUsers_Call) RunAndReturn(run func(context.Context) ([]db.GetPendingVerificationUsersRow, error)) *Querier_GetPendingVerificationUsers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetProjectByID provides a mock function with given fields: ctx, id
 func (_m *Querier) GetProjectByID(ctx context.Context, id int64) (db.GetProjectByIDRow, error) {
 	ret := _m.Called(ctx, id)

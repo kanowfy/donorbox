@@ -17,6 +17,7 @@ type Escrow interface {
 	GetAuthenticatedEscrow(w http.ResponseWriter, r *http.Request)
 	ApproveOfProject(w http.ResponseWriter, r *http.Request)
 	ResolveMilestone(w http.ResponseWriter, r *http.Request)
+	ApproveUserVerification(w http.ResponseWriter, r *http.Request)
 }
 
 type escrow struct {
@@ -122,6 +123,32 @@ func (e *escrow) ResolveMilestone(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
 		"message": "confirming milestone resolution",
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (e *escrow) ApproveUserVerification(w http.ResponseWriter, r *http.Request) {
+	var req dto.VerificationApprovalRequest
+
+	err := json.ReadJSON(w, r, &req)
+	if err != nil {
+		httperror.BadRequestResponse(w, r, err)
+		return
+	}
+
+	if err = e.validator.Struct(req); err != nil {
+		httperror.FailedValidationResponse(w, r, err)
+		return
+	}
+
+	if err := e.service.ApproveUserVerification(r.Context(), req); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"message": "project approved successfully",
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

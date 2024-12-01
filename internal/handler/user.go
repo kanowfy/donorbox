@@ -24,6 +24,7 @@ type User interface {
 	GetUserByID(w http.ResponseWriter, r *http.Request)
 	UpdateAccount(w http.ResponseWriter, r *http.Request)
 	ChangePassword(w http.ResponseWriter, r *http.Request)
+	GetPendingVerificationUsers(w http.ResponseWriter, r *http.Request)
 	UploadDocument(w http.ResponseWriter, r *http.Request)
 }
 
@@ -128,6 +129,20 @@ func (u *user) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "password changed successfully",
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (u *user) GetPendingVerificationUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := u.service.GetPendingVerificationUsers(r.Context())
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"users": users,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, FileInput } from "flowbite-react";
+import { Button, FileInput, Modal } from "flowbite-react";
 import { useAuthContext } from "../context/AuthContext";
 import uploadService from "../services/upload";
 
@@ -9,6 +9,8 @@ const VerifyAccount = () => {
   const { user, token } = useAuthContext();
   const [document, setDocument] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
 
   /*
   useEffect(() => {
@@ -24,8 +26,12 @@ const VerifyAccount = () => {
     setIsLoading(true);
     try {
       const response = await uploadDocument(document);
+      setIsLoading(false);
+      setIsSuccessful(true);
       console.log(response);
     } catch(err) {
+      setIsLoading(false);
+      setIsFailed(true);
       console.error(err);
     }
   }
@@ -109,6 +115,42 @@ const VerifyAccount = () => {
           )}
         </div>
       </div>
+      <Modal
+        show={isSuccessful}
+        size="md"
+        onClose={() => setIsSuccessful(false)}
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center flex flex-col space-y-2">
+            <img
+              src="/success.svg"
+              height={32}
+              width={32}
+              className="mx-auto"
+            />
+            <h3 className="mb-5 text-xl font-normal text-gray-500 dark:text-gray-400">
+              Document submitted!
+            </h3>
+            <p className="text-xs text-gray-600">
+              Please wait while your verification is reviewed, we will notify you as soon as possible.
+              You can continue to use other functionalities
+            </p>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <Modal show={isFailed} size="md" onClose={() => setIsFailed(false)} popup>
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center flex flex-col space-y-2">
+            <img src="/fail.svg" height={32} width={32} className="mx-auto" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              Failed to submit document. Please try again later!
+            </h3>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

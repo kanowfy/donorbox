@@ -20,6 +20,7 @@ type User interface {
 	UpdateAccount(ctx context.Context, user *model.User, req dto.UpdateAccountRequest) error
 	ChangePassword(ctx context.Context, userID int64, req dto.ChangePasswordRequest) error
 	UploadDocument(ctx context.Context, userID int64, docLink string) error
+	GetPendingVerificationUsers(ctx context.Context) ([]dto.PendingUserVerificationResponse, error)
 }
 
 type user struct {
@@ -122,4 +123,25 @@ func (u *user) UploadDocument(ctx context.Context, userID int64, docLink string)
 	}
 
 	return nil
+}
+
+func (u *user) GetPendingVerificationUsers(ctx context.Context) ([]dto.PendingUserVerificationResponse, error) {
+	dbUsers, err := u.repository.GetPendingVerificationUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []dto.PendingUserVerificationResponse
+	for _, u := range dbUsers {
+		users = append(users, dto.PendingUserVerificationResponse{
+			ID:          u.ID,
+			Email:       u.Email,
+			FirstName:   u.FirstName,
+			LastName:    u.LastName,
+			DocumentUrl: *u.VerificationDocumentUrl,
+			CreatedAt:   convert.MustPgTimestampToTime(u.CreatedAt),
+		})
+	}
+
+	return users, nil
 }

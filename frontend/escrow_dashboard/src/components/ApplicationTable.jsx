@@ -7,15 +7,12 @@ import {
   TableCell,
   Card,
   Button,
-  Dialog,
-  DialogPanel,
 } from "@tremor/react";
 import PropTypes from "prop-types";
 import { useState } from "react";
 import utils from "../utils/utils";
 import { IoOpenOutline } from "react-icons/io5";
 import { CategoryIndexMap } from "../constants";
-import { IoIosCloseCircle } from "react-icons/io";
 import escrowService from "../services/escrow";
 import {
   Label,
@@ -41,7 +38,7 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const handleApprove = async () => {
     try {
       await escrowService.reviewProject(token, {
-        project_id: review?.project.id,
+        project_id: Number(review?.project.id),
         approved: true,
       });
       setIsSuccessful(true);
@@ -57,7 +54,7 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const handleReject = async (data) => {
     try {
       await escrowService.reviewProject(token, {
-        project_id: review?.project.id,
+        project_id: Number(review?.project.id),
         reject_reason: data.reason,
       });
       setIsSuccessful(true);

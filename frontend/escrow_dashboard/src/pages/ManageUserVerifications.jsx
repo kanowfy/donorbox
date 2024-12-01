@@ -1,37 +1,39 @@
 import { Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
-import projectService from "../services/project";
-import ApplicationTable from "../components/ApplicationTable";
+import userService from "../services/user";
 import { useAuthContext } from "../context/AuthContext";
+import UserVerificationTable from "../components/UserVerificationTable";
 
-const ManageApplications = () => {
+
+const ManageUserVerifications = () => {
   const { token } = useAuthContext();
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
-  const [projects, setProjects] = useState();
+  const [users, setUsers] = useState();
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchUsers = async () => {
       try {
-        const response = await projectService.getPending(token);
-        setProjects(response.result);
+        const response = await userService.getPendingVerificationUsers(token);
+        setUsers(response.users)
+        console.log(response.users);
       } catch (err) {
         console.error(err);
       }
     };
 
-    fetchProjects();
+    fetchUsers();
   }, []);
 
   return (
     <div className="p-10 bg-slate-200 w-full space-y-10 font-sans min-h-screen">
       <div className="text-3xl font-semibold tracking-tight">
-        Fundraiser Applications
+        Pending User Verification Requests
       </div>
       <div className="bg-slate-50 px-5 py-2">
-        <ApplicationTable
+        <UserVerificationTable
           token={token}
-          data={projects}
+          data={users}
           setIsSuccessful={setIsSuccessful}
           setIsFailed={setIsFailed}
         />
@@ -77,4 +79,4 @@ const ManageApplications = () => {
   );
 };
 
-export default ManageApplications;
+export default ManageUserVerifications;

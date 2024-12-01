@@ -144,6 +144,49 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 	return items, nil
 }
 
+const getPendingVerificationUsers = `-- name: GetPendingVerificationUsers :many
+SELECT id, email, first_name, last_name, verification_document_url, created_at
+FROM users
+WHERE verification_status = 'pending'
+ORDER BY created_at DESC
+`
+
+type GetPendingVerificationUsersRow struct {
+	ID                      int64
+	Email                   string
+	FirstName               string
+	LastName                string
+	VerificationDocumentUrl *string
+	CreatedAt               pgtype.Timestamptz
+}
+
+func (q *Queries) GetPendingVerificationUsers(ctx context.Context) ([]GetPendingVerificationUsersRow, error) {
+	rows, err := q.db.Query(ctx, getPendingVerificationUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPendingVerificationUsersRow
+	for rows.Next() {
+		var i GetPendingVerificationUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.FirstName,
+			&i.LastName,
+			&i.VerificationDocumentUrl,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, first_name, last_name, profile_picture, hashed_password, activated, verification_status, verification_document_url, created_at FROM users
 WHERE email = $1

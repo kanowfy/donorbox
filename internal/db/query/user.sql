@@ -44,3 +44,9 @@ RETURNING *;
 UPDATE users
 SET verification_status = $2, verification_document_url = $3
 WHERE id = $1;
+
+-- name: GetPendingVerificationUsers :many
+SELECT id, email, first_name, last_name, verification_document_url, created_at
+FROM users
+WHERE verification_status = 'pending'
+ORDER BY created_at DESC;

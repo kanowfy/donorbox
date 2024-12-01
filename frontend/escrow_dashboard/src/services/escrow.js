@@ -9,7 +9,13 @@ const getStats = async (token) => {
 };
 
 const reviewProject = async (token, data) => {
-  await axios.post(`${BASE_URL}/escrow/approve`, data, {
+  await axios.post(`${BASE_URL}/escrow/approve/project`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+const reviewVerification = async (token, data) => {
+  await axios.post(`${BASE_URL}/escrow/approve/verification`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
@@ -20,4 +26,4 @@ const resolveMilestone = async(token, id, payload) => {
   });
 }
 
-export default { getStats, reviewProject, resolveMilestone };
+export default { getStats, reviewProject, reviewVerification, resolveMilestone };

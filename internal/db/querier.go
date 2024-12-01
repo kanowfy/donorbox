@@ -36,6 +36,7 @@ type Querier interface {
 	GetMostBackingDonor(ctx context.Context, projectID int64) (GetMostBackingDonorRow, error)
 	GetMostRecentBackingDonor(ctx context.Context, projectID int64) (GetMostRecentBackingDonorRow, error)
 	GetPendingProjects(ctx context.Context) ([]GetPendingProjectsRow, error)
+	GetPendingVerificationUsers(ctx context.Context) ([]GetPendingVerificationUsersRow, error)
 	GetProjectByID(ctx context.Context, id int64) (GetProjectByIDRow, error)
 	GetProjectUpdates(ctx context.Context, projectID int64) ([]ProjectUpdate, error)
 	GetProjectsForUser(ctx context.Context, userID int64) ([]GetProjectsForUserRow, error)

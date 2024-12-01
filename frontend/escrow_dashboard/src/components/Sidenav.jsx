@@ -115,17 +115,24 @@ const Sidenav = () => {
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}
-                  to="/manage/applications"
+                  to="/manage/projects"
                   icon={MdOutlinePostAdd}
                 >
-                  Fundraiser Applications
+                  Manage Projects 
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}
                   to="/manage/milestones"
                   icon={GoMilestone}
                 >
-                  Manage Milestones 
+                  Resolve Milestones 
+                </Sidebar.Item>
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/verifications"
+                  icon={MdOutlinePostAdd}
+                >
+                  User Verifications
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}

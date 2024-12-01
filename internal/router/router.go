@@ -16,7 +16,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("GET /users/authenticated", authMiddleware.RequireUserAuthentication(handlers.User.GetAuthenticatedUser))
 	router.HandleFunc("GET /users/{id}", handlers.User.GetUserByID)
 	router.HandleFunc("POST /users/register", handlers.Auth.Register)
-	router.HandleFunc("POST /users/verify", handlers.Auth.ActivateUser)
+	router.HandleFunc("POST /users/verify", handlers.Auth.ActivateUser) //TODO: change this to /users/activate
 	router.HandleFunc("POST /users/login", handlers.Auth.Login)
 	router.HandleFunc("PATCH /users", authMiddleware.RequireUserAuthentication(handlers.User.UpdateAccount))
 	router.HandleFunc("PATCH /users/password", authMiddleware.RequireUserAuthentication(handlers.User.ChangePassword))
@@ -26,12 +26,14 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("GET /users/auth/{provider}/token", handlers.Auth.GetAuthenticationToken)
 	router.HandleFunc("POST /users/password/forgot", handlers.Auth.ForgotPassword)
 	router.HandleFunc("POST /users/password/reset", handlers.Auth.ResetPassword)
-	router.HandleFunc("POST /users/uploaddocument", authMiddleware.RequireUserAuthentication(handlers.User.UploadDocument))
+	router.HandleFunc("POST /users/uploadDocument", authMiddleware.RequireUserAuthentication(handlers.User.UploadDocument))
+	router.HandleFunc("GET /users/pendingVerification", authMiddleware.RequireEscrowAuthentication(handlers.User.GetPendingVerificationUsers))
 
 	router.HandleFunc("GET /escrow/authenticated", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetAuthenticatedEscrow))
 	router.HandleFunc("POST /escrow/login", handlers.Escrow.Login)
 	router.HandleFunc("POST /escrow/register", handlers.Auth.RegisterEscrow)
-	router.HandleFunc("POST /escrow/approve", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveOfProject))
+	router.HandleFunc("POST /escrow/approve/project", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveOfProject))
+	router.HandleFunc("POST /escrow/approve/verification", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveUserVerification))
 	router.HandleFunc("POST /escrow/resolve/{id}", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ResolveMilestone))
 
 	router.HandleFunc("GET /projects", handlers.Project.GetAllProjects)
