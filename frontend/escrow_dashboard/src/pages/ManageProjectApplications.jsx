@@ -28,7 +28,7 @@ const ManageProjectApplications = () => {
       <div className="text-3xl font-semibold tracking-tight">
         Fundraiser Applications
       </div>
-      <div className="bg-slate-50 px-5 py-2">
+      <div className="px-5">
         <ApplicationTable
           token={token}
           data={projects}

@@ -11,7 +11,7 @@ const Header = () => {
       className="flex justify-center w-full"
       theme={{
         root: {
-          base: "bg-white dark:border-gray-700 dark:bg-gray-800 sm:px-4",
+          base: "bg-gray-50 dark:border-gray-700 dark:bg-gray-800 sm:px-4",
           inner: {
             base: "items-center justify-between w-full",
           },
@@ -100,6 +100,7 @@ const Header = () => {
           {user ? (
             <>
               <Dropdown
+              className="z-20"
                 inline
                 label={
                   <Avatar

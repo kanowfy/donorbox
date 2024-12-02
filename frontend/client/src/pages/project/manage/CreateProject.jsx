@@ -19,7 +19,7 @@ import MDEditor from "@uiw/react-md-editor";
 import MilestoneInput from "../../../components/MilestoneInput";
 
 const CreateProject = () => {
-  const { token } = useAuthContext();
+  const { user, token } = useAuthContext();
   const navigate = useNavigate();
   const [tosChecked, setTosChecked] = useState(false);
   const [img, setImg] = useState();
@@ -140,16 +140,17 @@ const CreateProject = () => {
 
   return (
     <section className="py-10 flex flex-col items-center bg-gray-50">
-      <div className="w-1/2 border rounded-lg shadow-xl px-16 py-5 bg-white mb-20">
-        <div className="flex flex-col items-center">
-          <div className="text-4xl font-bold mt-5 underline px-4 py-3 text-teal-500">
-            Start a new Fundraiser
+      {!user?.verification_status === "verified" ? (
+        <div className="w-1/2 border rounded-lg shadow-xl px-16 py-5 bg-white mb-20">
+          <div className="flex flex-col items-center">
+            <div className="text-4xl font-bold mt-5 underline px-4 py-3 text-teal-500">
+              Start a new Fundraiser
+            </div>
+            <div className="text-sm font-normal no-underline text-gray-600">
+              Complete the form below to start a new fundraiser
+            </div>
           </div>
-          <div className="text-sm font-normal no-underline text-gray-600">
-            Complete the form below to start a new fundraiser
-          </div>
-        </div>
-        {/*{step === 1 && (
+          {/*{step === 1 && (
           <div className="flex justify-end">
             <Button
               onClick={() => setStep(2)}
@@ -171,74 +172,76 @@ const CreateProject = () => {
             </Button>
           </div>
         )}*/}
-        <div className="flex justify-end mt-5 underline">
-          {step === 1 ? "1/2 Basic Details" : "2/2 Milestone Details"}
-        </div>
+          <div className="flex justify-end mt-5 underline">
+            {step === 1 ? "1/2 Basic Details" : "2/2 Milestone Details"}
+          </div>
 
-        <form
-          className="space-y-4 md:space-y-6 my-10"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          {step === 1 && (
-            <>
-              <div className="flex items-end space-x-3">
-                <label className="block mb-2 font-medium text-gray-900">
-                  Select category:{" "}
-                </label>
-                <select
-                  {...register("category", {
-                    required: "Category is required",
-                  })}
-                  name="category"
-                  defaultValue=""
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5"
-                >
-                  <option value="" disabled></option>
-                  {Object.entries(CategoryIndexMap).map(([name, num]) => (
-                    <option value={num} key={num}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-end space-x-3">
-                <label className="block mb-2 font-medium text-gray-900">
-                  Choose cover picture:
-                </label>
-                <FileInput
-                  accept="image/png, image/jpeg"
-                  onChange={onSelectImage}
-                />
-              </div>
-              {img && (
-                <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover">
-                  <img
-                    src={preview}
-                    className="w-full h-full m-auto object-cover"
+          <form
+            className="space-y-4 md:space-y-6 my-10"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            {step === 1 && (
+              <>
+                <div className="flex items-end space-x-3">
+                  <label className="block mb-2 font-medium text-gray-900">
+                    Select category:{" "}
+                  </label>
+                  <select
+                    {...register("category", {
+                      required: "Category is required",
+                    })}
+                    name="category"
+                    defaultValue=""
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5"
+                  >
+                    <option value="" disabled></option>
+                    {Object.entries(CategoryIndexMap).map(([name, num]) => (
+                      <option value={num} key={num}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end space-x-3">
+                  <label className="block mb-2 font-medium text-gray-900">
+                    Choose cover picture:
+                  </label>
+                  <FileInput
+                    accept="image/png, image/jpeg"
+                    onChange={onSelectImage}
                   />
                 </div>
-              )}
-              <div>
-                <label className="block mb-2 font-medium text-gray-900">
-                  Title:
-                </label>
-                <input
-                  {...register("title", {
-                    required: "Title is required",
-                  })}
-                  type="text"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                  placeholder="Enter title"
-                />
-                {errors.title?.type === "required" && (
-                  <p className="text-red-600 text-sm">{errors.title.message}</p>
+                {img && (
+                  <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover">
+                    <img
+                      src={preview}
+                      className="w-full h-full m-auto object-cover"
+                    />
+                  </div>
                 )}
-              </div>
-              <div data-color-mode="light">
-                <label className="block mb-2 font-medium text-gray-900">
-                  Description:
-                </label>
-                {/*<textarea
+                <div>
+                  <label className="block mb-2 font-medium text-gray-900">
+                    Title:
+                  </label>
+                  <input
+                    {...register("title", {
+                      required: "Title is required",
+                    })}
+                    type="text"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                    placeholder="Enter title"
+                  />
+                  {errors.title?.type === "required" && (
+                    <p className="text-red-600 text-sm">
+                      {errors.title.message}
+                    </p>
+                  )}
+                </div>
+                <div data-color-mode="light">
+                  <label className="block mb-2 font-medium text-gray-900">
+                    Description:
+                  </label>
+                  {/*<textarea
               {...register("description", {
                 required: "Description is required",
               })}
@@ -246,145 +249,147 @@ const CreateProject = () => {
               className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
             />
             */}
-                <MDEditor
-                  value={desc}
-                  onChange={(val) => setDesc(val || "")}
-                  height={400}
-                  required
-                />
-                {errors.description?.type === "required" && (
-                  <p className="text-red-600 text-sm">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block mb-2 font-medium text-gray-900">
-                  Set due date:
-                </label>
-                <Datepicker
-                  minDate={new Date(Date.now())}
-                  showClearButton={false}
-                  showTodayButton={false}
-                  autoHide={true}
-                  onSelectedDateChanged={(date) =>
-                    setValue("end_date", utils.getRFC3339DateString(date))
-                  }
-                  className="w-fit"
-                />
-              </div>
-
-              <div className="p-5 border rounded-lg space-y-4">
-                <div className="font-semibold">Beneficiary Information</div>
-                <div className="flex space-x-4">
-                  <div className="flex items-end space-x-3">
-                    <label className="block mb-2 font-medium text-gray-900">
-                      Name:{" "}
-                    </label>
-                    <input
-                      {...register("receiver_name", {
-                        required: "Beneficiary name is required",
-                      })}
-                      type="text"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                      placeholder="Enter name"
-                      required
-                    />
-                    {errors.receiver_name?.type === "required" && (
-                      <p className="text-red-600 text-sm">
-                        {errors.receiver_name.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-end space-x-3">
-                    <label className="block font-medium text-gray-900">
-                      Phone number:{" "}
-                    </label>
-                    <input
-                      {...register("receiver_number", {
-                        required: "Beneficiary number is required",
-                      })}
-                      type="text"
-                      className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                      placeholder="Enter number"
-                      required
-                    />
-                    {errors.receiver_number?.type === "required" && (
-                      <p className="text-red-600 text-sm">
-                        {errors.receiver_number.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-end space-x-3">
-                  <label className="block mb-2 font-medium text-gray-900">
-                    Select location:{" "}
-                  </label>
-                  <select
-                    {...register("country", {
-                      required: "Country is required",
-                    })}
-                    name="country"
-                    defaultValue=""
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5 max-w-2xl"
-                    onChange={handleSelectCountry}
-                  >
-                    <option value="" disabled>
-                      Choose country
-                    </option>
-                    {geodata &&
-                      geodata.map((c, i) => (
-                        <option value={c.name} key={i}>
-                          {c.name}
-                        </option>
-                      ))}
-                  </select>
-                  <select
-                    {...register("city", {
-                      required: "city is required",
-                    })}
-                    name="city"
-                    defaultValue=""
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5"
-                    disabled={!country}
-                  >
-                    <option value="" disabled>
-                      Choose city
-                    </option>
-                    {cityList?.map((p, i) => (
-                      <option value={p} key={i}>
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {errors.country?.type === "required" && (
-                  <p className="text-red-600 text-sm">
-                    {errors.country.message}
-                  </p>
-                )}
-                {errors.city?.type === "required" && (
-                  <p className="text-red-600 text-sm">{errors.city.message}</p>
-                )}
-                <div>
-                  <input
-                    {...register("address", {
-                      required: "Address is required",
-                    })}
-                    type="text"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-2/3 p-2.5"
-                    placeholder="Enter Address"
+                  <MDEditor
+                    value={desc}
+                    onChange={(val) => setDesc(val || "")}
+                    height={400}
                     required
                   />
-                  {errors.address?.type === "required" && (
+                  {errors.description?.type === "required" && (
                     <p className="text-red-600 text-sm">
-                      {errors.address.message}
+                      {errors.description.message}
                     </p>
                   )}
                 </div>
-              </div>
-              {/*<div className="flex items-baseline space-x-1">
+                <div>
+                  <label className="block mb-2 font-medium text-gray-900">
+                    Set due date:
+                  </label>
+                  <Datepicker
+                    minDate={new Date(Date.now())}
+                    showClearButton={false}
+                    showTodayButton={false}
+                    autoHide={true}
+                    onSelectedDateChanged={(date) =>
+                      setValue("end_date", utils.getRFC3339DateString(date))
+                    }
+                    className="w-fit"
+                  />
+                </div>
+
+                <div className="p-5 border rounded-lg space-y-4">
+                  <div className="font-semibold">Beneficiary Information</div>
+                  <div className="flex space-x-4">
+                    <div className="flex items-end space-x-3">
+                      <label className="block mb-2 font-medium text-gray-900">
+                        Name:{" "}
+                      </label>
+                      <input
+                        {...register("receiver_name", {
+                          required: "Beneficiary name is required",
+                        })}
+                        type="text"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                        placeholder="Enter name"
+                        required
+                      />
+                      {errors.receiver_name?.type === "required" && (
+                        <p className="text-red-600 text-sm">
+                          {errors.receiver_name.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-end space-x-3">
+                      <label className="block font-medium text-gray-900">
+                        Phone number:{" "}
+                      </label>
+                      <input
+                        {...register("receiver_number", {
+                          required: "Beneficiary number is required",
+                        })}
+                        type="text"
+                        className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                        placeholder="Enter number"
+                        required
+                      />
+                      {errors.receiver_number?.type === "required" && (
+                        <p className="text-red-600 text-sm">
+                          {errors.receiver_number.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-end space-x-3">
+                    <label className="block mb-2 font-medium text-gray-900">
+                      Select location:{" "}
+                    </label>
+                    <select
+                      {...register("country", {
+                        required: "Country is required",
+                      })}
+                      name="country"
+                      defaultValue=""
+                      className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5 max-w-2xl"
+                      onChange={handleSelectCountry}
+                    >
+                      <option value="" disabled>
+                        Choose country
+                      </option>
+                      {geodata &&
+                        geodata.map((c, i) => (
+                          <option value={c.name} key={i}>
+                            {c.name}
+                          </option>
+                        ))}
+                    </select>
+                    <select
+                      {...register("city", {
+                        required: "city is required",
+                      })}
+                      name="city"
+                      defaultValue=""
+                      className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block p-2.5"
+                      disabled={!country}
+                    >
+                      <option value="" disabled>
+                        Choose city
+                      </option>
+                      {cityList?.map((p, i) => (
+                        <option value={p} key={i}>
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.country?.type === "required" && (
+                    <p className="text-red-600 text-sm">
+                      {errors.country.message}
+                    </p>
+                  )}
+                  {errors.city?.type === "required" && (
+                    <p className="text-red-600 text-sm">
+                      {errors.city.message}
+                    </p>
+                  )}
+                  <div>
+                    <input
+                      {...register("address", {
+                        required: "Address is required",
+                      })}
+                      type="text"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-2/3 p-2.5"
+                      placeholder="Enter Address"
+                      required
+                    />
+                    {errors.address?.type === "required" && (
+                      <p className="text-red-600 text-sm">
+                        {errors.address.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {/*<div className="flex items-baseline space-x-1">
             <label className="block mb-2 font-medium text-gray-900">
               Set goal:
             </label>
@@ -415,82 +420,112 @@ const CreateProject = () => {
               </p>
             )}
           </div>*/}
-              <div className="flex justify-end">
-                <Button color="light" onClick={() => setStep(2)} size="xl">
-                  Next
-                </Button>
-              </div>
-            </>
-          )}
-          {step === 2 && (
-            <div className="flex flex-col items-center space-y-5">
-              <div className="w-full flex flex-col items-center space-y-5">
-                {fields.map((field, index) => (
-                  <MilestoneInput
-                    index={index}
-                    register={register}
-                    setValue={setValue}
-                    key={field.id}
-                  />
-                ))}
-              </div>
-              <ButtonGroup className="mb-10">
-                <Button
-                  color="failure"
-                  pill
-                  onClick={() => remove(fields.length - 1)}
-                  disabled={fields.length <= 1}
-                >
-                  - Remove one
-                </Button>
-                <Button
-                  color="light"
-                  pill
-                  onClick={() =>
-                    append({
-                      title: "",
-                      description: "",
-                      fund_goal: 0,
-                      bank_description: "",
-                    })
-                  }
-                >
-                  + Add Milestone
-                </Button>
-              </ButtonGroup>
+                <div className="flex justify-end">
+                  <Button color="light" onClick={() => setStep(2)} size="xl">
+                    Next
+                  </Button>
+                </div>
+              </>
+            )}
+            {step === 2 && (
+              <div className="flex flex-col items-center space-y-5">
+                <div className="w-full flex flex-col items-center space-y-5">
+                  {fields.map((field, index) => (
+                    <MilestoneInput
+                      index={index}
+                      register={register}
+                      setValue={setValue}
+                      key={field.id}
+                    />
+                  ))}
+                </div>
+                <ButtonGroup className="mb-10">
+                  <Button
+                    color="failure"
+                    pill
+                    onClick={() => remove(fields.length - 1)}
+                    disabled={fields.length <= 1}
+                  >
+                    - Remove one
+                  </Button>
+                  <Button
+                    color="light"
+                    pill
+                    onClick={() =>
+                      append({
+                        title: "",
+                        description: "",
+                        fund_goal: 0,
+                        bank_description: "",
+                      })
+                    }
+                  >
+                    + Add Milestone
+                  </Button>
+                </ButtonGroup>
 
-              <div className="flex text-sm items-end space-x-1">
-                <Checkbox
-                  className="h-5 w-5 mr-1 checked:bg-blue-700 focus:ring-0"
-                  checked={tosChecked}
-                  onChange={() => setTosChecked(!tosChecked)}
-                />
-                <div>
-                  By starting a new fundraiser, you must agree with our platform
-                  fund regulation
+                <div className="flex text-sm items-end space-x-1">
+                  <Checkbox
+                    className="h-5 w-5 mr-1 checked:bg-blue-700 focus:ring-0"
+                    checked={tosChecked}
+                    onChange={() => setTosChecked(!tosChecked)}
+                  />
+                  <div>
+                    By starting a new fundraiser, you must agree with our
+                    platform fund regulation
+                  </div>
+                  <div className="text-sm font-semibold underline">
+                    Terms and Conditions
+                  </div>
                 </div>
-                <div className="text-sm font-semibold underline">
-                  Terms and Conditions
+                <div className="w-full flex gap-2 justify-center">
+                  <Button color="light" onClick={() => setStep(1)} size="xl">
+                    Back
+                  </Button>
+                  <Button
+                    color="blue"
+                    size="xl"
+                    type="submit"
+                    disabled={!tosChecked}
+                    isProcessing={isLoading}
+                  >
+                    Create
+                  </Button>
                 </div>
               </div>
-              <div className="w-full flex gap-2 justify-center">
-                <Button color="light" onClick={() => setStep(1)} size="xl">
-                  Back
-                </Button>
-                <Button
-                  color="blue"
-                  size="xl"
-                  type="submit"
-                  disabled={!tosChecked}
-                  isProcessing={isLoading}
+            )}
+          </form>
+        </div>
+      ) : (
+        <div>
+          <Modal show={true}>
+            <Modal.Body>
+              <div className="px-6 py-3 flex flex-col items-center">
+                <p className="leading-relaxed text-2xl mb-4">
+                  You have not been verified!
+                </p>
+                <p className="text-base leading-relaxed text-gray-700">
+                  Only verified accounts can start a fundraising campaign.
+                </p>
+                <p className="text-base leading-relaxed text-gray-700">
+                  Please complete the verification process.
+                </p>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <div className="mx-auto">
+                <Button color="blue"
+                  onClick={() => {
+                    navigate("/account/verify");
+                  }}
                 >
-                  Create
+                  Go to Verification Page
                 </Button>
               </div>
-            </div>
-          )}
-        </form>
-      </div>
+            </Modal.Footer>
+          </Modal>
+        </div>
+      )}
       <Modal
         show={isSuccessful}
         size="md"

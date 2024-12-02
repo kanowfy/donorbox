@@ -72,17 +72,16 @@ const VerifyAccount = () => {
           {user?.verification_status == "unverified" ? (
             <>
               <div>
-                Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam
-                quidem voluptatibus voluptatem voluptate incidunt veniam commodi
-                culpa, voluptatum provident fugiat reiciendis itaque nostrum
-                porro laborum rerum officiis quae? Debitis, reprehenderit?
+                To start your own fundraising campaigns, we need to verify your identity.
+                Please print and fill out the attached document and upload it using this form so our team
+                can begin the verification process for your account.
               </div>
               <div>
                 Click{" "}
                 <a
                   className="text-blue-700 hover:underline"
-                  href="www.google.com"
-                  target="_blank"
+                  href="/"
+                  download="handshake.jpg"
                 >
                   here
                 </a>{" "}

@@ -29,7 +29,7 @@ const ManageMilestones = () => {
       <div className="text-3xl font-semibold tracking-tight">
         Pending Milestones
       </div>
-      <div className="bg-slate-50 px-5 py-2">
+      <div className="px-5">
         <MilestoneTable
           token={token}
           data={milestones}

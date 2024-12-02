@@ -24,26 +24,32 @@ const Home = () => {
   return (
     <>
       <div>
-        <section
-          className="flex flex-col pt-20 items-center h-[33rem] bg-cover bg-gradient-to-b from-white to-sky-200"
-        >
-          <div className="pb-7 font-semibold text-sky-700 text-6xl">
-            Help those in need today
-          </div>
-          <div className="text-sky-800 pb-10 font-medium text-xl">
-            Your home for communities, charities and people you care about
-          </div>
-          <div>
+        <section className="relative h-[48rem]">
+          <div
+            class="absolute inset-0 bg-top bg-cover bg-no-repeat filter brightness-50"
+            style={{ backgroundImage: "url('/handshake.jpeg')" }}
+          ></div>
+
+          <div className="relative z-10 flex items-center flex-col top-36">
+            <div className="pb-7 font-semibold text-green-100 text-7xl">
+              Help those in need today
+            </div>
+            <div className="text-green-100 font-medium text-2xl">
+              Your home for communities, charities and people you care about
+            </div>
+
+            {/*<div>
             <Link to="/start-fundraiser">
               <button className="text-lg mt-10 px-8 py-4 text-white font-semibold rounded-xl shadow-lg bg-gradient-to-t from-cyan-500 to-blue-500 hover:bg-gradient-to-b">
                 Start a Fundraiser
               </button>
             </Link>
+          </div>*/}
           </div>
         </section>
 
         <section>
-          <div className="min-h-screen px-10 pt-6 bg-teal-50">
+          <div className="min-h-screen px-10 pt-6 bg-gray-50">
             <div className="flex justify-between mx-48">
               <div className="font-medium text-2xl tracking-tight">
                 Trending fundraisers

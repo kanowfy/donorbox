@@ -134,13 +134,13 @@ const Sidenav = () => {
                 >
                   User Verifications
                 </Sidebar.Item>
-                <Sidebar.Item
+                {/*<Sidebar.Item
                   as={Link}
                   to="/transactions"
                   icon={AiOutlineAudit}
                 >
                   Transaction Audits
-                </Sidebar.Item>
+                </Sidebar.Item>*/}
               </Sidebar.ItemGroup>
               <Sidebar.ItemGroup>
                 <Sidebar.Item as={Link} to="/logout" icon={LuLogOut}>
