@@ -36,7 +36,10 @@ type Config struct {
 
 	StripeSecretKey string `env:"STRIPE_SK"`
 
-	DropboxAccessToken string `env:"DROPBOX_ACCESS_TOKEN"`
+	DropboxAccessToken  string `env:"DROPBOX_ACCESS_TOKEN"`
+	DropboxRefreshToken string `env:"DROPBOX_REFRESH_TOKEN"`
+	DropboxAppKey       string `env:"DROPBOX_APP_KEY"`
+	DropboxAppSecret    string `env:"DROPBOX_APP_SECRET"`
 }
 
 func Load() (Config, error) {

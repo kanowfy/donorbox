@@ -6,6 +6,7 @@ import { RxDashboard } from "react-icons/rx";
 import { AiOutlineAudit } from "react-icons/ai";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { GoMilestone } from "react-icons/go";
+import { FiUserCheck } from "react-icons/fi";
 
 const customSidenavTheme = {
   root: {
@@ -130,7 +131,7 @@ const Sidenav = () => {
                 <Sidebar.Item
                   as={Link}
                   to="/manage/verifications"
-                  icon={MdOutlinePostAdd}
+                  icon={FiUserCheck}
                 >
                   User Verifications
                 </Sidebar.Item>

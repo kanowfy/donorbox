@@ -80,8 +80,9 @@ const VerifyAccount = () => {
                 Click{" "}
                 <a
                   className="text-blue-700 hover:underline"
-                  href="/"
-                  download="handshake.jpg"
+                  href="/verification_form.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   here
                 </a>{" "}

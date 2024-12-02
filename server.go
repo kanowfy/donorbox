@@ -32,7 +32,7 @@ func (app *application) run() error {
 
 	// initialize handlers
 	authHandler := handler.NewAuth(authService, app.validator, app.cfg)
-	userHandler := handler.NewUser(userService, app.validator, app.cfg)
+	userHandler := handler.NewUser(userService, app.validator, app.cfg, app.cfg.DropboxAccessToken)
 	escrowHandler := handler.NewEscrow(escrowService, app.validator)
 	backingHandler := handler.NewBacking(backingService, app.validator)
 	projectHandler := handler.NewProject(projectService, app.validator)

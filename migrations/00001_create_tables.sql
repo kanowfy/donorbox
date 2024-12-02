@@ -6,11 +6,11 @@ CREATE TYPE project_status AS ENUM (
   'finished'
 );
 
-CREATE TYPE verification_status AS ENUM (
-  'unverified',
-  'pending',
-  'verified'
-);
+--CREATE TYPE verification_status AS ENUM (
+--  'unverified',
+--  'pending',
+--  'verified'
+--);
 
 CREATE TABLE IF NOT EXISTS users (
   id bigserial PRIMARY KEY,
@@ -103,6 +103,6 @@ DROP TABLE IF EXISTS project_updates;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
 --DROP TABLE IF EXISTS escrow_users;
-DROP TABLE IF EXISTS users;
+--DROP TABLE IF EXISTS users;
 DROP TYPE verification_status;
 DROP TYPE project_status;

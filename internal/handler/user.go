@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"encoding/base64"
+	ejson "encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,16 +32,18 @@ type User interface {
 }
 
 type user struct {
-	service   service.User
-	validator *validator.Validate
-	cfg       config.Config
+	service      service.User
+	validator    *validator.Validate
+	cfg          config.Config
+	dropboxToken string
 }
 
-func NewUser(service service.User, validator *validator.Validate, cfg config.Config) User {
+func NewUser(service service.User, validator *validator.Validate, cfg config.Config, dropboxToken string) User {
 	return &user{
 		service,
 		validator,
 		cfg,
+		dropboxToken,
 	}
 }
 
@@ -161,7 +166,7 @@ func (u *user) UploadDocument(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	config := dropbox.Config{
-		Token: u.cfg.DropboxAccessToken,
+		Token: u.dropboxToken,
 	}
 
 	dbx := files.New(config)
@@ -177,8 +182,19 @@ func (u *user) UploadDocument(w http.ResponseWriter, r *http.Request) {
 		CommitInfo: *commitInfo,
 	}, file)
 	if err != nil {
-		httperror.ServerErrorResponse(w, r, err)
-		return
+		if strings.Contains(err.Error(), "expired_access_token") {
+			u.requestDropboxAccessToken()
+			_, err = dbx.Upload(&files.UploadArg{
+				CommitInfo: *commitInfo,
+			}, file)
+
+			if err != nil {
+				httperror.ServerErrorResponse(w, r, err)
+			}
+		} else {
+			httperror.ServerErrorResponse(w, r, err)
+			return
+		}
 	}
 
 	// create share link
@@ -216,4 +232,39 @@ func (u *user) UploadDocument(w http.ResponseWriter, r *http.Request) {
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
+}
+
+func (u *user) requestDropboxAccessToken() error {
+	req, err := http.NewRequest("POST", "https://api.dropbox.com/oauth2/token", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	base64Auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", u.cfg.DropboxAppKey, u.cfg.DropboxAppSecret)))
+	req.Header.Add("Authorization", fmt.Sprintf("Basic %s", base64Auth))
+
+	qs := req.URL.Query()
+	qs.Add("refresh_token", u.cfg.DropboxRefreshToken)
+	qs.Add("grant_type", "refresh_token")
+
+	req.URL.RawQuery = qs.Encode()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	var payload struct {
+		AccessToken string `json:"access_token"`
+		TokenType   string `json:"token_type"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+
+	if err := ejson.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		return fmt.Errorf("unable to decode dropbox response: %w", err)
+	}
+
+	u.dropboxToken = payload.AccessToken
+	return nil
 }

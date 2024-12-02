@@ -94,9 +94,9 @@ const UserVerificationTable = ({
           <TableBody>
             {data?.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="text-gray-800">{item.id}</TableCell>
-                <TableCell className="text-gray-800">{item.email}</TableCell>
-                <TableCell className="text-gray-800">{`${item.first_name} ${item?.last_name}`}</TableCell>
+                <TableCell className="text-gray-600">{item.id}</TableCell>
+                <TableCell className="text-gray-600">{item.email}</TableCell>
+                <TableCell className="text-gray-600">{`${item.first_name} ${item?.last_name}`}</TableCell>
                 <TableCell>
                   <a
                     target="_blank"
@@ -109,7 +109,7 @@ const UserVerificationTable = ({
                     </div>
                   </a>
                 </TableCell>
-                <TableCell className="text-gray-800">
+                <TableCell className="text-gray-600">
                   {utils.formatDate(
                     new Date(utils.parseDateFromRFC3339(item.created_at))
                   )}
