@@ -1,0 +1,33 @@
+{{define "subject"}}Donorbox - Account verification result{{end}}
+
+{{define "plainBody"}}
+Hi {{.firstName}},
+
+Thanks for your account verification submission.
+
+We are thrilled to inform you that your account has been verified.
+
+You are now able to start your own fundraising campaigns on our platform.
+
+Sincerely,
+
+Donorbox Team
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <p>Hi, </p>
+    <p>Thanks for your account verification submission.</p>
+    <p>We are thrilled to inform you that your account has been verified.</p>
+    <p>You are now able to start your own fundraising campaigns on our platform.</p>
+    <p>Sincerely,</p>
+    <p>Donorbox Team</p>
+</body>
+</html>
+{{end}}

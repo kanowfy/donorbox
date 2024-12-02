@@ -2,14 +2,17 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
+	"github.com/kanowfy/donorbox/internal/mail"
 	"github.com/kanowfy/donorbox/internal/model"
 	"github.com/kanowfy/donorbox/internal/token"
+	"github.com/kanowfy/donorbox/pkg/helper"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,11 +26,13 @@ type Escrow interface {
 
 type escrow struct {
 	repository db.Querier
+	mailer     mail.Mailer
 }
 
-func NewEscrow(querier db.Querier) Escrow {
+func NewEscrow(querier db.Querier, mailer mail.Mailer) Escrow {
 	return &escrow{
 		repository: querier,
+		mailer:     mailer,
 	}
 }
 
@@ -65,15 +70,34 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser
 }
 
 func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
+	project, err := e.repository.GetProjectByID(ctx, req.ProjectID)
+	if err != nil {
+		return err
+	}
+
+	user, err := e.repository.GetUserByID(ctx, project.UserID)
+	if err != nil {
+		return err
+	}
+
 	params := db.UpdateProjectStatusParams{
-		ID: req.ProjectID,
+		ID: project.ID,
 	}
 
 	if req.Approved != nil {
 		params.Status = db.ProjectStatusOngoing
 	} else {
-		//TODO: do something with other req fields
 		params.Status = db.ProjectStatusRejected
+
+		helper.Background(func() {
+			payload := map[string]interface{}{
+				"rejectReason": *req.RejectReason,
+			}
+
+			if err := e.mailer.Send(user.Email, "reject_project_application.tmpl", payload); err != nil {
+				slog.Error(err.Error())
+			}
+		})
 	}
 	if err := e.repository.UpdateProjectStatus(ctx, params); err != nil {
 		return err
@@ -135,10 +159,30 @@ func (e *escrow) ApproveUserVerification(ctx context.Context, req dto.Verificati
 	if req.Approved != nil {
 		params.VerificationStatus = db.VerificationStatusVerified
 		params.VerificationDocumentUrl = user.VerificationDocumentUrl
+
+		helper.Background(func() {
+			payload := map[string]interface{}{
+				"firstName": user.FirstName,
+			}
+
+			if err := e.mailer.Send(user.Email, "approve_verification.tmpl", payload); err != nil {
+				slog.Error(err.Error())
+			}
+		})
 	} else {
 		params.VerificationStatus = db.VerificationStatusUnverified
 		params.VerificationDocumentUrl = nil
-		// Send email on rejection
+
+		helper.Background(func() {
+			payload := map[string]interface{}{
+				"firstName":    user.FirstName,
+				"rejectReason": *req.RejectReason, // adjust url as needed
+			}
+
+			if err := e.mailer.Send(user.Email, "reject_verification.tmpl", payload); err != nil {
+				slog.Error(err.Error())
+			}
+		})
 	}
 
 	if err := e.repository.UpdateVerificationStatus(ctx, params); err != nil {

@@ -26,7 +26,7 @@ func (app *application) run() error {
 	// initialize service
 	authService := service.NewAuth(repository, app.mailer)
 	userService := service.NewUser(repository)
-	escrowService := service.NewEscrow(repository)
+	escrowService := service.NewEscrow(repository, app.mailer)
 	backingService := service.NewBacking(repository)
 	projectService := service.NewProject(repository, backingService, userService)
 
