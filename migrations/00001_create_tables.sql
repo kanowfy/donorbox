@@ -6,11 +6,19 @@ CREATE TYPE project_status AS ENUM (
   'finished'
 );
 
---CREATE TYPE verification_status AS ENUM (
---  'unverified',
---  'pending',
---  'verified'
---);
+CREATE TYPE verification_status AS ENUM (
+  'unverified',
+  'pending',
+  'verified'
+);
+
+CREATE TYPE notification_type AS ENUM (
+  'approved_verification',
+  'rejected_verification',
+  'approved_project',
+  'rejected_project',
+  'milestone_completion'
+);
 
 CREATE TABLE IF NOT EXISTS users (
   id bigserial PRIMARY KEY,
@@ -95,8 +103,19 @@ CREATE TABLE IF NOT EXISTS milestone_completions (
   completed_at timestamptz NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS notifications (
+  id bigserial PRIMARY KEY,
+  user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  notification_type notification_type NOT NULL,
+  message text NOT NULL,
+  project_id bigint REFERENCES projects(id),
+  is_read boolean NOT NULL DEFAULT FALSE,
+  created_at timestamptz NOT NULL DEFAULT NOW()
+);
+
 -- +goose Down
 DROP TABLE IF EXISTS backings;
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS milestone_completions;
 DROP TABLE IF EXISTS milestones;
 DROP TABLE IF EXISTS project_updates;
@@ -104,5 +123,5 @@ DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
 --DROP TABLE IF EXISTS escrow_users;
 --DROP TABLE IF EXISTS users;
-DROP TYPE verification_status;
+--DROP TYPE verification_status;
 DROP TYPE project_status;

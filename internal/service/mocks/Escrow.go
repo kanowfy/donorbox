@@ -71,6 +71,53 @@ func (_c *Escrow_ApproveOfProject_Call) RunAndReturn(run func(context.Context, d
 	return _c
 }
 
+// ApproveUserVerification provides a mock function with given fields: ctx, req
+func (_m *Escrow) ApproveUserVerification(ctx context.Context, req dto.VerificationApprovalRequest) error {
+	ret := _m.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApproveUserVerification")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, dto.VerificationApprovalRequest) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Escrow_ApproveUserVerification_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApproveUserVerification'
+type Escrow_ApproveUserVerification_Call struct {
+	*mock.Call
+}
+
+// ApproveUserVerification is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req dto.VerificationApprovalRequest
+func (_e *Escrow_Expecter) ApproveUserVerification(ctx interface{}, req interface{}) *Escrow_ApproveUserVerification_Call {
+	return &Escrow_ApproveUserVerification_Call{Call: _e.mock.On("ApproveUserVerification", ctx, req)}
+}
+
+func (_c *Escrow_ApproveUserVerification_Call) Run(run func(ctx context.Context, req dto.VerificationApprovalRequest)) *Escrow_ApproveUserVerification_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(dto.VerificationApprovalRequest))
+	})
+	return _c
+}
+
+func (_c *Escrow_ApproveUserVerification_Call) Return(_a0 error) *Escrow_ApproveUserVerification_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Escrow_ApproveUserVerification_Call) RunAndReturn(run func(context.Context, dto.VerificationApprovalRequest) error) *Escrow_ApproveUserVerification_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEscrowByID provides a mock function with given fields: ctx, id
 func (_m *Escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser, error) {
 	ret := _m.Called(ctx, id)
@@ -126,6 +173,64 @@ func (_c *Escrow_GetEscrowByID_Call) Return(_a0 *model.EscrowUser, _a1 error) *E
 }
 
 func (_c *Escrow_GetEscrowByID_Call) RunAndReturn(run func(context.Context, int64) (*model.EscrowUser, error)) *Escrow_GetEscrowByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetStatistics provides a mock function with given fields: ctx
+func (_m *Escrow) GetStatistics(ctx context.Context) (*dto.GetStatisticsResponse, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetStatistics")
+	}
+
+	var r0 *dto.GetStatisticsResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*dto.GetStatisticsResponse, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *dto.GetStatisticsResponse); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.GetStatisticsResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Escrow_GetStatistics_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetStatistics'
+type Escrow_GetStatistics_Call struct {
+	*mock.Call
+}
+
+// GetStatistics is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Escrow_Expecter) GetStatistics(ctx interface{}) *Escrow_GetStatistics_Call {
+	return &Escrow_GetStatistics_Call{Call: _e.mock.On("GetStatistics", ctx)}
+}
+
+func (_c *Escrow_GetStatistics_Call) Run(run func(ctx context.Context)) *Escrow_GetStatistics_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Escrow_GetStatistics_Call) Return(_a0 *dto.GetStatisticsResponse, _a1 error) *Escrow_GetStatistics_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Escrow_GetStatistics_Call) RunAndReturn(run func(context.Context) (*dto.GetStatisticsResponse, error)) *Escrow_GetStatistics_Call {
 	_c.Call.Return(run)
 	return _c
 }

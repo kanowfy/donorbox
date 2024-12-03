@@ -29,6 +29,9 @@ const VerifyAccount = () => {
       setIsLoading(false);
       setIsSuccessful(true);
       console.log(response);
+      setTimeout(() => {
+        navigate("/");
+      }, 5000);
     } catch(err) {
       setIsLoading(false);
       setIsFailed(true);
@@ -118,7 +121,10 @@ const VerifyAccount = () => {
       <Modal
         show={isSuccessful}
         size="md"
-        onClose={() => setIsSuccessful(false)}
+        onClose={() => {
+          setIsSuccessful(false);
+          navigate("/");
+        }}
         popup
       >
         <Modal.Header />
@@ -133,7 +139,7 @@ const VerifyAccount = () => {
             <h3 className="mb-5 text-xl font-normal text-gray-500 dark:text-gray-400">
               Document submitted!
             </h3>
-            <p className="text-xs text-gray-600">
+            <p className="text-sm text-gray-600">
               Please wait while your verification is reviewed, we will notify you as soon as possible.
               You can continue to use other functionalities
             </p>

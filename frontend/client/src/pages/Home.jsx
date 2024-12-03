@@ -26,15 +26,15 @@ const Home = () => {
       <div>
         <section className="relative h-[48rem]">
           <div
-            class="absolute inset-0 bg-top bg-cover bg-no-repeat filter brightness-50"
+            className="absolute inset-0 bg-top bg-cover bg-no-repeat filter brightness-50"
             style={{ backgroundImage: "url('/handshake.jpeg')" }}
           ></div>
 
           <div className="relative z-10 flex items-center flex-col top-36">
-            <div className="pb-7 font-semibold text-green-100 text-7xl">
+            <div className="pb-7 font-semibold text-gray-100 text-7xl">
               Help those in need today
             </div>
-            <div className="text-green-100 font-medium text-2xl">
+            <div className="text-gray-100 font-medium text-2xl">
               Your home for communities, charities and people you care about
             </div>
 

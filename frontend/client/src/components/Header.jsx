@@ -1,6 +1,7 @@
 import { MegaMenu, Dropdown, Navbar, Avatar, Button } from "flowbite-react";
 import { useAuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import Notification from "./Notification";
 
 const Header = () => {
   const { user } = useAuthContext();
@@ -99,6 +100,10 @@ const Header = () => {
         <div className="flex md:order-2 flex-grow basis-0 justify-end">
           {user ? (
             <>
+            <div className="z-20">
+              <Notification />
+
+            </div>
               <Dropdown
               className="z-20"
                 inline
@@ -151,9 +156,9 @@ const Header = () => {
                 <Navbar.Link as={Link} to="/login">
                   <div className="mt-4 text-lg">Sign In</div>
                 </Navbar.Link>
-                <Navbar.Link as={Link} to="/start-fundraiser" className="mt-2">
-                  <Button pill color="cyan" size="lg">
-                    Start a Fundraiser
+                <Navbar.Link as={Link} to="/register" className="mt-3">
+                  <Button color="dark">
+                    Get Started
                   </Button>
                 </Navbar.Link>
               </Navbar.Collapse>

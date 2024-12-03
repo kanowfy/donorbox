@@ -35,6 +35,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("POST /escrow/approve/project", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveOfProject))
 	router.HandleFunc("POST /escrow/approve/verification", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ApproveUserVerification))
 	router.HandleFunc("POST /escrow/resolve/{id}", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.ResolveMilestone))
+	router.HandleFunc("GET /escrow/statistics", authMiddleware.RequireEscrowAuthentication(handlers.Escrow.GetStatistics))
 
 	router.HandleFunc("GET /projects", handlers.Project.GetAllProjects)
 	router.HandleFunc("POST /projects/search", handlers.Project.SearchProjects)
@@ -58,6 +59,10 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("GET /projects/{id}/backings/stats", handlers.Backing.GetProjectBackingStats)
 
 	router.HandleFunc("GET /categories", handlers.Project.GetAllCategories)
+
+	router.HandleFunc("GET /notifications/{id}", handlers.Notification.GetNotificationsForUser)
+	router.HandleFunc("POST /notifications/{id}/read", handlers.Notification.UpdateReadNotification)
+	router.HandleFunc("GET /notifications/events", handlers.Notification.NotificationStreamHandler)
 
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))

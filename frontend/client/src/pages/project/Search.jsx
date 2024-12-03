@@ -56,10 +56,10 @@ const Search = () => {
       <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-sky-200 mt-20">
         <div className="flex flex-col items-center">
           <div className="pb-7 font-semibold text-4xl tracking-tight">
-            Search for fundraising projects
+            Explore fundraising campaigns
           </div>
           <div className="pb-10 font-normal text-lg">
-            Find fundraisers by category, description or location
+            Find and filter for fundraisers by category, title, description,...
           </div>
           <div>
             <form
@@ -109,6 +109,7 @@ const Search = () => {
           {initialSearchQuery ? (
             <div>
               <div className="flex gap-1">
+                {/*
                 <Dropdown
                   label="Location"
                   dismissOnClick={false}
@@ -121,7 +122,7 @@ const Search = () => {
                     <span>Choose location worldwide</span>
                   </Dropdown.Header>
                   <Dropdown.Item></Dropdown.Item>
-                </Dropdown>
+                </Dropdown>*/}
                 <Dropdown
                   label="Category"
                   dismissOnClick={false}

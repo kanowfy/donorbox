@@ -33,7 +33,7 @@ const UserVerificationTable = ({
 }) => {
   const navigate = useNavigate(0);
   const [isOpenReject, setIsOpenReject] = useState(false);
-  const [review, setReview] = useState();
+  const [reviewID, setReviewID] = useState();
   const {
     register,
     handleSubmit,
@@ -41,11 +41,10 @@ const UserVerificationTable = ({
     reset,
   } = useForm();
 
-  const handleApprove = async () => {
-    console.log("reviewing ", review);
+  const handleApprove = async (reviewID) => {
     try {
       await escrowService.reviewVerification(token, {
-        user_id: Number(review?.id),
+        user_id: Number(reviewID),
         approved: true,
       });
       setIsSuccessful(true);
@@ -61,7 +60,7 @@ const UserVerificationTable = ({
   const handleReject = async (data) => {
     try {
       await escrowService.reviewVerification(token, {
-        user_id: Number(review?.id),
+        user_id: Number(reviewID),
         reject_reason: data.reason,
       });
       setIsSuccessful(true);
@@ -127,10 +126,7 @@ const UserVerificationTable = ({
                     <Dropdown.Item>
                       <span
                         className="text-green-600 text-lg"
-                        onClick={() => {
-                          setReview(item);
-                          handleApprove();
-                        }}
+                        onClick={() => handleApprove(item.id)}
                       >
                         Accept
                       </span>
@@ -139,8 +135,8 @@ const UserVerificationTable = ({
                       <span
                         className="text-red-500 text-lg"
                         onClick={() => {
-                          setReview(item);
                           setIsOpenReject(true);
+                          setReview(item);
                         }}
                       >
                         Reject

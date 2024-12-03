@@ -11,6 +11,51 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type NotificationType string
+
+const (
+	NotificationTypeApprovedVerification NotificationType = "approved_verification"
+	NotificationTypeRejectedVerification NotificationType = "rejected_verification"
+	NotificationTypeApprovedProject      NotificationType = "approved_project"
+	NotificationTypeRejectedProject      NotificationType = "rejected_project"
+	NotificationTypeMilestoneCompletion  NotificationType = "milestone_completion"
+)
+
+func (e *NotificationType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = NotificationType(s)
+	case string:
+		*e = NotificationType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for NotificationType: %T", src)
+	}
+	return nil
+}
+
+type NullNotificationType struct {
+	NotificationType NotificationType
+	Valid            bool // Valid is true if NotificationType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullNotificationType) Scan(value interface{}) error {
+	if value == nil {
+		ns.NotificationType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.NotificationType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullNotificationType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.NotificationType), nil
+}
+
 type ProjectStatus string
 
 const (
@@ -140,6 +185,16 @@ type MilestoneCompletion struct {
 	TransferNote   *string
 	TransferImage  *string
 	CompletedAt    pgtype.Timestamptz
+}
+
+type Notification struct {
+	ID               int64
+	UserID           int64
+	NotificationType NotificationType
+	Message          string
+	ProjectID        *int64
+	IsRead           bool
+	CreatedAt        pgtype.Timestamptz
 }
 
 type Project struct {

@@ -168,6 +168,7 @@ const Project = () => {
             ))}
           </div>
           <div className="h-px bg-gray-300"></div>
+          {/*
           <div className="my-5">
             <Link to={`/fundraiser/${params.id}/report`} className="w-fit">
               <Button color="light" pill size="lg">
@@ -176,6 +177,7 @@ const Project = () => {
               </Button>
             </Link>
           </div>
+          */}
         </div>
         <div className="mt-20 space-y-10">
           <div>

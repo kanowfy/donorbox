@@ -23,8 +23,10 @@ import {
   Timeline,
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
+  const navigate = useNavigate();
   const [isOpenReview, setIsOpenReview] = useState(false);
   const [isOpenReject, setIsOpenReject] = useState(false);
   const [review, setReview] = useState();

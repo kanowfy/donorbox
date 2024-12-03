@@ -4,7 +4,13 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import backingService from "../services/backing";
 import { Avatar, Modal } from "flowbite-react";
+import { PiShareFatThin } from "react-icons/pi";
+import { FaFacebook } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { IoIosMail } from "react-icons/io";
+import { IoMdCopy } from "react-icons/io";
 import Donor from "./Donor";
+import { SERVE_URL } from "../constants";
 
 const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
   const [recentBacking, setRecentBacking] = useState({});
@@ -12,6 +18,7 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
   const [firstBacking, setFirstBacking] = useState({});
   const [backingCount, setBackingCount] = useState(0);
   const [viewDonations, setViewDonations] = useState(false);
+  const [isOpenShare, setIsOpenShare] = useState(false);
 
   useEffect(() => {
     const fetchBackingStats = async (projectID) => {
@@ -38,17 +45,24 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
             Donate
           </div>
         </Link>
-        <div className="py-3 px-10 border-gray-900 border flex items-center justify-center font-semibold text-lg rounded-xl">Share</div>
+        <div
+          className="cursor-pointer hover:bg-gray-200 py-3 px-10 border-gray-900 border flex items-center justify-center font-semibold text-lg rounded-xl"
+          onClick={() => setIsOpenShare(true)}
+        >
+          Share
+        </div>
       </div>
       <div className="flex flex-col my-5 space-y-1 justify-center items-center">
         <div className="block text-4xl font-bold text-yellow-400">
           ₫{totalFund?.toLocaleString()}
         </div>
         <div className="text-gray-700">
-          raised of <span className="text-yellow-500">₫{fundGoal?.toLocaleString()}</span> target
+          raised of{" "}
+          <span className="text-yellow-500">₫{fundGoal?.toLocaleString()}</span>{" "}
+          target
         </div>
         <div className="text-gray-700">
-        from <span className="text-teal-500">{backingCount}</span> donations
+          from <span className="text-teal-500">{backingCount}</span> donations
         </div>
       </div>
 
@@ -183,9 +197,13 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
                   <Donor
                     key={b.id}
                     profile_picture={
-                      b.backer.profile_picture ? b.backer.profile_picture : "/avatar.svg"
+                      b.backer.profile_picture
+                        ? b.backer.profile_picture
+                        : "/avatar.svg"
                     }
-                    first_name={b.backer.first_name ? b.backer.first_name : "Anonymous"}
+                    first_name={
+                      b.backer.first_name ? b.backer.first_name : "Anonymous"
+                    }
                     last_name={b.backer.last_name ? b.backer.last_name : ""}
                     amount={b.amount}
                     created_at={b.created_at}
@@ -206,6 +224,57 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
           </Link>
         </div>
       )}
+      <Modal show={isOpenShare} onClose={() => setIsOpenShare(false)} size="xl">
+        <Modal.Header>
+          <div className="flex">
+            Share this Campaign
+            <PiShareFatThin className="w-7 h-7 ml-2" />
+          </div>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-4 items-center justify-center leading-tight text-gray-700 px-10">
+            <a
+              className="flex flex-col items-center space-y-1"
+              href={`mailto:?body=${encodeURI(
+                `${SERVE_URL}/fundraiser/${id}`
+              )}`}
+              target="_blank"
+            >
+              <IoIosMail className="text-red-500 w-16 h-16" />
+              <div>Send email</div>
+            </a>
+            <a
+              className="flex flex-col items-center space-y-1"
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(
+                `${SERVE_URL}/fundraiser/${id}`
+              )}`}
+              target="_blank"
+            >
+              <FaFacebook className="text-blue-500 w-16 h-16" />
+              <div>Facebook</div>
+            </a>
+            <a
+              className="flex flex-col items-center space-y-1"
+              href={`https://x.com/intent/tweet?url=${encodeURI(
+                `${SERVE_URL}/fundraiser/${id}`
+              )}`}
+              target="_blank"
+            >
+              <FaXTwitter className="text-zinc-800 w-16 h-16" />
+              <div>X</div>
+            </a>
+            <div
+              className="flex flex-col items-center space-y-1 cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(`${SERVE_URL}/fundraiser/${id}`);
+              }}
+            >
+              <IoMdCopy className=" w-16 h-16" />
+              <div>Copy link</div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

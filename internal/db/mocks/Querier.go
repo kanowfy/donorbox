@@ -297,6 +297,63 @@ func (_c *Querier_CreateMilestoneCompletion_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// CreateNotification provides a mock function with given fields: ctx, arg
+func (_m *Querier) CreateNotification(ctx context.Context, arg db.CreateNotificationParams) (db.Notification, error) {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateNotification")
+	}
+
+	var r0 db.Notification
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateNotificationParams) (db.Notification, error)); ok {
+		return rf(ctx, arg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateNotificationParams) db.Notification); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Get(0).(db.Notification)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.CreateNotificationParams) error); ok {
+		r1 = rf(ctx, arg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_CreateNotification_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateNotification'
+type Querier_CreateNotification_Call struct {
+	*mock.Call
+}
+
+// CreateNotification is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.CreateNotificationParams
+func (_e *Querier_Expecter) CreateNotification(ctx interface{}, arg interface{}) *Querier_CreateNotification_Call {
+	return &Querier_CreateNotification_Call{Call: _e.mock.On("CreateNotification", ctx, arg)}
+}
+
+func (_c *Querier_CreateNotification_Call) Run(run func(ctx context.Context, arg db.CreateNotificationParams)) *Querier_CreateNotification_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.CreateNotificationParams))
+	})
+	return _c
+}
+
+func (_c *Querier_CreateNotification_Call) Return(_a0 db.Notification, _a1 error) *Querier_CreateNotification_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_CreateNotification_Call) RunAndReturn(run func(context.Context, db.CreateNotificationParams) (db.Notification, error)) *Querier_CreateNotification_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateProject provides a mock function with given fields: ctx, arg
 func (_m *Querier) CreateProject(ctx context.Context, arg db.CreateProjectParams) (db.Project, error) {
 	ret := _m.Called(ctx, arg)
@@ -1026,6 +1083,64 @@ func (_c *Querier_GetBackingsForUser_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// GetCategoriesCount provides a mock function with given fields: ctx
+func (_m *Querier) GetCategoriesCount(ctx context.Context) ([]db.GetCategoriesCountRow, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCategoriesCount")
+	}
+
+	var r0 []db.GetCategoriesCountRow
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]db.GetCategoriesCountRow, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []db.GetCategoriesCountRow); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.GetCategoriesCountRow)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetCategoriesCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCategoriesCount'
+type Querier_GetCategoriesCount_Call struct {
+	*mock.Call
+}
+
+// GetCategoriesCount is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Querier_Expecter) GetCategoriesCount(ctx interface{}) *Querier_GetCategoriesCount_Call {
+	return &Querier_GetCategoriesCount_Call{Call: _e.mock.On("GetCategoriesCount", ctx)}
+}
+
+func (_c *Querier_GetCategoriesCount_Call) Run(run func(ctx context.Context)) *Querier_GetCategoriesCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Querier_GetCategoriesCount_Call) Return(_a0 []db.GetCategoriesCountRow, _a1 error) *Querier_GetCategoriesCount_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetCategoriesCount_Call) RunAndReturn(run func(context.Context) ([]db.GetCategoriesCountRow, error)) *Querier_GetCategoriesCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEscrowUserByEmail provides a mock function with given fields: ctx, email
 func (_m *Querier) GetEscrowUserByEmail(ctx context.Context, email string) (db.EscrowUser, error) {
 	ret := _m.Called(ctx, email)
@@ -1485,6 +1600,65 @@ func (_c *Querier_GetMostRecentBackingDonor_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// GetNotificationsForUser provides a mock function with given fields: ctx, userID
+func (_m *Querier) GetNotificationsForUser(ctx context.Context, userID int64) ([]db.Notification, error) {
+	ret := _m.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNotificationsForUser")
+	}
+
+	var r0 []db.Notification
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) ([]db.Notification, error)); ok {
+		return rf(ctx, userID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) []db.Notification); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.Notification)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetNotificationsForUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNotificationsForUser'
+type Querier_GetNotificationsForUser_Call struct {
+	*mock.Call
+}
+
+// GetNotificationsForUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID int64
+func (_e *Querier_Expecter) GetNotificationsForUser(ctx interface{}, userID interface{}) *Querier_GetNotificationsForUser_Call {
+	return &Querier_GetNotificationsForUser_Call{Call: _e.mock.On("GetNotificationsForUser", ctx, userID)}
+}
+
+func (_c *Querier_GetNotificationsForUser_Call) Run(run func(ctx context.Context, userID int64)) *Querier_GetNotificationsForUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *Querier_GetNotificationsForUser_Call) Return(_a0 []db.Notification, _a1 error) *Querier_GetNotificationsForUser_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetNotificationsForUser_Call) RunAndReturn(run func(context.Context, int64) ([]db.Notification, error)) *Querier_GetNotificationsForUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetPendingProjects provides a mock function with given fields: ctx
 func (_m *Querier) GetPendingProjects(ctx context.Context) ([]db.GetPendingProjectsRow, error) {
 	ret := _m.Called(ctx)
@@ -1772,6 +1946,62 @@ func (_c *Querier_GetProjectsForUser_Call) Return(_a0 []db.GetProjectsForUserRow
 }
 
 func (_c *Querier_GetProjectsForUser_Call) RunAndReturn(run func(context.Context, int64) ([]db.GetProjectsForUserRow, error)) *Querier_GetProjectsForUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetStatsAggregation provides a mock function with given fields: ctx
+func (_m *Querier) GetStatsAggregation(ctx context.Context) (db.GetStatsAggregationRow, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetStatsAggregation")
+	}
+
+	var r0 db.GetStatsAggregationRow
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (db.GetStatsAggregationRow, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) db.GetStatsAggregationRow); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(db.GetStatsAggregationRow)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetStatsAggregation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetStatsAggregation'
+type Querier_GetStatsAggregation_Call struct {
+	*mock.Call
+}
+
+// GetStatsAggregation is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Querier_Expecter) GetStatsAggregation(ctx interface{}) *Querier_GetStatsAggregation_Call {
+	return &Querier_GetStatsAggregation_Call{Call: _e.mock.On("GetStatsAggregation", ctx)}
+}
+
+func (_c *Querier_GetStatsAggregation_Call) Run(run func(ctx context.Context)) *Querier_GetStatsAggregation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Querier_GetStatsAggregation_Call) Return(_a0 db.GetStatsAggregationRow, _a1 error) *Querier_GetStatsAggregation_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetStatsAggregation_Call) RunAndReturn(run func(context.Context) (db.GetStatsAggregationRow, error)) *Querier_GetStatsAggregation_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -2238,6 +2468,53 @@ func (_c *Querier_UpdateProjectStatus_Call) Return(_a0 error) *Querier_UpdatePro
 }
 
 func (_c *Querier_UpdateProjectStatus_Call) RunAndReturn(run func(context.Context, db.UpdateProjectStatusParams) error) *Querier_UpdateProjectStatus_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateReadNotification provides a mock function with given fields: ctx, id
+func (_m *Querier) UpdateReadNotification(ctx context.Context, id int64) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateReadNotification")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateReadNotification_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateReadNotification'
+type Querier_UpdateReadNotification_Call struct {
+	*mock.Call
+}
+
+// UpdateReadNotification is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int64
+func (_e *Querier_Expecter) UpdateReadNotification(ctx interface{}, id interface{}) *Querier_UpdateReadNotification_Call {
+	return &Querier_UpdateReadNotification_Call{Call: _e.mock.On("UpdateReadNotification", ctx, id)}
+}
+
+func (_c *Querier_UpdateReadNotification_Call) Run(run func(ctx context.Context, id int64)) *Querier_UpdateReadNotification_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateReadNotification_Call) Return(_a0 error) *Querier_UpdateReadNotification_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateReadNotification_Call) RunAndReturn(run func(context.Context, int64) error) *Querier_UpdateReadNotification_Call {
 	_c.Call.Return(run)
 	return _c
 }

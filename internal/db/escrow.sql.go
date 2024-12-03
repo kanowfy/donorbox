@@ -32,6 +32,40 @@ func (q *Queries) CreateEscrowUser(ctx context.Context, arg CreateEscrowUserPara
 	return i, err
 }
 
+const getCategoriesCount = `-- name: GetCategoriesCount :many
+SELECT c.id, c.name, COALESCE(COUNT(*), 0)::bigint AS count
+FROM categories c
+JOIN projects p ON c.id = p.category_id
+GROUP BY c.id
+ORDER BY c.id
+`
+
+type GetCategoriesCountRow struct {
+	ID    int32
+	Name  string
+	Count int64
+}
+
+func (q *Queries) GetCategoriesCount(ctx context.Context) ([]GetCategoriesCountRow, error) {
+	rows, err := q.db.Query(ctx, getCategoriesCount)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCategoriesCountRow
+	for rows.Next() {
+		var i GetCategoriesCountRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getEscrowUserByEmail = `-- name: GetEscrowUserByEmail :one
 SELECT id, email, hashed_password, created_at FROM escrow_users
 WHERE email = $1
@@ -62,6 +96,56 @@ func (q *Queries) GetEscrowUserByID(ctx context.Context, id int64) (EscrowUser, 
 		&i.Email,
 		&i.HashedPassword,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getStatsAggregation = `-- name: GetStatsAggregation :one
+SELECT COALESCE(
+	(SELECT COUNT(*)
+	FROM projects GROUP BY status HAVING status = 'pending'), 0
+)::bigint AS projects_pending, COALESCE(
+	(SELECT COUNT(*)
+	FROM projects GROUP BY status HAVING status = 'ongoing'), 0
+)::bigint AS projects_ongoing, COALESCE(
+	(SELECT COUNT(*)
+	FROM projects GROUP BY status HAVING status = 'finished'), 0
+)::bigint AS projects_finished, COALESCE(
+	(SELECT COUNT(*)
+	FROM projects GROUP BY status HAVING status = 'rejected'), 0
+)::bigint AS projects_rejected, COALESCE(
+        (SELECT SUM(amount)
+	FROM backings), 0
+)::bigint AS total_fund, (
+        SELECT COUNT(*)
+	FROM backings
+) AS backing_count, COALESCE(
+        (SELECT COUNT(*)
+        FROM users GROUP BY verification_status HAVING verification_status='pending'), 0
+)::bigint AS verification_count
+`
+
+type GetStatsAggregationRow struct {
+	ProjectsPending   int64
+	ProjectsOngoing   int64
+	ProjectsFinished  int64
+	ProjectsRejected  int64
+	TotalFund         int64
+	BackingCount      int64
+	VerificationCount int64
+}
+
+func (q *Queries) GetStatsAggregation(ctx context.Context) (GetStatsAggregationRow, error) {
+	row := q.db.QueryRow(ctx, getStatsAggregation)
+	var i GetStatsAggregationRow
+	err := row.Scan(
+		&i.ProjectsPending,
+		&i.ProjectsOngoing,
+		&i.ProjectsFinished,
+		&i.ProjectsRejected,
+		&i.TotalFund,
+		&i.BackingCount,
+		&i.VerificationCount,
 	)
 	return i, err
 }

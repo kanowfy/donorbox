@@ -140,10 +140,10 @@ const CreateProject = () => {
 
   return (
     <section className="py-10 flex flex-col items-center bg-gray-50">
-      {!user?.verification_status === "verified" ? (
+      {user?.verification_status === "verified" ? (
         <div className="w-1/2 border rounded-lg shadow-xl px-16 py-5 bg-white mb-20">
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-bold mt-5 underline px-4 py-3 text-teal-500">
+            <div className="text-4xl font-bold mt-5 underline px-4 py-3 text-gray-800">
               Start a new Fundraiser
             </div>
             <div className="text-sm font-normal no-underline text-gray-600">
@@ -270,9 +270,9 @@ const CreateProject = () => {
                     showClearButton={false}
                     showTodayButton={false}
                     autoHide={true}
-                    onSelectedDateChanged={(date) =>
-                      setValue("end_date", utils.getRFC3339DateString(date))
-                    }
+                    onChange={(date) => {
+                      setValue("end_date", utils.getRFC3339DateString(date));
+                    }}
                     className="w-fit"
                   />
                 </div>
@@ -498,7 +498,7 @@ const CreateProject = () => {
         </div>
       ) : (
         <div>
-          <Modal show={true}>
+          <Modal show={user?.verification_status !== "verified"}>
             <Modal.Body>
               <div className="px-6 py-3 flex flex-col items-center">
                 <p className="leading-relaxed text-2xl mb-4">
@@ -514,7 +514,8 @@ const CreateProject = () => {
             </Modal.Body>
             <Modal.Footer>
               <div className="mx-auto">
-                <Button color="blue"
+                <Button
+                  color="blue"
                   onClick={() => {
                     navigate("/account/verify");
                   }}
@@ -556,9 +557,9 @@ const CreateProject = () => {
           <div className="text-center flex flex-col space-y-2">
             <img src="/fail.svg" height={32} width={32} className="mx-auto" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-              Failed to create fundraiser:
+              Failed to create fundraiser
             </h3>
-            <h3 className="mb-5 text-red-500">{failedReason}</h3>
+            <h3 className="mb-5 text-red-500">Please try again later</h3>
           </div>
         </Modal.Body>
       </Modal>

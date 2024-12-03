@@ -7,4 +7,5 @@ type Handlers struct {
 	Project       Project
 	User          User
 	ImageUploader ImageUploader
+	Notification  Notification
 }

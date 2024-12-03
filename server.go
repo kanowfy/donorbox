@@ -14,21 +14,29 @@ import (
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/handler"
 	"github.com/kanowfy/donorbox/internal/middleware"
+	"github.com/kanowfy/donorbox/internal/model"
+	"github.com/kanowfy/donorbox/internal/publish"
 	"github.com/kanowfy/donorbox/internal/router"
 	"github.com/kanowfy/donorbox/internal/service"
 )
 
 func (app *application) run() error {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
 	// initialize repository, usually repository is also broken up to correspond to each domain model
 	// but here we group them together as provided by sqlc
 	repository := db.New(app.dbpool)
+	notifChan := make(chan model.Notification)
+	publisher := publish.New(notifChan)
 
 	// initialize service
 	authService := service.NewAuth(repository, app.mailer)
 	userService := service.NewUser(repository)
-	escrowService := service.NewEscrow(repository, app.mailer)
+	escrowService := service.NewEscrow(repository, app.mailer, publisher)
 	backingService := service.NewBacking(repository)
 	projectService := service.NewProject(repository, backingService, userService)
+	notificationService := service.NewNotification(repository)
 
 	// initialize handlers
 	authHandler := handler.NewAuth(authService, app.validator, app.cfg)
@@ -37,6 +45,7 @@ func (app *application) run() error {
 	backingHandler := handler.NewBacking(backingService, app.validator)
 	projectHandler := handler.NewProject(projectService, app.validator)
 	imageUploadHandler := handler.NewImageUploader(app.cfg)
+	notifcationHandler := handler.NewNotification(notificationService, notifChan, ctx)
 
 	// initialize auth middleware
 	authMiddleware := middleware.NewAuth(userService, escrowService)
@@ -48,6 +57,7 @@ func (app *application) run() error {
 		Project:       projectHandler,
 		User:          userHandler,
 		ImageUploader: imageUploadHandler,
+		Notification:  notifcationHandler,
 	}
 
 	srv := &http.Server{
@@ -60,9 +70,6 @@ func (app *application) run() error {
 
 	cronJobs := cron.New(projectService)
 	cronJobs.Start()
-
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-	defer stop()
 
 	go func() {
 		slog.Info(fmt.Sprintf("starting server at %s", srv.Addr))

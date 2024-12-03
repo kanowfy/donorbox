@@ -1,7 +1,5 @@
 package dto
 
-import "time"
-
 type UserRegisterRequest struct {
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8,max=50"`
@@ -34,19 +32,4 @@ type ChangePasswordRequest struct {
 type ResetPasswordRequest struct {
 	ResetToken  string `json:"reset_token"`
 	NewPassword string `json:"new_password" validate:"min=8,max=50"`
-}
-
-type PendingUserVerificationResponse struct {
-	ID          int64     `json:"id"`
-	Email       string    `json:"email"`
-	FirstName   string    `json:"first_name"`
-	LastName    string    `json:"last_name"`
-	DocumentUrl string    `json:"document_url"`
-	CreatedAt   time.Time `json:"created_at"`
-}
-
-type VerificationApprovalRequest struct {
-	UserID       int64   `json:"user_id" validate:"required,number"`
-	Approved     *bool   `json:"approved,omitempty" validate:"omitnil"`
-	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
 }

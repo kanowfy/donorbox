@@ -18,6 +18,7 @@ type Escrow interface {
 	ApproveOfProject(w http.ResponseWriter, r *http.Request)
 	ResolveMilestone(w http.ResponseWriter, r *http.Request)
 	ApproveUserVerification(w http.ResponseWriter, r *http.Request)
+	GetStatistics(w http.ResponseWriter, r *http.Request)
 }
 
 type escrow struct {
@@ -149,6 +150,20 @@ func (e *escrow) ApproveUserVerification(w http.ResponseWriter, r *http.Request)
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "project approved successfully",
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (e *escrow) GetStatistics(w http.ResponseWriter, r *http.Request) {
+	stats, err := e.service.GetStatistics(r.Context())
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"statistics": stats,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

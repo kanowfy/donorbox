@@ -23,7 +23,7 @@ type CreateProjectRequest struct {
 
 type CreateMilestoneRequest struct {
 	Title           string  `json:"title" validate:"required,min=8"`
-	Description     *string `json:"description,omitempty" validate:"omitnil,min=10"`
+	Description     *string `json:"description,omitempty" validate:"omitnil"`
 	FundGoal        string  `json:"fund_goal" validate:"required,number"`
 	BankDescription string  `json:"bank_description" validate:"required"`
 }
@@ -62,26 +62,4 @@ type CreateProjectCommentRequest struct {
 	BackerID        string  `json:"backer_id" validate:"required,number"`
 	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,number"`
 	Content         string  `json:"content" validate:"required"`
-}
-
-type ProjectApprovalRequest struct {
-	ProjectID    int64   `json:"project_id" validate:"required,number"`
-	Approved     *bool   `json:"approved,omitempty" validate:"omitnil"`
-	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
-}
-
-type UnresolvedMilestoneDto struct {
-	Milestone      model.Milestone `json:"milestone"`
-	Address        string          `json:"address"`
-	District       string          `json:"district"`
-	City           string          `json:"city"`
-	Country        string          `json:"country"`
-	ReceiverName   string          `json:"receiver_name"`
-	ReceiverNumber string          `json:"receiver_number"`
-}
-
-type ResolveMilestoneRequest struct {
-	Amount      int64   `json:"amount" validate:"required,number"`
-	Description *string `json:"description" validate:"required"`
-	Image       *string `json:"image,omitempty" validate:"omitnil"`
 }
