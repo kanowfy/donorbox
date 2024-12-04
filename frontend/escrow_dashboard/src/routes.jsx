@@ -7,6 +7,7 @@ import TransactionAudits from "./pages/TransactionAudits";
 import ManageProjectApplications from "./pages/ManageProjectApplications";
 import ManageMilestones from "./pages/ManageMilestones";
 import ManageUserVerifications from "./pages/ManageUserVerifications";
+import ManageDocuments from "./pages/ManageDocuments";
 
 const AppRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const AppRoutes = () => {
         <Route path="manage/verifications" element={<ManageUserVerifications />} />
         <Route path="manage/projects" element={<ManageProjectApplications />} />
         <Route path="manage/milestones" element={<ManageMilestones />} />
+        <Route path="manage/documents" element={<ManageDocuments />} />
         <Route path="transactions" element={<TransactionAudits />} />
       </Route>
       <Route path="/login" element={<Login />} />

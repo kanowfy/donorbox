@@ -64,6 +64,9 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("POST /notifications/{id}/read", handlers.Notification.UpdateReadNotification)
 	router.HandleFunc("GET /notifications/events", handlers.Notification.NotificationStreamHandler)
 
+	router.HandleFunc("POST /rag/documents", handlers.Rag.AddDocuments)
+	router.HandleFunc("POST /rag/query", handlers.Rag.Query)
+
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 

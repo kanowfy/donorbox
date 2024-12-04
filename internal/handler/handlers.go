@@ -8,4 +8,5 @@ type Handlers struct {
 	User          User
 	ImageUploader ImageUploader
 	Notification  Notification
+	Rag           Rag
 }

@@ -71,9 +71,11 @@ const ManageDashboard = () => {
           style="light"
           placement="bottom"
         >
-          <Button color="light" disabled={project?.total_fund > 0}>
-            <CiEdit className="mr-2 h-5 w-5" />
-            Edit
+          <Button color="light" disabled={project?.total_fund > 0} onClick={() => {
+
+          }}>
+            {/*<CiEdit className="mr-2 h-5 w-5" />*/}
+            View
           </Button>
         </Tooltip>
 

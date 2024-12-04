@@ -7,6 +7,7 @@ import { AiOutlineAudit } from "react-icons/ai";
 import { MdOutlinePostAdd } from "react-icons/md";
 import { GoMilestone } from "react-icons/go";
 import { FiUserCheck } from "react-icons/fi";
+import { FiBook } from "react-icons/fi";
 
 const customSidenavTheme = {
   root: {
@@ -142,6 +143,14 @@ const Sidenav = () => {
                 >
                   Transaction Audits
                 </Sidebar.Item>*/}
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/documents"
+                  icon={FiBook}
+                >
+                  Knowledge Base
+                </Sidebar.Item>
+
               </Sidebar.ItemGroup>
               <Sidebar.ItemGroup>
                 <Sidebar.Item as={Link} to="/logout" icon={LuLogOut}>

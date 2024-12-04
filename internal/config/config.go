@@ -40,6 +40,9 @@ type Config struct {
 	DropboxRefreshToken string `env:"DROPBOX_REFRESH_TOKEN"`
 	DropboxAppKey       string `env:"DROPBOX_APP_KEY"`
 	DropboxAppSecret    string `env:"DROPBOX_APP_SECRET"`
+
+	WeaviatePort string `env:"WEAVIATE_PORT"`
+	GeminiApiKey string `env:"GEMINI_API_KEY"`
 }
 
 func Load() (Config, error) {

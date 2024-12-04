@@ -5,6 +5,7 @@ import { Banner } from "flowbite-react";
 import { MdAnnouncement } from "react-icons/md";
 import { HiX } from "react-icons/hi";
 import { useAuthContext } from "../context/AuthContext";
+import Chatbot from "../components/Chatbot";
 
 const Layout = () => {
   const { user } = useAuthContext();
@@ -46,6 +47,7 @@ const Layout = () => {
       <div className="px-6 mt-auto">
         <Footer />
       </div>
+      <Chatbot />
     </div>
   );
 };

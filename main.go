@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/generative-ai-go/genai"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/kanowfy/donorbox/internal/config"
@@ -19,17 +20,25 @@ import (
 	"github.com/markbates/goth/providers/google"
 	"github.com/pressly/goose/v3"
 	"github.com/stripe/stripe-go/v81"
+	"github.com/weaviate/weaviate-go-client/v4/weaviate"
+	"github.com/weaviate/weaviate/entities/models"
+	"google.golang.org/api/option"
 )
 
 //go:embed migrations/*.sql
 var embedMigrations embed.FS
 
 type application struct {
+	ctx       context.Context
 	cfg       config.Config
 	dbpool    *pgxpool.Pool
 	validator *validator.Validate
 	mailer    mail.Mailer
 	wg        sync.WaitGroup
+
+	weaviateClient *weaviate.Client
+	embedModel     *genai.EmbeddingModel
+	genModel       *genai.GenerativeModel
 }
 
 func init() {
@@ -38,6 +47,8 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
+
 	cfg, err := config.Load()
 	if err != nil {
 		slog.Error(fmt.Sprintf("error loading config: %v", err))
@@ -72,11 +83,25 @@ func main() {
 
 	stripe.Key = cfg.StripeSecretKey
 
+	weaviateClient, err := initiateWeaviate(ctx, cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	genaiClient, err := genai.NewClient(ctx, option.WithAPIKey(cfg.GeminiApiKey))
+	if err != nil {
+		panic(err)
+	}
+
 	app := &application{
-		cfg:       cfg,
-		dbpool:    dbpool,
-		validator: validator.New(validator.WithRequiredStructEnabled()),
-		mailer:    mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+		ctx:            ctx,
+		cfg:            cfg,
+		dbpool:         dbpool,
+		validator:      validator.New(validator.WithRequiredStructEnabled()),
+		mailer:         mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+		weaviateClient: weaviateClient,
+		embedModel:     genaiClient.EmbeddingModel("text-embedding-004"),
+		genModel:       genaiClient.GenerativeModel("gemini-1.5-flash"),
 	}
 
 	err = app.run()
@@ -103,4 +128,32 @@ func openDB(cfg config.Config) (*pgxpool.Pool, error) {
 	}
 
 	return dbpool, nil
+}
+
+func initiateWeaviate(ctx context.Context, cfg config.Config) (*weaviate.Client, error) {
+	client, err := weaviate.NewClient(weaviate.Config{
+		Host:   "localhost:" + cfg.WeaviatePort,
+		Scheme: "http",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error connecting to weaviate: %w", err)
+	}
+
+	cls := &models.Class{
+		Class:      "Document",
+		Vectorizer: "none",
+	}
+
+	exists, err := client.Schema().ClassExistenceChecker().WithClassName(cls.Class).Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error from weaviate: %w", err)
+	}
+
+	if !exists {
+		if err = client.Schema().ClassCreator().WithClass(cls).Do(ctx); err != nil {
+			return nil, fmt.Errorf("error from weaviate: %w", err)
+		}
+	}
+
+	return client, nil
 }

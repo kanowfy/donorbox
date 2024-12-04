@@ -21,7 +21,7 @@ import (
 )
 
 func (app *application) run() error {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	ctx, stop := signal.NotifyContext(app.ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
 	// initialize repository, usually repository is also broken up to correspond to each domain model
@@ -37,6 +37,7 @@ func (app *application) run() error {
 	backingService := service.NewBacking(repository)
 	projectService := service.NewProject(repository, backingService, userService)
 	notificationService := service.NewNotification(repository)
+	ragService := service.NewRag(app.weaviateClient, app.genModel, app.embedModel)
 
 	// initialize handlers
 	authHandler := handler.NewAuth(authService, app.validator, app.cfg)
@@ -46,6 +47,7 @@ func (app *application) run() error {
 	projectHandler := handler.NewProject(projectService, app.validator)
 	imageUploadHandler := handler.NewImageUploader(app.cfg)
 	notifcationHandler := handler.NewNotification(notificationService, notifChan, ctx)
+	ragHandler := handler.NewRag(ragService)
 
 	// initialize auth middleware
 	authMiddleware := middleware.NewAuth(userService, escrowService)
@@ -58,6 +60,7 @@ func (app *application) run() error {
 		User:          userHandler,
 		ImageUploader: imageUploadHandler,
 		Notification:  notifcationHandler,
+		Rag:           ragHandler,
 	}
 
 	srv := &http.Server{

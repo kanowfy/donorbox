@@ -44,6 +44,10 @@ const AppRoutes = () => {
           <Route path="donations" element={<ManageDonations />} />
           <Route path="updates" element={<ManageUpdates />} />
         </Route>
+        <Route path="/fundraiser/:id/donate" element={<Donate />} />
+        <Route path="/fundraiser/:id/payment" element={<Payment />}>
+          <Route path="checkout" element={<CheckoutForm />} />
+        </Route>
       </Route>
       <Route path="/register" element={<Register />} />
       <Route path="/register/success" element={<RegisterSuccess />} />
@@ -53,10 +57,6 @@ const AppRoutes = () => {
       <Route path="/password/forgot" element={<ForgotPassword />} />
       <Route path="/password/reset" element={<ResetPassword />} />
       <Route path="/verify" element={<Verify />} />
-      <Route path="/fundraiser/:id/donate" element={<Donate />} />
-      <Route path="/fundraiser/:id/payment" element={<Payment/>}>
-        <Route path="checkout" element={<CheckoutForm />} />
-      </Route>
     </Routes>
   );
 };
