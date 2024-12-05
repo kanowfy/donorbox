@@ -143,6 +143,19 @@ func (ns NullVerificationStatus) Value() (driver.Value, error) {
 	return string(ns.VerificationStatus), nil
 }
 
+type AuditTrail struct {
+	ID            int64
+	UserID        *int64
+	EscrowID      *int64
+	EntityType    string
+	EntityID      *int64
+	OperationType string
+	FieldName     string
+	OldValue      []byte
+	NewValue      []byte
+	CreatedAt     pgtype.Timestamptz
+}
+
 type Backing struct {
 	ID            int64
 	UserID        *int64

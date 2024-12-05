@@ -67,6 +67,8 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("POST /rag/documents", handlers.Rag.AddDocuments)
 	router.HandleFunc("POST /rag/query", handlers.Rag.Query)
 
+	router.HandleFunc("GET /audits", authMiddleware.RequireEscrowAuthentication(handlers.AuditTrail.GetAuditHistory))
+
 	v1 := http.NewServeMux()
 	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 

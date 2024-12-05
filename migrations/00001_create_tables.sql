@@ -113,6 +113,19 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS audit_trails (
+  id bigserial PRIMARY KEY,
+  user_id bigint, -- either user_id or escrow_id is null, but not both
+  escrow_id bigint,
+  entity_type text NOT NULL, -- tables that is being manipulated
+  entity_id bigserial, -- id of entity in that table that is being manipulated
+  operation_type text NOT NULL, -- CREATE, UPDATE, DELETE
+  field_name text NOT NULL,
+  old_value jsonb,
+  new_value jsonb,
+  created_at timestamptz NOT NULL DEFAULT NOW()
+);
+
 -- +goose Down
 DROP TABLE IF EXISTS backings;
 DROP TABLE IF EXISTS notifications;
@@ -121,7 +134,7 @@ DROP TABLE IF EXISTS milestones;
 DROP TABLE IF EXISTS project_updates;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
---DROP TABLE IF EXISTS escrow_users;
---DROP TABLE IF EXISTS users;
---DROP TYPE verification_status;
+DROP TABLE IF EXISTS escrow_users;
+DROP TABLE IF EXISTS users;
+DROP TYPE verification_status;
 DROP TYPE project_status;

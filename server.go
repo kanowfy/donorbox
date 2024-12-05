@@ -32,7 +32,8 @@ func (app *application) run() error {
 
 	// initialize service
 	authService := service.NewAuth(repository, app.mailer)
-	userService := service.NewUser(repository)
+	auditService := service.NewAuditTrail(repository)
+	userService := service.NewUser(repository, auditService)
 	escrowService := service.NewEscrow(repository, app.mailer, publisher)
 	backingService := service.NewBacking(repository)
 	projectService := service.NewProject(repository, backingService, userService)
@@ -41,6 +42,7 @@ func (app *application) run() error {
 
 	// initialize handlers
 	authHandler := handler.NewAuth(authService, app.validator, app.cfg)
+	auditHandler := handler.NewAuditTrail(auditService)
 	userHandler := handler.NewUser(userService, app.validator, app.cfg, app.cfg.DropboxAccessToken)
 	escrowHandler := handler.NewEscrow(escrowService, app.validator)
 	backingHandler := handler.NewBacking(backingService, app.validator)
@@ -61,6 +63,7 @@ func (app *application) run() error {
 		ImageUploader: imageUploadHandler,
 		Notification:  notifcationHandler,
 		Rag:           ragHandler,
+		AuditTrail:    auditHandler,
 	}
 
 	srv := &http.Server{

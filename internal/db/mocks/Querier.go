@@ -69,6 +69,63 @@ func (_c *Querier_ActivateUser_Call) RunAndReturn(run func(context.Context, int6
 	return _c
 }
 
+// CreateAuditLog provides a mock function with given fields: ctx, arg
+func (_m *Querier) CreateAuditLog(ctx context.Context, arg db.CreateAuditLogParams) (db.AuditTrail, error) {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateAuditLog")
+	}
+
+	var r0 db.AuditTrail
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateAuditLogParams) (db.AuditTrail, error)); ok {
+		return rf(ctx, arg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.CreateAuditLogParams) db.AuditTrail); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Get(0).(db.AuditTrail)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, db.CreateAuditLogParams) error); ok {
+		r1 = rf(ctx, arg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_CreateAuditLog_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateAuditLog'
+type Querier_CreateAuditLog_Call struct {
+	*mock.Call
+}
+
+// CreateAuditLog is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.CreateAuditLogParams
+func (_e *Querier_Expecter) CreateAuditLog(ctx interface{}, arg interface{}) *Querier_CreateAuditLog_Call {
+	return &Querier_CreateAuditLog_Call{Call: _e.mock.On("CreateAuditLog", ctx, arg)}
+}
+
+func (_c *Querier_CreateAuditLog_Call) Run(run func(ctx context.Context, arg db.CreateAuditLogParams)) *Querier_CreateAuditLog_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.CreateAuditLogParams))
+	})
+	return _c
+}
+
+func (_c *Querier_CreateAuditLog_Call) Return(_a0 db.AuditTrail, _a1 error) *Querier_CreateAuditLog_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_CreateAuditLog_Call) RunAndReturn(run func(context.Context, db.CreateAuditLogParams) (db.AuditTrail, error)) *Querier_CreateAuditLog_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateBacking provides a mock function with given fields: ctx, arg
 func (_m *Querier) CreateBacking(ctx context.Context, arg db.CreateBackingParams) (db.Backing, error) {
 	ret := _m.Called(ctx, arg)
@@ -847,6 +904,64 @@ func (_c *Querier_GetAllUsers_Call) Return(_a0 []db.GetAllUsersRow, _a1 error) *
 }
 
 func (_c *Querier_GetAllUsers_Call) RunAndReturn(run func(context.Context) ([]db.GetAllUsersRow, error)) *Querier_GetAllUsers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetAuditHistory provides a mock function with given fields: ctx
+func (_m *Querier) GetAuditHistory(ctx context.Context) ([]db.AuditTrail, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAuditHistory")
+	}
+
+	var r0 []db.AuditTrail
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]db.AuditTrail, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []db.AuditTrail); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.AuditTrail)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetAuditHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAuditHistory'
+type Querier_GetAuditHistory_Call struct {
+	*mock.Call
+}
+
+// GetAuditHistory is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *Querier_Expecter) GetAuditHistory(ctx interface{}) *Querier_GetAuditHistory_Call {
+	return &Querier_GetAuditHistory_Call{Call: _e.mock.On("GetAuditHistory", ctx)}
+}
+
+func (_c *Querier_GetAuditHistory_Call) Run(run func(ctx context.Context)) *Querier_GetAuditHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *Querier_GetAuditHistory_Call) Return(_a0 []db.AuditTrail, _a1 error) *Querier_GetAuditHistory_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetAuditHistory_Call) RunAndReturn(run func(context.Context) ([]db.AuditTrail, error)) *Querier_GetAuditHistory_Call {
 	_c.Call.Return(run)
 	return _c
 }

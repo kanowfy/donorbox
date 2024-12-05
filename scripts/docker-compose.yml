@@ -9,6 +9,13 @@ services:
     ports:
       - "5432:5432"
 
+  weaviate:
+    image: cr.weaviate.io/semitechnologies/weaviate:1.27.6
+    ports:
+      - 9000:8080
+      - 50051:50051
+    restart: on-failure:0
+
   backend:
     image: dungnt07/donorbox-backend
     container_name: donorbox-backend

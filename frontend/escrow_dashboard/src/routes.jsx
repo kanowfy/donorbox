@@ -3,11 +3,11 @@ import Login from "./pages/auth/Login";
 import Logout from "./pages/auth/Logout";
 import Home from "./pages/Home";
 import Layout from "./pages/Layout";
-import TransactionAudits from "./pages/TransactionAudits";
 import ManageProjectApplications from "./pages/ManageProjectApplications";
 import ManageMilestones from "./pages/ManageMilestones";
 import ManageUserVerifications from "./pages/ManageUserVerifications";
 import ManageDocuments from "./pages/ManageDocuments";
+import AuditTrails from "./pages/AuditTrails";
 
 const AppRoutes = () => {
   return (
@@ -18,7 +18,7 @@ const AppRoutes = () => {
         <Route path="manage/projects" element={<ManageProjectApplications />} />
         <Route path="manage/milestones" element={<ManageMilestones />} />
         <Route path="manage/documents" element={<ManageDocuments />} />
-        <Route path="transactions" element={<TransactionAudits />} />
+        <Route path="audits" element={<AuditTrails />} />
       </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/logout" element={<Logout />} />

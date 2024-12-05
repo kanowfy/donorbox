@@ -9,4 +9,5 @@ type Handlers struct {
 	ImageUploader ImageUploader
 	Notification  Notification
 	Rag           Rag
+	AuditTrail    AuditTrail
 }

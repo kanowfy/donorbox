@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
@@ -25,11 +26,13 @@ type User interface {
 
 type user struct {
 	repository db.Querier
+	auditSvc   AuditTrail
 }
 
-func NewUser(repository db.Querier) User {
+func NewUser(repository db.Querier, auditSvc AuditTrail) User {
 	return &user{
 		repository,
+		auditSvc,
 	}
 }
 
@@ -56,31 +59,58 @@ func (u *user) UpdateAccount(ctx context.Context, user *model.User, req dto.Upda
 	var updateParams db.UpdateUserByIDParams
 	updateParams.ID = user.ID
 
+	trailParams := LogActionParams{
+		UserID:        &user.ID,
+		EntityType:    "user",
+		EntityID:      &user.ID,
+		OperationType: "UPDATE",
+	}
+
 	if req.Email != nil {
+		trailParams.FieldName = "email"
+		trailParams.OldValue = updateParams.Email
+		trailParams.OldValue = *req.Email
+
 		updateParams.Email = *req.Email
 	} else {
 		updateParams.Email = user.Email
 	}
 
 	if req.FirstName != nil {
+		trailParams.FieldName = "first_name"
+		trailParams.OldValue = updateParams.FirstName
+		trailParams.OldValue = *req.FirstName
+
 		updateParams.FirstName = *req.FirstName
 	} else {
 		updateParams.FirstName = user.FirstName
 	}
 
 	if req.LastName != nil {
+		trailParams.FieldName = "last_name"
+		trailParams.OldValue = updateParams.LastName
+		trailParams.OldValue = *req.LastName
+
 		updateParams.LastName = *req.LastName
 	} else {
 		updateParams.LastName = user.LastName
 	}
 
 	if req.ProfilePicture != nil {
+		trailParams.FieldName = "profile_picture"
+		trailParams.OldValue = updateParams.ProfilePicture
+		trailParams.OldValue = *req.ProfilePicture
+
 		updateParams.ProfilePicture = req.ProfilePicture
 	} else {
 		updateParams.ProfilePicture = user.ProfilePicture
 	}
 
 	if err := u.repository.UpdateUserByID(ctx, updateParams); err != nil {
+		return fmt.Errorf("update user: %w", err)
+	}
+
+	if err := u.auditSvc.LogAction(ctx, trailParams); err != nil {
 		return err
 	}
 
@@ -110,6 +140,16 @@ func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangeP
 		return err
 	}
 
+	if err = u.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        &user.ID,
+		EntityType:    "user",
+		EntityID:      &user.ID,
+		OperationType: "UPDATE",
+		FieldName:     "password",
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -118,6 +158,17 @@ func (u *user) UploadDocument(ctx context.Context, userID int64, docLink string)
 		ID:                      userID,
 		VerificationStatus:      db.VerificationStatusPending,
 		VerificationDocumentUrl: &docLink,
+	}); err != nil {
+		return err
+	}
+
+	if err := u.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        &userID,
+		EntityType:    "user",
+		EntityID:      &userID,
+		OperationType: "UPDATE",
+		FieldName:     "verification_document_url", // how about status?
+		NewValue:      docLink,
 	}); err != nil {
 		return err
 	}

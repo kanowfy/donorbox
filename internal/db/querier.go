@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	ActivateUser(ctx context.Context, id int64) error
+	CreateAuditLog(ctx context.Context, arg CreateAuditLogParams) (AuditTrail, error)
 	CreateBacking(ctx context.Context, arg CreateBackingParams) (Backing, error)
 	CreateEscrowUser(ctx context.Context, arg CreateEscrowUserParams) (EscrowUser, error)
 	CreateMilestone(ctx context.Context, arg CreateMilestoneParams) (Milestone, error)
@@ -24,6 +25,7 @@ type Querier interface {
 	GetAllCategories(ctx context.Context) ([]Category, error)
 	GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]GetAllProjectsRow, error)
 	GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error)
+	GetAuditHistory(ctx context.Context) ([]AuditTrail, error)
 	GetBackingByID(ctx context.Context, id int64) (Backing, error)
 	GetBackingCountForProject(ctx context.Context, projectID int64) (int64, error)
 	GetBackingsForProject(ctx context.Context, projectID int64) ([]GetBackingsForProjectRow, error)
