@@ -62,10 +62,11 @@ LEFT JOIN milestone_completions c ON m.id = c.milestone_id
 WHERE m.project_id = $1
 ORDER BY m.id;
 
--- name: UpdateProjectByID :exec
+-- name: UpdateProjectByID :one
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, receiver_number=$5, receiver_name=$6, address=$7, district=$8, city=$9, country = $10, end_date = $11
-WHERE id = $1;
+WHERE id = $1
+RETURNING *;
 
 -- name: UpdateProjectStatus :exec
 UPDATE projects SET status = $2

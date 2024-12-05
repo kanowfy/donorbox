@@ -858,10 +858,11 @@ func (q *Queries) UpdateMilestoneStatus(ctx context.Context, id int64) error {
 	return err
 }
 
-const updateProjectByID = `-- name: UpdateProjectByID :exec
+const updateProjectByID = `-- name: UpdateProjectByID :one
 UPDATE projects
 SET title = $2, description = $3, cover_picture = $4, receiver_number=$5, receiver_name=$6, address=$7, district=$8, city=$9, country = $10, end_date = $11
 WHERE id = $1
+RETURNING id, user_id, title, description, cover_picture, category_id, end_date, receiver_number, receiver_name, address, district, city, country, status, created_at
 `
 
 type UpdateProjectByIDParams struct {
@@ -878,8 +879,8 @@ type UpdateProjectByIDParams struct {
 	EndDate        pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error {
-	_, err := q.db.Exec(ctx, updateProjectByID,
+func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) (Project, error) {
+	row := q.db.QueryRow(ctx, updateProjectByID,
 		arg.ID,
 		arg.Title,
 		arg.Description,
@@ -892,7 +893,25 @@ func (q *Queries) UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDPa
 		arg.Country,
 		arg.EndDate,
 	)
-	return err
+	var i Project
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.Description,
+		&i.CoverPicture,
+		&i.CategoryID,
+		&i.EndDate,
+		&i.ReceiverNumber,
+		&i.ReceiverName,
+		&i.Address,
+		&i.District,
+		&i.City,
+		&i.Country,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const updateProjectStatus = `-- name: UpdateProjectStatus :exec

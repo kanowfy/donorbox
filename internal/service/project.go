@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
@@ -39,13 +40,15 @@ type project struct {
 	repository     db.Querier
 	backingService Backing
 	userService    User
+	auditSvc       AuditTrail
 }
 
-func NewProject(repository db.Querier, backingService Backing, userService User) Project {
+func NewProject(repository db.Querier, backingService Backing, userService User, auditSvc AuditTrail) Project {
 	return &project{
 		repository,
 		backingService,
 		userService,
+		auditSvc,
 	}
 }
 
@@ -349,6 +352,13 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*mode
 
 // TODO: put the queries in transaction
 func (p *project) CreateProject(ctx context.Context, userID int64, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error) {
+	queries := p.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
 	projectArgs := db.CreateProjectParams{
 		UserID:         userID,
 		CategoryID:     int32(req.CategoryID),
@@ -364,8 +374,18 @@ func (p *project) CreateProject(ctx context.Context, userID int64, req dto.Creat
 		EndDate:        convert.TimeToPgTimestamp(req.EndDate),
 	}
 
-	project, err := p.repository.CreateProject(ctx, projectArgs)
+	project, err := q.CreateProject(ctx, projectArgs)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := p.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        &userID,
+		EntityType:    "project",
+		EntityID:      &project.ID,
+		OperationType: "CREATE",
+		NewValue:      project,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -373,7 +393,7 @@ func (p *project) CreateProject(ctx context.Context, userID int64, req dto.Creat
 	var fundGoal int64
 
 	for _, m := range req.Milestones {
-		milestone, err := p.repository.CreateMilestone(ctx, db.CreateMilestoneParams{
+		milestone, err := q.CreateMilestone(ctx, db.CreateMilestoneParams{
 			ProjectID:       project.ID,
 			Title:           m.Title,
 			Description:     m.Description,
@@ -382,6 +402,16 @@ func (p *project) CreateProject(ctx context.Context, userID int64, req dto.Creat
 		})
 
 		if err != nil {
+			return nil, err
+		}
+
+		if err := p.auditSvc.LogAction(ctx, LogActionParams{
+			UserID:        &userID,
+			EntityType:    "milestone",
+			EntityID:      &milestone.ID,
+			OperationType: "CREATE",
+			NewValue:      milestone,
+		}); err != nil {
 			return nil, err
 		}
 
@@ -418,11 +448,18 @@ func (p *project) CreateProject(ctx context.Context, userID int64, req dto.Creat
 			Status:         model.ProjectStatusPending,
 		},
 		Milestones: milestones,
-	}, nil
+	}, tx.Commit(ctx)
 }
 
 func (p *project) UpdateProject(ctx context.Context, userID, projectID int64, req dto.UpdateProjectRequest) error {
-	project, err := p.repository.GetProjectByID(ctx, projectID)
+	queries := p.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	project, err := q.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return ErrProjectNotFound
 	}
@@ -431,6 +468,14 @@ func (p *project) UpdateProject(ctx context.Context, userID, projectID int64, re
 
 	if userID != project.UserID {
 		return ErrNotOwner
+	}
+
+	trailParams := LogActionParams{
+		UserID:        &userID,
+		EntityType:    "project",
+		EntityID:      &projectID,
+		OperationType: "UPDATE",
+		OldValue:      project,
 	}
 
 	var updateParams db.UpdateProjectByIDParams
@@ -496,15 +541,29 @@ func (p *project) UpdateProject(ctx context.Context, userID, projectID int64, re
 		updateParams.EndDate = project.EndDate
 	}
 
-	if err = p.repository.UpdateProjectByID(ctx, updateParams); err != nil {
+	updated, err := q.UpdateProjectByID(ctx, updateParams)
+	if err != nil {
 		return err
 	}
 
-	return nil
+	trailParams.NewValue = updated
+
+	if err = p.auditSvc.LogAction(ctx, trailParams); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (p *project) DeleteProject(ctx context.Context, userID, projectID int64) error {
-	project, err := p.repository.GetProjectByID(ctx, projectID)
+	queries := p.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	project, err := q.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return ErrProjectNotFound
 	}
@@ -513,11 +572,20 @@ func (p *project) DeleteProject(ctx context.Context, userID, projectID int64) er
 		return ErrNotOwner
 	}
 
-	if err = p.repository.DeleteProjectByID(ctx, project.ID); err != nil {
+	if err = q.DeleteProjectByID(ctx, project.ID); err != nil {
 		return err
 	}
 
-	return nil
+	if err := p.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        &userID,
+		EntityType:    "project",
+		EntityID:      &project.ID,
+		OperationType: "DELETE",
+	}); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (p *project) GetAllCategories(ctx context.Context) ([]model.Category, error) {
@@ -565,7 +633,14 @@ func (p *project) GetProjectUpdates(ctx context.Context, projectID int64) ([]mod
 }
 
 func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error) {
-	project, err := p.repository.GetProjectByID(ctx, req.ProjectID)
+	queries := p.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	project, err := q.GetProjectByID(ctx, req.ProjectID)
 	if err != nil {
 		return nil, ErrProjectNotFound
 	}
@@ -580,8 +655,18 @@ func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto
 		Description:     req.Description,
 	}
 
-	update, err := p.repository.CreateProjectUpdate(ctx, args)
+	update, err := q.CreateProjectUpdate(ctx, args)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := p.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        &userID,
+		EntityType:    "project_update",
+		EntityID:      &update.ID,
+		OperationType: "CREATE",
+		NewValue:      update,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -591,7 +676,7 @@ func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto
 		AttachmentPhoto: update.AttachmentPhoto,
 		Description:     update.Description,
 		CreatedAt:       convert.MustPgTimestampToTime(update.CreatedAt),
-	}, err
+	}, tx.Commit(ctx)
 }
 
 func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error) {

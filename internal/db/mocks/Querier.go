@@ -2494,21 +2494,31 @@ func (_c *Querier_UpdateMilestoneStatus_Call) RunAndReturn(run func(context.Cont
 }
 
 // UpdateProjectByID provides a mock function with given fields: ctx, arg
-func (_m *Querier) UpdateProjectByID(ctx context.Context, arg db.UpdateProjectByIDParams) error {
+func (_m *Querier) UpdateProjectByID(ctx context.Context, arg db.UpdateProjectByIDParams) (db.Project, error) {
 	ret := _m.Called(ctx, arg)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateProjectByID")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateProjectByIDParams) error); ok {
+	var r0 db.Project
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateProjectByIDParams) (db.Project, error)); ok {
+		return rf(ctx, arg)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateProjectByIDParams) db.Project); ok {
 		r0 = rf(ctx, arg)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(db.Project)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, db.UpdateProjectByIDParams) error); ok {
+		r1 = rf(ctx, arg)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Querier_UpdateProjectByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateProjectByID'
@@ -2530,12 +2540,12 @@ func (_c *Querier_UpdateProjectByID_Call) Run(run func(ctx context.Context, arg 
 	return _c
 }
 
-func (_c *Querier_UpdateProjectByID_Call) Return(_a0 error) *Querier_UpdateProjectByID_Call {
-	_c.Call.Return(_a0)
+func (_c *Querier_UpdateProjectByID_Call) Return(_a0 db.Project, _a1 error) *Querier_UpdateProjectByID_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Querier_UpdateProjectByID_Call) RunAndReturn(run func(context.Context, db.UpdateProjectByIDParams) error) *Querier_UpdateProjectByID_Call {
+func (_c *Querier_UpdateProjectByID_Call) RunAndReturn(run func(context.Context, db.UpdateProjectByIDParams) (db.Project, error)) *Querier_UpdateProjectByID_Call {
 	_c.Call.Return(run)
 	return _c
 }

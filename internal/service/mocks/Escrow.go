@@ -24,17 +24,17 @@ func (_m *Escrow) EXPECT() *Escrow_Expecter {
 	return &Escrow_Expecter{mock: &_m.Mock}
 }
 
-// ApproveOfProject provides a mock function with given fields: ctx, req
-func (_m *Escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
-	ret := _m.Called(ctx, req)
+// ApproveOfProject provides a mock function with given fields: ctx, escrowID, req
+func (_m *Escrow) ApproveOfProject(ctx context.Context, escrowID int64, req dto.ProjectApprovalRequest) error {
+	ret := _m.Called(ctx, escrowID, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ApproveOfProject")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, dto.ProjectApprovalRequest) error); ok {
-		r0 = rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, dto.ProjectApprovalRequest) error); ok {
+		r0 = rf(ctx, escrowID, req)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -49,14 +49,15 @@ type Escrow_ApproveOfProject_Call struct {
 
 // ApproveOfProject is a helper method to define mock.On call
 //   - ctx context.Context
+//   - escrowID int64
 //   - req dto.ProjectApprovalRequest
-func (_e *Escrow_Expecter) ApproveOfProject(ctx interface{}, req interface{}) *Escrow_ApproveOfProject_Call {
-	return &Escrow_ApproveOfProject_Call{Call: _e.mock.On("ApproveOfProject", ctx, req)}
+func (_e *Escrow_Expecter) ApproveOfProject(ctx interface{}, escrowID interface{}, req interface{}) *Escrow_ApproveOfProject_Call {
+	return &Escrow_ApproveOfProject_Call{Call: _e.mock.On("ApproveOfProject", ctx, escrowID, req)}
 }
 
-func (_c *Escrow_ApproveOfProject_Call) Run(run func(ctx context.Context, req dto.ProjectApprovalRequest)) *Escrow_ApproveOfProject_Call {
+func (_c *Escrow_ApproveOfProject_Call) Run(run func(ctx context.Context, escrowID int64, req dto.ProjectApprovalRequest)) *Escrow_ApproveOfProject_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(dto.ProjectApprovalRequest))
+		run(args[0].(context.Context), args[1].(int64), args[2].(dto.ProjectApprovalRequest))
 	})
 	return _c
 }
@@ -66,22 +67,22 @@ func (_c *Escrow_ApproveOfProject_Call) Return(_a0 error) *Escrow_ApproveOfProje
 	return _c
 }
 
-func (_c *Escrow_ApproveOfProject_Call) RunAndReturn(run func(context.Context, dto.ProjectApprovalRequest) error) *Escrow_ApproveOfProject_Call {
+func (_c *Escrow_ApproveOfProject_Call) RunAndReturn(run func(context.Context, int64, dto.ProjectApprovalRequest) error) *Escrow_ApproveOfProject_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// ApproveUserVerification provides a mock function with given fields: ctx, req
-func (_m *Escrow) ApproveUserVerification(ctx context.Context, req dto.VerificationApprovalRequest) error {
-	ret := _m.Called(ctx, req)
+// ApproveUserVerification provides a mock function with given fields: ctx, escrowID, req
+func (_m *Escrow) ApproveUserVerification(ctx context.Context, escrowID int64, req dto.VerificationApprovalRequest) error {
+	ret := _m.Called(ctx, escrowID, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ApproveUserVerification")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, dto.VerificationApprovalRequest) error); ok {
-		r0 = rf(ctx, req)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, dto.VerificationApprovalRequest) error); ok {
+		r0 = rf(ctx, escrowID, req)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -96,14 +97,15 @@ type Escrow_ApproveUserVerification_Call struct {
 
 // ApproveUserVerification is a helper method to define mock.On call
 //   - ctx context.Context
+//   - escrowID int64
 //   - req dto.VerificationApprovalRequest
-func (_e *Escrow_Expecter) ApproveUserVerification(ctx interface{}, req interface{}) *Escrow_ApproveUserVerification_Call {
-	return &Escrow_ApproveUserVerification_Call{Call: _e.mock.On("ApproveUserVerification", ctx, req)}
+func (_e *Escrow_Expecter) ApproveUserVerification(ctx interface{}, escrowID interface{}, req interface{}) *Escrow_ApproveUserVerification_Call {
+	return &Escrow_ApproveUserVerification_Call{Call: _e.mock.On("ApproveUserVerification", ctx, escrowID, req)}
 }
 
-func (_c *Escrow_ApproveUserVerification_Call) Run(run func(ctx context.Context, req dto.VerificationApprovalRequest)) *Escrow_ApproveUserVerification_Call {
+func (_c *Escrow_ApproveUserVerification_Call) Run(run func(ctx context.Context, escrowID int64, req dto.VerificationApprovalRequest)) *Escrow_ApproveUserVerification_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(dto.VerificationApprovalRequest))
+		run(args[0].(context.Context), args[1].(int64), args[2].(dto.VerificationApprovalRequest))
 	})
 	return _c
 }
@@ -113,7 +115,7 @@ func (_c *Escrow_ApproveUserVerification_Call) Return(_a0 error) *Escrow_Approve
 	return _c
 }
 
-func (_c *Escrow_ApproveUserVerification_Call) RunAndReturn(run func(context.Context, dto.VerificationApprovalRequest) error) *Escrow_ApproveUserVerification_Call {
+func (_c *Escrow_ApproveUserVerification_Call) RunAndReturn(run func(context.Context, int64, dto.VerificationApprovalRequest) error) *Escrow_ApproveUserVerification_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -292,17 +294,17 @@ func (_c *Escrow_Login_Call) RunAndReturn(run func(context.Context, dto.LoginReq
 	return _c
 }
 
-// ResolveMilestone provides a mock function with given fields: ctx, escrowID, req
-func (_m *Escrow) ResolveMilestone(ctx context.Context, escrowID int64, req dto.ResolveMilestoneRequest) error {
-	ret := _m.Called(ctx, escrowID, req)
+// ResolveMilestone provides a mock function with given fields: ctx, escorwID, milestoneID, req
+func (_m *Escrow) ResolveMilestone(ctx context.Context, escorwID int64, milestoneID int64, req dto.ResolveMilestoneRequest) error {
+	ret := _m.Called(ctx, escorwID, milestoneID, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ResolveMilestone")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, dto.ResolveMilestoneRequest) error); ok {
-		r0 = rf(ctx, escrowID, req)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int64, dto.ResolveMilestoneRequest) error); ok {
+		r0 = rf(ctx, escorwID, milestoneID, req)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -317,15 +319,16 @@ type Escrow_ResolveMilestone_Call struct {
 
 // ResolveMilestone is a helper method to define mock.On call
 //   - ctx context.Context
-//   - escrowID int64
+//   - escorwID int64
+//   - milestoneID int64
 //   - req dto.ResolveMilestoneRequest
-func (_e *Escrow_Expecter) ResolveMilestone(ctx interface{}, escrowID interface{}, req interface{}) *Escrow_ResolveMilestone_Call {
-	return &Escrow_ResolveMilestone_Call{Call: _e.mock.On("ResolveMilestone", ctx, escrowID, req)}
+func (_e *Escrow_Expecter) ResolveMilestone(ctx interface{}, escorwID interface{}, milestoneID interface{}, req interface{}) *Escrow_ResolveMilestone_Call {
+	return &Escrow_ResolveMilestone_Call{Call: _e.mock.On("ResolveMilestone", ctx, escorwID, milestoneID, req)}
 }
 
-func (_c *Escrow_ResolveMilestone_Call) Run(run func(ctx context.Context, escrowID int64, req dto.ResolveMilestoneRequest)) *Escrow_ResolveMilestone_Call {
+func (_c *Escrow_ResolveMilestone_Call) Run(run func(ctx context.Context, escorwID int64, milestoneID int64, req dto.ResolveMilestoneRequest)) *Escrow_ResolveMilestone_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(dto.ResolveMilestoneRequest))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int64), args[3].(dto.ResolveMilestoneRequest))
 	})
 	return _c
 }
@@ -335,7 +338,7 @@ func (_c *Escrow_ResolveMilestone_Call) Return(_a0 error) *Escrow_ResolveMilesto
 	return _c
 }
 
-func (_c *Escrow_ResolveMilestone_Call) RunAndReturn(run func(context.Context, int64, dto.ResolveMilestoneRequest) error) *Escrow_ResolveMilestone_Call {
+func (_c *Escrow_ResolveMilestone_Call) RunAndReturn(run func(context.Context, int64, int64, dto.ResolveMilestoneRequest) error) *Escrow_ResolveMilestone_Call {
 	_c.Call.Return(run)
 	return _c
 }

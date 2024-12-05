@@ -34,9 +34,9 @@ func (app *application) run() error {
 	authService := service.NewAuth(repository, app.mailer)
 	auditService := service.NewAuditTrail(repository)
 	userService := service.NewUser(repository, auditService)
-	escrowService := service.NewEscrow(repository, app.mailer, publisher)
-	backingService := service.NewBacking(repository)
-	projectService := service.NewProject(repository, backingService, userService)
+	escrowService := service.NewEscrow(repository, app.mailer, publisher, auditService)
+	backingService := service.NewBacking(repository, auditService)
+	projectService := service.NewProject(repository, backingService, userService, auditService)
 	notificationService := service.NewNotification(repository)
 	ragService := service.NewRag(app.weaviateClient, app.genModel, app.embedModel)
 

@@ -21,9 +21,9 @@ import (
 type Escrow interface {
 	Login(ctx context.Context, req dto.LoginRequest) (string, error)
 	GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser, error)
-	ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error
-	ResolveMilestone(ctx context.Context, escrowID int64, req dto.ResolveMilestoneRequest) error
-	ApproveUserVerification(ctx context.Context, req dto.VerificationApprovalRequest) error
+	ApproveOfProject(ctx context.Context, escrowID int64, req dto.ProjectApprovalRequest) error
+	ResolveMilestone(ctx context.Context, escorwID int64, milestoneID int64, req dto.ResolveMilestoneRequest) error
+	ApproveUserVerification(ctx context.Context, escrowID int64, req dto.VerificationApprovalRequest) error
 	GetStatistics(ctx context.Context) (*dto.GetStatisticsResponse, error)
 }
 
@@ -31,13 +31,15 @@ type escrow struct {
 	repository db.Querier
 	mailer     mail.Mailer
 	publisher  publish.Publisher
+	auditSvc   AuditTrail
 }
 
-func NewEscrow(querier db.Querier, mailer mail.Mailer, publisher publish.Publisher) Escrow {
+func NewEscrow(querier db.Querier, mailer mail.Mailer, publisher publish.Publisher, auditSvc AuditTrail) Escrow {
 	return &escrow{
 		repository: querier,
 		mailer:     mailer,
 		publisher:  publisher,
+		auditSvc:   auditSvc,
 	}
 }
 
@@ -74,13 +76,20 @@ func (e *escrow) GetEscrowByID(ctx context.Context, id int64) (*model.EscrowUser
 	}, nil
 }
 
-func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRequest) error {
-	project, err := e.repository.GetProjectByID(ctx, req.ProjectID)
+func (e *escrow) ApproveOfProject(ctx context.Context, escrowID int64, req dto.ProjectApprovalRequest) error {
+	queries := e.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	project, err := q.GetProjectByID(ctx, req.ProjectID)
 	if err != nil {
 		return err
 	}
 
-	user, err := e.repository.GetUserByID(ctx, project.UserID)
+	user, err := q.GetUserByID(ctx, project.UserID)
 	if err != nil {
 		return err
 	}
@@ -89,9 +98,19 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 		ID: project.ID,
 	}
 
+	trailParams := LogActionParams{
+		EscrowID:      &escrowID,
+		EntityType:    "project",
+		EntityID:      &project.ID,
+		OperationType: "UPDATE",
+		FieldName:     "status",
+		OldValue:      db.ProjectStatusPending,
+	}
+
 	if req.Approved != nil {
 		params.Status = db.ProjectStatusOngoing
-		notif, err := e.repository.CreateNotification(ctx, db.CreateNotificationParams{
+		trailParams.NewValue = db.ProjectStatusOngoing
+		notif, err := q.CreateNotification(ctx, db.CreateNotificationParams{
 			UserID:           user.ID,
 			NotificationType: db.NotificationTypeApprovedProject,
 			Message:          fmt.Sprintf("Congratulations! Your project \"%s\" has been approved and ready to receive funds.", project.Title),
@@ -100,6 +119,7 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 		if err != nil {
 			return err
 		}
+
 		helper.Background(func() {
 			event := model.Notification{
 				ID:               notif.ID,
@@ -114,7 +134,8 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 		})
 	} else {
 		params.Status = db.ProjectStatusRejected
-		notif, err := e.repository.CreateNotification(ctx, db.CreateNotificationParams{
+		trailParams.NewValue = db.ProjectStatusRejected
+		notif, err := q.CreateNotification(ctx, db.CreateNotificationParams{
 			UserID:           user.ID,
 			NotificationType: db.NotificationTypeRejectedProject,
 			Message:          fmt.Sprintf("We are sorry! Your project \"%s\" has insufficient requirements and can not be approved of funding.", project.Title),
@@ -147,14 +168,19 @@ func (e *escrow) ApproveOfProject(ctx context.Context, req dto.ProjectApprovalRe
 			}
 		})
 	}
-	if err := e.repository.UpdateProjectStatus(ctx, params); err != nil {
+
+	if err := q.UpdateProjectStatus(ctx, params); err != nil {
 		return err
 	}
 
-	return nil
+	if err := e.auditSvc.LogAction(ctx, trailParams); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
-func (e *escrow) ResolveMilestone(ctx context.Context, milestoneID int64, req dto.ResolveMilestoneRequest) error {
+func (e *escrow) ResolveMilestone(ctx context.Context, escrowID int64, milestoneID int64, req dto.ResolveMilestoneRequest) error {
 	queries := e.repository.(*db.Queries)
 	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -185,8 +211,18 @@ func (e *escrow) ResolveMilestone(ctx context.Context, milestoneID int64, req dt
 		params.TransferImage = req.Image
 	}
 
-	_, err = q.CreateMilestoneCompletion(ctx, params)
+	completion, err := q.CreateMilestoneCompletion(ctx, params)
 	if err != nil {
+		return err
+	}
+
+	if err := e.auditSvc.LogAction(ctx, LogActionParams{
+		EscrowID:      &escrowID,
+		EntityType:    "milestone_completion",
+		EntityID:      &completion.ID,
+		OperationType: "CREATE",
+		NewValue:      completion,
+	}); err != nil {
 		return err
 	}
 
@@ -215,6 +251,19 @@ func (e *escrow) ResolveMilestone(ctx context.Context, milestoneID int64, req dt
 		}); err != nil {
 			return err
 		}
+
+		if err := e.auditSvc.LogAction(ctx, LogActionParams{
+			EscrowID:      &escrowID,
+			EntityType:    "project",
+			EntityID:      &project.ID,
+			OperationType: "UPDATE",
+			FieldName:     "status",
+			OldValue:      db.ProjectStatusOngoing,
+			NewValue:      db.ProjectStatusFinished,
+		}); err != nil {
+			return err
+		}
+
 	}
 
 	user, err := q.GetUserByID(ctx, project.UserID)
@@ -248,8 +297,15 @@ func (e *escrow) ResolveMilestone(ctx context.Context, milestoneID int64, req dt
 	return tx.Commit(ctx)
 }
 
-func (e *escrow) ApproveUserVerification(ctx context.Context, req dto.VerificationApprovalRequest) error {
-	user, err := e.repository.GetUserByID(ctx, req.UserID)
+func (e *escrow) ApproveUserVerification(ctx context.Context, escrowID int64, req dto.VerificationApprovalRequest) error {
+	queries := e.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	user, err := q.GetUserByID(ctx, req.UserID)
 	if err != nil {
 		return err
 	}
@@ -258,9 +314,19 @@ func (e *escrow) ApproveUserVerification(ctx context.Context, req dto.Verificati
 		ID: user.ID,
 	}
 
+	trailParams := LogActionParams{
+		EscrowID:      &escrowID,
+		EntityType:    "user",
+		EntityID:      &user.ID,
+		OperationType: "UPDATE",
+		FieldName:     "verification_status",
+		OldValue:      db.VerificationStatusPending,
+	}
+
 	if req.Approved != nil {
 		params.VerificationStatus = db.VerificationStatusVerified
 		params.VerificationDocumentUrl = user.VerificationDocumentUrl
+		trailParams.NewValue = db.VerificationStatusVerified
 
 		helper.Background(func() {
 			payload := map[string]interface{}{
@@ -274,6 +340,7 @@ func (e *escrow) ApproveUserVerification(ctx context.Context, req dto.Verificati
 	} else {
 		params.VerificationStatus = db.VerificationStatusUnverified
 		params.VerificationDocumentUrl = nil
+		trailParams.NewValue = db.VerificationStatusVerified
 
 		helper.Background(func() {
 			payload := map[string]interface{}{
@@ -287,11 +354,15 @@ func (e *escrow) ApproveUserVerification(ctx context.Context, req dto.Verificati
 		})
 	}
 
-	if err := e.repository.UpdateVerificationStatus(ctx, params); err != nil {
+	if err := q.UpdateVerificationStatus(ctx, params); err != nil {
 		return err
 	}
 
-	return nil
+	if err := e.auditSvc.LogAction(ctx, trailParams); err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (e *escrow) GetStatistics(ctx context.Context) (*dto.GetStatisticsResponse, error) {

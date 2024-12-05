@@ -19,11 +19,13 @@ type Backing interface {
 
 type backing struct {
 	repository db.Querier
+	auditSvc   AuditTrail
 }
 
-func NewBacking(repository db.Querier) Backing {
+func NewBacking(repository db.Querier, auditSvc AuditTrail) Backing {
 	return &backing{
 		repository,
+		auditSvc,
 	}
 }
 
@@ -49,8 +51,18 @@ func (b *backing) CreateBacking(ctx context.Context, projectID int64, req dto.Ba
 		backingParams.UserID = req.UserID
 	}
 
-	_, err = q.CreateBacking(ctx, backingParams)
+	backing, err := q.CreateBacking(ctx, backingParams)
 	if err != nil {
+		return err
+	}
+
+	if err := b.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        backingParams.UserID,
+		EntityType:    "backing",
+		EntityID:      backingParams.UserID,
+		OperationType: "CREATE",
+		NewValue:      backing,
+	}); err != nil {
 		return err
 	}
 
@@ -94,62 +106,6 @@ func (b *backing) CreateBacking(ctx context.Context, projectID int64, req dto.Ba
 
 	return tx.Commit(ctx)
 }
-
-/*
-func (b *backing) AcceptBacking(ctx context.Context, projectID int64, request dto.BackingRequest) error {
-		queries := b.repository.(*db.Queries)
-		q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
-		if err != nil {
-			return err
-		}
-		defer tx.Rollback(ctx)
-
-		card, err := b.cardService.RequestCardToken(ctx, request.CardInformation)
-		if err != nil {
-			return err
-		}
-
-		escrow, err := q.GetEscrowUser(ctx)
-		if err != nil {
-			return err
-		}
-
-		backingParams := db.CreateBackingParams{
-			ProjectID:     projectID,
-			Amount:        convert.MustStringToInt64(request.Amount),
-			WordOfSupport: request.WordOfSupport,
-		}
-
-		if request.UserID != nil {
-			backingParams.BackerID = uuid.MustParse(*request.UserID)
-		}
-
-		backing, err := q.CreateBacking(ctx, backingParams)
-		if err != nil {
-			return err
-		}
-
-		if err = q.UpdateProjectFund(ctx, db.UpdateProjectFundParams{
-			ID:            backing.ProjectID,
-			BackingAmount: backing.Amount,
-		}); err != nil {
-			return err
-		}
-
-		_, err = q.CreateTransaction(ctx, db.CreateTransactionParams{
-			ProjectID:       backing.ProjectID,
-			TransactionType: db.TransactionTypeBacking,
-			Amount:          backing.Amount,
-			InitiatorCardID: card.ID,
-			RecipientCardID: escrow.CardID,
-		})
-		if err != nil {
-			return err
-		}
-
-		return tx.Commit(ctx)
-}
-*/
 
 func (b *backing) GetBackingsForProject(ctx context.Context, projectID int64) ([]model.Backing, error) {
 	_, err := b.repository.GetProjectByID(ctx, projectID)

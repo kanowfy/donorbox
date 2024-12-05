@@ -53,7 +53,7 @@ type Querier interface {
 	UpdateEscrowUserByID(ctx context.Context, arg UpdateEscrowUserByIDParams) error
 	UpdateMilestoneFund(ctx context.Context, arg UpdateMilestoneFundParams) error
 	UpdateMilestoneStatus(ctx context.Context, id int64) error
-	UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) error
+	UpdateProjectByID(ctx context.Context, arg UpdateProjectByIDParams) (Project, error)
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error
 	UpdateReadNotification(ctx context.Context, id int64) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error

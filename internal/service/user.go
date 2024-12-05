@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
@@ -56,6 +57,13 @@ func (u *user) GetUserByID(ctx context.Context, userID int64) (*model.User, erro
 }
 
 func (u *user) UpdateAccount(ctx context.Context, user *model.User, req dto.UpdateAccountRequest) error {
+	queries := u.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
 	var updateParams db.UpdateUserByIDParams
 	updateParams.ID = user.ID
 
@@ -106,7 +114,7 @@ func (u *user) UpdateAccount(ctx context.Context, user *model.User, req dto.Upda
 		updateParams.ProfilePicture = user.ProfilePicture
 	}
 
-	if err := u.repository.UpdateUserByID(ctx, updateParams); err != nil {
+	if err := q.UpdateUserByID(ctx, updateParams); err != nil {
 		return fmt.Errorf("update user: %w", err)
 	}
 
@@ -114,11 +122,18 @@ func (u *user) UpdateAccount(ctx context.Context, user *model.User, req dto.Upda
 		return err
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangePasswordRequest) error {
-	user, err := u.repository.GetUserByID(ctx, userID)
+	queries := u.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	user, err := q.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -136,7 +151,7 @@ func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangeP
 		HashedPassword: string(newHashedPassword),
 	}
 
-	if err = u.repository.UpdateUserPassword(ctx, args); err != nil {
+	if err = q.UpdateUserPassword(ctx, args); err != nil {
 		return err
 	}
 
@@ -150,11 +165,18 @@ func (u *user) ChangePassword(ctx context.Context, userID int64, req dto.ChangeP
 		return err
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (u *user) UploadDocument(ctx context.Context, userID int64, docLink string) error {
-	if err := u.repository.UpdateVerificationStatus(ctx, db.UpdateVerificationStatusParams{
+	queries := u.repository.(*db.Queries)
+	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	if err := q.UpdateVerificationStatus(ctx, db.UpdateVerificationStatusParams{
 		ID:                      userID,
 		VerificationStatus:      db.VerificationStatusPending,
 		VerificationDocumentUrl: &docLink,
@@ -173,7 +195,7 @@ func (u *user) UploadDocument(ctx context.Context, userID int64, docLink string)
 		return err
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (u *user) GetPendingVerificationUsers(ctx context.Context) ([]dto.PendingUserVerificationResponse, error) {

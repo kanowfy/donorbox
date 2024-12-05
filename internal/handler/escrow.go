@@ -85,7 +85,9 @@ func (e *escrow) ApproveOfProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := e.service.ApproveOfProject(r.Context(), req); err != nil {
+	escrow := rcontext.GetEscrowUser(r)
+
+	if err := e.service.ApproveOfProject(r.Context(), escrow.ID, req); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}
@@ -117,7 +119,9 @@ func (e *escrow) ResolveMilestone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := e.service.ResolveMilestone(r.Context(), mid, req); err != nil {
+	escrow := rcontext.GetEscrowUser(r)
+
+	if err := e.service.ResolveMilestone(r.Context(), escrow.ID, mid, req); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}
@@ -143,7 +147,9 @@ func (e *escrow) ApproveUserVerification(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if err := e.service.ApproveUserVerification(r.Context(), req); err != nil {
+	escrow := rcontext.GetEscrowUser(r)
+
+	if err := e.service.ApproveUserVerification(r.Context(), escrow.ID, req); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}

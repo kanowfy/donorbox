@@ -1,4 +1,4 @@
-import { Badge, Table } from "flowbite-react";
+import { Badge, Table, Tooltip } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import auditService from "../services/audit";
@@ -14,8 +14,10 @@ const operationFormat = {
 
 const entityFormat = {
   user: "info",
-  project: "success",
-  milestone: "warning"
+  project: "purple",
+  milestone: "failure",
+  milestone_completion: "pink",
+  backing: "success"
 };
 
 
@@ -73,6 +75,18 @@ const AuditTrails = () => {
     return val;
   }
 
+  const getIDFormat = (trail) => {
+    if (trail.user_id) {
+      return `User_${trail.user_id}`
+    }
+
+    if (trail.escrow_id) {
+      return `User_${trail.user_id}`
+    }
+
+    return "Anonymous"
+  }
+
   return (
     <div className="p-10 bg-slate-200 w-full font-sans min-h-screen">
       <div className="text-3xl font-semibold tracking-tight mb-10">
@@ -113,7 +127,7 @@ const AuditTrails = () => {
                 className="bg-white dark:border-gray-700 dark:bg-gray-800"
               >
                 <Table.Cell>{t.id}</Table.Cell>
-                <Table.Cell>{`${t.user_id ? `User (${t.user_id})` : `Escrow (${t.escrow_id})`}`}</Table.Cell>
+                <Table.Cell>{`${getIDFormat(t)}`}</Table.Cell>
                 <Table.Cell>
                   <Badge
                     className="w-fit"
@@ -145,10 +159,21 @@ const AuditTrails = () => {
                   )}
                 </Table.Cell>
 
-                <Table.Cell>{t.old_value && limitValue(t.old_value)}</Table.Cell>
-                <Table.Cell>{t.new_value && limitValue(t.new_value)}</Table.Cell>
+                <Table.Cell>
+                  {t.old_value && (
+                    <Tooltip content={JSON.stringify(t.old_value)}>
+                      {limitValue(JSON.stringify(t.old_value))}
+                    </Tooltip>
+                  )}
+                  </Table.Cell>
+                <Table.Cell>{t.new_value && (
+                    <Tooltip content={JSON.stringify(t.new_value)}>
+                      {limitValue(JSON.stringify(t.new_value))}
+                    </Tooltip>
+                )}
+                </Table.Cell>
 
-                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                <Table.Cell className="whitespace-nowrap font-medium text-gray-700 dark:text-white">
                   {utils.formatDateTime(
                     new Date(utils.parseDateFromRFC3339(t.created_at))
                   )}
