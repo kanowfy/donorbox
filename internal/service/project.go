@@ -30,6 +30,7 @@ type Project interface {
 	UpdateProject(ctx context.Context, userID, projectID int64, req dto.UpdateProjectRequest) error
 	DeleteProject(ctx context.Context, userID, projectID int64) error
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
+	GetCategoryByName(ctx context.Context, name string) (*model.Category, error)
 	GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error)
 	CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
 	GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error)
@@ -605,6 +606,20 @@ func (p *project) GetAllCategories(ctx context.Context) ([]model.Category, error
 	}
 
 	return categories, nil
+}
+
+func (p *project) GetCategoryByName(ctx context.Context, name string) (*model.Category, error) {
+	category, err := p.repository.GetCategoryByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Category{
+		ID:           int(category.ID),
+		Name:         category.Name,
+		Description:  category.Description,
+		CoverPicture: category.CoverPicture,
+	}, nil
 }
 
 func (p *project) GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error) {

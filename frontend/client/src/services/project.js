@@ -49,4 +49,15 @@ const getUpdates = async (projectID) => {
     return response.data;
 }
 
-export default { getAll, getForUser, search, getOne, create, createUpdate, getUpdates }
+const getCategoryByName = async (name) => {
+    const response = await axios.get(`${BASE_URL}/categories/${name}`);
+    return response.data;
+}
+
+const getByCategoryID = async (id) => {
+    const response = await axios.get(`${BASE_URL}/projects?category=${id}`);
+    return response.data;
+}
+
+
+export default { getAll, getForUser, search, getOne, create, createUpdate, getUpdates, getCategoryByName, getByCategoryID }

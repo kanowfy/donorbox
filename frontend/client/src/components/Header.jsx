@@ -2,17 +2,44 @@ import { MegaMenu, Dropdown, Navbar, Avatar, Button } from "flowbite-react";
 import { useAuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import Notification from "./Notification";
+import { BiPlusMedical } from "react-icons/bi";
+import { FaTruckMedical } from "react-icons/fa6";
+import { FaGraduationCap } from "react-icons/fa";
+import { PiDogFill } from "react-icons/pi";
+import { MdEmojiEvents } from "react-icons/md";
+import { MdEventAvailable } from "react-icons/md";
+import { FaTree } from "react-icons/fa";
+import { GiSailboat } from "react-icons/gi";
+import { MdBusinessCenter } from "react-icons/md";
+import { useEffect, useState } from "react";
+import projectService from "../services/project";
 
 const Header = () => {
   const { user } = useAuthContext();
-  console.log(user);
+  const [categories, setCategories] = useState();
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await projectService.getCategories();
+        setCategories(response.categories);
+      } catch(err) {
+        console.error(err);
+      }
+    }
+
+    fetchCategories();
+  }, []);
+
+  const getCategory = (name) => {
+    return categories?.filter(c => c.name == name)[0];
+  }
 
   return (
     <MegaMenu
       className="flex justify-center w-full"
       theme={{
         root: {
-          base: "bg-gray-50 dark:border-gray-700 dark:bg-gray-800 sm:px-4",
+          base: "bg-green-50 dark:border-gray-700 dark:bg-gray-800 sm:px-4",
           inner: {
             base: "items-center justify-between w-full",
           },
@@ -38,56 +65,65 @@ const Header = () => {
             <MegaMenu.Dropdown
               toggle={<span className="text-lg">Category</span>}
             >
-              <ul className="grid grid-cols-3">
+              <ul className="grid grid-cols-3 text-lg">
                 <div className="space-y-4 p-4">
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/medical" state={{ category: getCategory("medical") }} className="hover:text-gray-700 flex">
+                      <BiPlusMedical  className="mt-1 mr-1"/>
                       Medical
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/emergency" state={{ category: getCategory("emergency") }} className="hover:text-gray-700 flex">
+                      <FaTruckMedical className="mt-1 mr-1"/>
                       Emergency
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/education" state={{ category: getCategory("education") }} className="hover:text-gray-700 flex">
+                      <FaGraduationCap  className="mt-1 mr-1"/>
                       Education
-                    </a>
+                    </Link>
                   </li>
                 </div>
                 <div className="space-y-4 p-4">
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/animals" className="hover:text-gray-700 flex">
+                      <PiDogFill  className="mt-1 mr-1"/>
                       Animals
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/competition" className="hover:text-gray-700 flex">
+                      <MdEmojiEvents className="mt-1 mr-1"/>
                       Competition
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/event" className="hover:text-gray-700 flex">
+                      <MdEventAvailable  className="mt-1 mr-1"/>
                       Event
-                    </a>
+                    </Link>
                   </li>
                 </div>
                 <div className="space-y-4 p-4">
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/environment" className="hover:text-gray-700 flex">
+                      <FaTree className="mt-1 mr-1"/>
                       Environment
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/travel" className="hover:text-gray-700 flex">
+                      <GiSailboat className="mt-1 mr-1"/>
                       Travel
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-primary-600">
+                    <Link to="/category/business" className="hover:text-gray-700 flex">
+                      <MdBusinessCenter  className="mt-1 mr-1"/>
                       Business
-                    </a>
+                    </Link>
                   </li>
                 </div>
               </ul>

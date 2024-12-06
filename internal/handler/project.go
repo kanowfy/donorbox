@@ -25,6 +25,7 @@ type Project interface {
 	UpdateProject(w http.ResponseWriter, r *http.Request)
 	DeleteProject(w http.ResponseWriter, r *http.Request)
 	GetAllCategories(w http.ResponseWriter, r *http.Request)
+	GetCategoryByName(w http.ResponseWriter, r *http.Request)
 	GetProjectUpdates(w http.ResponseWriter, r *http.Request)
 	CreateProjectUpdate(w http.ResponseWriter, r *http.Request)
 	GetUnresolvedMilestones(w http.ResponseWriter, r *http.Request)
@@ -265,6 +266,25 @@ func (p *project) GetAllCategories(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"categories": categories,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (p *project) GetCategoryByName(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if name == "" {
+		httperror.NotFoundResponse(w, r)
+		return
+	}
+
+	category, err := p.service.GetCategoryByName(r.Context(), name)
+	if err != nil {
+		httperror.NotFoundResponse(w, r)
+	}
+
+	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"category": category,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

@@ -59,6 +59,7 @@ func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config
 	router.HandleFunc("GET /projects/{id}/backings/stats", handlers.Backing.GetProjectBackingStats)
 
 	router.HandleFunc("GET /categories", handlers.Project.GetAllCategories)
+	router.HandleFunc("GET /categories/{name}", handlers.Project.GetCategoryByName)
 
 	router.HandleFunc("GET /notifications/{id}", handlers.Notification.GetNotificationsForUser)
 	router.HandleFunc("POST /notifications/{id}/read", handlers.Notification.UpdateReadNotification)

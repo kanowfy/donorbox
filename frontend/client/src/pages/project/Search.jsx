@@ -53,7 +53,7 @@ const Search = () => {
 
   return (
     <>
-      <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-sky-200 mt-20">
+      <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-gray-200 mt-20">
         <div className="flex flex-col items-center">
           <div className="pb-7 font-semibold text-4xl tracking-tight">
             Explore fundraising campaigns

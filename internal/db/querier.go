@@ -31,6 +31,7 @@ type Querier interface {
 	GetBackingsForProject(ctx context.Context, projectID int64) ([]GetBackingsForProjectRow, error)
 	GetBackingsForUser(ctx context.Context, userID *int64) ([]Backing, error)
 	GetCategoriesCount(ctx context.Context) ([]GetCategoriesCountRow, error)
+	GetCategoryByName(ctx context.Context, name string) (Category, error)
 	GetEscrowUserByEmail(ctx context.Context, email string) (EscrowUser, error)
 	GetEscrowUserByID(ctx context.Context, id int64) (EscrowUser, error)
 	GetFinishedProjects(ctx context.Context) ([]GetFinishedProjectsRow, error)

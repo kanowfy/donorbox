@@ -94,6 +94,10 @@ RETURNING *;
 -- name: GetAllCategories :many
 SELECT * FROM categories;
 
+-- name: GetCategoryByName :one
+SELECT * FROM categories
+WHERE name = $1;
+
 -- name: GetProjectUpdates :many
 SELECT * FROM project_updates
 WHERE project_id = $1

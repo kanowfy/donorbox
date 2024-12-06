@@ -24,6 +24,7 @@ import ReportProject from "./pages/project/ReportProject";
 import Payment from "./pages/project/donation/Payment";
 import CheckoutForm from "./pages/project/donation/CheckoutForm";
 import VerifyAccount from "./pages/VerifyAccount";
+import Category from "./pages/project/Category";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/category/:name" element={<Category />} />
         <Route path="/account/settings" element={<AccountSettings />} />
         <Route path="/account/verify" element={<VerifyAccount />} />
         <Route path="/fundraiser/:id" element={<ViewProject />} />

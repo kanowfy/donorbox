@@ -27,7 +27,7 @@ const Chatbot = () => {
       <div
         hidden={displayChat}
         onClick={() => setDisplayChat(true)}
-        className="rounded-full bg-white p-3 mr-5 mb-5 border shadow-md cursor-pointer"
+        className="rounded-full bg-white p-3 mr-5 mb-10 border shadow-md cursor-pointer"
       >
         <PiChatsCircle className="w-16 h-16" />
       </div>

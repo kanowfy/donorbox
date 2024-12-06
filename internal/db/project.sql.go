@@ -302,6 +302,23 @@ func (q *Queries) GetAllProjects(ctx context.Context, arg GetAllProjectsParams) 
 	return items, nil
 }
 
+const getCategoryByName = `-- name: GetCategoryByName :one
+SELECT id, name, description, cover_picture FROM categories
+WHERE name = $1
+`
+
+func (q *Queries) GetCategoryByName(ctx context.Context, name string) (Category, error) {
+	row := q.db.QueryRow(ctx, getCategoryByName, name)
+	var i Category
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.CoverPicture,
+	)
+	return i, err
+}
+
 const getFinishedProjects = `-- name: GetFinishedProjects :many
 SELECT projects.id, projects.user_id, projects.title, projects.description, projects.cover_picture, projects.category_id, projects.end_date, projects.receiver_number, projects.receiver_name, projects.address, projects.district, projects.city, projects.country, projects.status, projects.created_at, SUM(milestones.current_fund) AS total_fund,
 SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count

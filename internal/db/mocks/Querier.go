@@ -1256,6 +1256,63 @@ func (_c *Querier_GetCategoriesCount_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
+// GetCategoryByName provides a mock function with given fields: ctx, name
+func (_m *Querier) GetCategoryByName(ctx context.Context, name string) (db.Category, error) {
+	ret := _m.Called(ctx, name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCategoryByName")
+	}
+
+	var r0 db.Category
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (db.Category, error)); ok {
+		return rf(ctx, name)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) db.Category); ok {
+		r0 = rf(ctx, name)
+	} else {
+		r0 = ret.Get(0).(db.Category)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Querier_GetCategoryByName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCategoryByName'
+type Querier_GetCategoryByName_Call struct {
+	*mock.Call
+}
+
+// GetCategoryByName is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *Querier_Expecter) GetCategoryByName(ctx interface{}, name interface{}) *Querier_GetCategoryByName_Call {
+	return &Querier_GetCategoryByName_Call{Call: _e.mock.On("GetCategoryByName", ctx, name)}
+}
+
+func (_c *Querier_GetCategoryByName_Call) Run(run func(ctx context.Context, name string)) *Querier_GetCategoryByName_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *Querier_GetCategoryByName_Call) Return(_a0 db.Category, _a1 error) *Querier_GetCategoryByName_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *Querier_GetCategoryByName_Call) RunAndReturn(run func(context.Context, string) (db.Category, error)) *Querier_GetCategoryByName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetEscrowUserByEmail provides a mock function with given fields: ctx, email
 func (_m *Querier) GetEscrowUserByEmail(ctx context.Context, email string) (db.EscrowUser, error) {
 	ret := _m.Called(ctx, email)
