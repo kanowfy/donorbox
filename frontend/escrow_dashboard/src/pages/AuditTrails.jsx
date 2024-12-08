@@ -81,7 +81,7 @@ const AuditTrails = () => {
     }
 
     if (trail.escrow_id) {
-      return `User_${trail.user_id}`
+      return `Escrow_${trail.escrow_id}`
     }
 
     return "Anonymous"

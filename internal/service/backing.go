@@ -59,7 +59,7 @@ func (b *backing) CreateBacking(ctx context.Context, projectID int64, req dto.Ba
 	if err := b.auditSvc.LogAction(ctx, LogActionParams{
 		UserID:        backingParams.UserID,
 		EntityType:    "backing",
-		EntityID:      backingParams.UserID,
+		EntityID:      &backing.ID,
 		OperationType: "CREATE",
 		NewValue:      backing,
 	}); err != nil {

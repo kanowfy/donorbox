@@ -4,6 +4,7 @@ import notificationService from "../services/notification";
 import { BASE_URL } from "../constants";
 import { Dropdown } from "flowbite-react";
 import { IoMdNotificationsOutline } from "react-icons/io";
+import { FaBell } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import utils from "../utils/utils";
 
@@ -74,7 +75,8 @@ const Notification = () => {
         </button>
       )}
     >
-      {notifs?.map((n) => (
+      { notifsLen > 0 ? (
+      notifs?.map((n) => (
         <Link to={`/fundraiser/${n.project_id}`} key={n.id}>
           <Dropdown.Item
             className={`max-w-sm ${
@@ -102,7 +104,13 @@ const Notification = () => {
 
           </Dropdown.Item>
         </Link>
-      ))}
+      ))) : (
+        <div className="px-5 py-4 flex">
+          <div><FaBell className="w-5 h-5 mr-1 mt-1"/></div>
+        <div className="text-gray-700">You don't have any notifications</div>
+        </div>
+      )
+      }
     </Dropdown>
   );
 };

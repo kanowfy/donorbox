@@ -54,9 +54,9 @@ type MilestoneCompletion struct {
 }
 
 type ProjectUpdate struct {
-	ID              int64
-	ProjectID       int64
-	AttachmentPhoto *string
-	Description     string
-	CreatedAt       time.Time
+	ID              int64     `json:"id"`
+	ProjectID       int64     `json:"project_id"`
+	AttachmentPhoto *string   `json:"attachment_photo,omitempty"`
+	Description     string    `json:"description"`
+	CreatedAt       time.Time `json:"created_at"`
 }

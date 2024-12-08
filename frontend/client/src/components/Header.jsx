@@ -16,23 +16,6 @@ import projectService from "../services/project";
 
 const Header = () => {
   const { user } = useAuthContext();
-  const [categories, setCategories] = useState();
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await projectService.getCategories();
-        setCategories(response.categories);
-      } catch(err) {
-        console.error(err);
-      }
-    }
-
-    fetchCategories();
-  }, []);
-
-  const getCategory = (name) => {
-    return categories?.filter(c => c.name == name)[0];
-  }
 
   return (
     <MegaMenu
@@ -68,19 +51,19 @@ const Header = () => {
               <ul className="grid grid-cols-3 text-lg">
                 <div className="space-y-4 p-4">
                   <li>
-                    <Link to="/category/medical" state={{ category: getCategory("medical") }} className="hover:text-gray-700 flex">
+                    <Link to="/category/medical" className="hover:text-gray-700 flex">
                       <BiPlusMedical  className="mt-1 mr-1"/>
                       Medical
                     </Link>
                   </li>
                   <li>
-                    <Link to="/category/emergency" state={{ category: getCategory("emergency") }} className="hover:text-gray-700 flex">
+                    <Link to="/category/emergency" className="hover:text-gray-700 flex">
                       <FaTruckMedical className="mt-1 mr-1"/>
                       Emergency
                     </Link>
                   </li>
                   <li>
-                    <Link to="/category/education" state={{ category: getCategory("education") }} className="hover:text-gray-700 flex">
+                    <Link to="/category/education" className="hover:text-gray-700 flex">
                       <FaGraduationCap  className="mt-1 mr-1"/>
                       Education
                     </Link>

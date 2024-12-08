@@ -32,6 +32,8 @@ const Project = () => {
         setUpdates(projectResponse.updates);
         setOwner(projectResponse.user);
 
+        console.log("updates ", projectResponse.updates);
+
         if (projectResponse.backings) {
           setWosList(
             projectResponse.backings.filter(
@@ -118,7 +120,7 @@ const Project = () => {
                   Updates ({updates.length})
                 </div>
                 <div className="space-y-4">
-                  {updates.map((u) => (
+                  {updates?.map((u) => (
                     <div key={u.id}>
                       <div className="font-medium text-sm">
                         On{" "}

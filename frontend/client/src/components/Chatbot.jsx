@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PiChatsCircle } from "react-icons/pi";
 import ragService from "../services/rag";
 import { WiStars } from "react-icons/wi";
+import { Tooltip } from "flowbite-react";
 
 const Chatbot = () => {
   const [displayChat, setDisplayChat] = useState(false);
@@ -14,23 +15,34 @@ const Chatbot = () => {
     setInput("");
 
     try {
-        const response = await ragService.ask(input);
-        setChatLog((prev) => [...prev, { message: response.answer, isUser: false }]);
-    } catch(err) {
-        setChatLog((prev) => [...prev, { message: "There is a problem processing chat request.", isUser: false }]);
-        console.error(err);
+      const response = await ragService.ask(input);
+      setChatLog((prev) => [
+        ...prev,
+        { message: response.answer, isUser: false },
+      ]);
+    } catch (err) {
+      setChatLog((prev) => [
+        ...prev,
+        {
+          message: "There is a problem processing chat request.",
+          isUser: false,
+        },
+      ]);
+      console.error(err);
     }
   };
 
   return (
     <div class="fixed bottom-0 right-0">
-      <div
-        hidden={displayChat}
-        onClick={() => setDisplayChat(true)}
-        className="rounded-full bg-white p-3 mr-5 mb-10 border shadow-md cursor-pointer"
-      >
-        <PiChatsCircle className="w-16 h-16" />
-      </div>
+      <Tooltip content="AI Assistant">
+        <div
+          hidden={displayChat}
+          onClick={() => setDisplayChat(true)}
+          className="rounded-full bg-white p-3 mr-5 mb-10 border shadow-md cursor-pointer"
+        >
+          <PiChatsCircle className="w-16 h-16" />
+        </div>
+      </Tooltip>
       <div
         className="bg-white border border-gray-300 shadow-lg rounded-lg w-[22rem] mr-4"
         hidden={!displayChat}
@@ -39,7 +51,9 @@ const Chatbot = () => {
           class="flex items-center justify-between py-2 px-4 bg-green-600 rounded-t-lg cursor-pointer"
           onClick={() => setDisplayChat((val) => !val)}
         >
-          <h3 class="text-white flex">AI Assistant <WiStars className="w-6 h-6"/></h3>
+          <h3 class="text-white flex">
+            AI Assistant <WiStars className="w-6 h-6" />
+          </h3>
           <button class="text-gray-200 hover:text-gray-50 text-xl rounded-full">
             &times;
           </button>
@@ -65,8 +79,8 @@ const Chatbot = () => {
 
 const ChatMessage = ({ message, isUser }) => {
   return (
-    <div class={`mb-2 flex justify-${isUser ? "end" : "start"}`}>
-      <p class={`bg-${isUser ? "gray" : "green"}-200 px-3 py-2 rounded-lg`}>
+    <div className={`mb-2 flex justify-${isUser ? "end" : "start"}`}>
+      <p className={`bg-${isUser ? "gray" : "green"}-200 px-3 py-2 rounded-lg`}>
         {message}
       </p>
     </div>

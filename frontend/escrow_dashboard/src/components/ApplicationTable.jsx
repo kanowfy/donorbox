@@ -123,9 +123,9 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
         <Modal.Body>
           <div className="grid grid-cols-3 space-x-4">
             <div className="space-y-2 grid-cols-2 md:grid-cols-1 w-full">
-              <div className="border rounded-lg p-5 space-y-2">
+              <div className="border rounded-lg p-5 space-y-2 overflow-hidden">
                 <div className="font-bold text-lg text-gray-700 underline">Basic Information</div>
-                <div className="rounded-xl overflow-hidden h-72 aspect-[5/3] object-cover mx-auto">
+                <div className="rounded-xl overflow-hidden max-h-fit aspect-[5/3] object-cover mx-auto">
                   <img
                     src={review?.project.cover_picture}
                     className="w-full h-full m-auto object-cover"
