@@ -3,7 +3,8 @@ CREATE TYPE project_status AS ENUM (
   'pending',
   'ongoing',
   'rejected',
-  'finished'
+  'finished',
+  'disputed'
 );
 
 CREATE TYPE verification_status AS ENUM (
@@ -17,7 +18,24 @@ CREATE TYPE notification_type AS ENUM (
   'rejected_verification',
   'approved_project',
   'rejected_project',
-  'milestone_completion'
+  'released_fund_milestone',
+  'completed_milestone',
+  'refuted_milestone',
+  'rejected_proof',
+  'approved_proof'
+);
+
+CREATE TYPE milestone_status AS ENUM (
+  'pending',
+  'fund_released',
+  'completed',
+  'refuted'
+);
+
+CREATE TYPE proof_status AS ENUM (
+  'pending',
+  'rejected',
+  'approved'
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -73,15 +91,7 @@ CREATE TABLE IF NOT EXISTS milestones (
   fund_goal bigint NOT NULL,
   current_fund bigint NOT NULL DEFAULT 0,
   bank_description text NOT NULL,
-  completed boolean NOT NULL DEFAULT FALSE,
-  created_at timestamptz NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS project_updates (
-  id bigserial PRIMARY KEY,
-  project_id bigint NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  attachment_photo text,
-  description text NOT NULL,
+  status milestone_status NOT NULL DEFAULT 'pending',
   created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
@@ -94,13 +104,24 @@ CREATE TABLE IF NOT EXISTS backings (
   created_at timestamptz NOT NULL DEFAULT NOW() 
 );
 
-CREATE TABLE IF NOT EXISTS milestone_completions (
+CREATE TABLE IF NOT EXISTS escrow_milestone_completions (
   id bigserial PRIMARY KEY,
   milestone_id bigserial NOT NULL REFERENCES milestones(id),
   transfer_amount bigserial NOT NULL,
   transfer_note text,
   transfer_image text,
-  completed_at timestamptz NOT NULL DEFAULT NOW()
+  created_at timestamptz NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS user_spending_proofs (
+  id bigserial PRIMARY KEY,
+  milestone_id bigserial NOT NULL REFERENCES milestones(id),
+  transfer_image text NOT NULL,
+  proof_media_url text NOT NULL,
+  description text NOT NULL,
+  status proof_status NOT NULL DEFAULT 'pending',
+  rejected_cause text,
+  created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS notifications (
@@ -109,6 +130,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   notification_type notification_type NOT NULL,
   message text NOT NULL,
   project_id bigint REFERENCES projects(id),
+  milestone_id bigint REFERENCES milestones(id),
   is_read boolean NOT NULL DEFAULT FALSE,
   created_at timestamptz NOT NULL DEFAULT NOW()
 );
@@ -127,14 +149,18 @@ CREATE TABLE IF NOT EXISTS audit_trails (
 );
 
 -- +goose Down
+DROP TABLE IF EXISTS audit_trails;
 DROP TABLE IF EXISTS backings;
 DROP TABLE IF EXISTS notifications;
-DROP TABLE IF EXISTS milestone_completions;
+DROP TABLE IF EXISTS escrow_milestone_completions;
+DROP TABLE IF EXISTS user_spending_proofs;
 DROP TABLE IF EXISTS milestones;
-DROP TABLE IF EXISTS project_updates;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
-DROP TABLE IF EXISTS escrow_users;
-DROP TABLE IF EXISTS users;
-DROP TYPE verification_status;
+-- DROP TABLE IF EXISTS escrow_users;
+-- DROP TABLE IF EXISTS users;
+-- DROP TYPE verification_status;
 DROP TYPE project_status;
+DROP TYPE milestone_status;
+DROP TYPE notification_type;
+DROP TYPE proof_status;

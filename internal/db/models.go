@@ -11,14 +11,62 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type MilestoneStatus string
+
+const (
+	MilestoneStatusPending      MilestoneStatus = "pending"
+	MilestoneStatusFundReleased MilestoneStatus = "fund_released"
+	MilestoneStatusCompleted    MilestoneStatus = "completed"
+	MilestoneStatusRefuted      MilestoneStatus = "refuted"
+)
+
+func (e *MilestoneStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MilestoneStatus(s)
+	case string:
+		*e = MilestoneStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MilestoneStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMilestoneStatus struct {
+	MilestoneStatus MilestoneStatus
+	Valid           bool // Valid is true if MilestoneStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMilestoneStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MilestoneStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MilestoneStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMilestoneStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MilestoneStatus), nil
+}
+
 type NotificationType string
 
 const (
-	NotificationTypeApprovedVerification NotificationType = "approved_verification"
-	NotificationTypeRejectedVerification NotificationType = "rejected_verification"
-	NotificationTypeApprovedProject      NotificationType = "approved_project"
-	NotificationTypeRejectedProject      NotificationType = "rejected_project"
-	NotificationTypeMilestoneCompletion  NotificationType = "milestone_completion"
+	NotificationTypeApprovedVerification  NotificationType = "approved_verification"
+	NotificationTypeRejectedVerification  NotificationType = "rejected_verification"
+	NotificationTypeApprovedProject       NotificationType = "approved_project"
+	NotificationTypeRejectedProject       NotificationType = "rejected_project"
+	NotificationTypeReleasedFundMilestone NotificationType = "released_fund_milestone"
+	NotificationTypeCompletedMilestone    NotificationType = "completed_milestone"
+	NotificationTypeRefutedMilestone      NotificationType = "refuted_milestone"
+	NotificationTypeRejectedProof         NotificationType = "rejected_proof"
+	NotificationTypeApprovedProof         NotificationType = "approved_proof"
 )
 
 func (e *NotificationType) Scan(src interface{}) error {
@@ -63,6 +111,8 @@ const (
 	ProjectStatusOngoing  ProjectStatus = "ongoing"
 	ProjectStatusRejected ProjectStatus = "rejected"
 	ProjectStatusFinished ProjectStatus = "finished"
+	ProjectStatusDisputed ProjectStatus = "disputed"
+	ProjectStatusStopped  ProjectStatus = "stopped"
 )
 
 func (e *ProjectStatus) Scan(src interface{}) error {
@@ -98,6 +148,92 @@ func (ns NullProjectStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.ProjectStatus), nil
+}
+
+type ProofStatus string
+
+const (
+	ProofStatusPending  ProofStatus = "pending"
+	ProofStatusRejected ProofStatus = "rejected"
+	ProofStatusApproved ProofStatus = "approved"
+)
+
+func (e *ProofStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ProofStatus(s)
+	case string:
+		*e = ProofStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ProofStatus: %T", src)
+	}
+	return nil
+}
+
+type NullProofStatus struct {
+	ProofStatus ProofStatus
+	Valid       bool // Valid is true if ProofStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullProofStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ProofStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ProofStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullProofStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ProofStatus), nil
+}
+
+type ReportStatus string
+
+const (
+	ReportStatusPending   ReportStatus = "pending"
+	ReportStatusDismissed ReportStatus = "dismissed"
+	ReportStatusResolved  ReportStatus = "resolved"
+)
+
+func (e *ReportStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportStatus(s)
+	case string:
+		*e = ReportStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReportStatus struct {
+	ReportStatus ReportStatus
+	Valid        bool // Valid is true if ReportStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportStatus), nil
 }
 
 type VerificationStatus string
@@ -172,6 +308,15 @@ type Category struct {
 	CoverPicture string
 }
 
+type EscrowMilestoneCompletion struct {
+	ID             int64
+	MilestoneID    int64
+	TransferAmount int64
+	TransferNote   *string
+	TransferImage  *string
+	CreatedAt      pgtype.Timestamptz
+}
+
 type EscrowUser struct {
 	ID             int64
 	Email          string
@@ -187,17 +332,8 @@ type Milestone struct {
 	FundGoal        int64
 	CurrentFund     int64
 	BankDescription string
-	Completed       bool
+	Status          MilestoneStatus
 	CreatedAt       pgtype.Timestamptz
-}
-
-type MilestoneCompletion struct {
-	ID             int64
-	MilestoneID    int64
-	TransferAmount int64
-	TransferNote   *string
-	TransferImage  *string
-	CompletedAt    pgtype.Timestamptz
 }
 
 type Notification struct {
@@ -206,6 +342,7 @@ type Notification struct {
 	NotificationType NotificationType
 	Message          string
 	ProjectID        *int64
+	MilestoneID      *int64
 	IsRead           bool
 	CreatedAt        pgtype.Timestamptz
 }
@@ -228,12 +365,17 @@ type Project struct {
 	CreatedAt      pgtype.Timestamptz
 }
 
-type ProjectUpdate struct {
-	ID              int64
-	ProjectID       int64
-	AttachmentPhoto *string
-	Description     string
-	CreatedAt       pgtype.Timestamptz
+type ProjectReport struct {
+	ID          int64
+	ProjectID   int64
+	Email       string
+	FullName    string
+	PhoneNumber string
+	Relation    *string
+	Reason      string
+	Details     string
+	Status      ReportStatus
+	CreatedAt   pgtype.Timestamptz
 }
 
 type User struct {
@@ -247,4 +389,15 @@ type User struct {
 	VerificationStatus      VerificationStatus
 	VerificationDocumentUrl *string
 	CreatedAt               pgtype.Timestamptz
+}
+
+type UserSpendingProof struct {
+	ID            int64
+	MilestoneID   int64
+	TransferImage string
+	ProofMediaUrl string
+	Description   string
+	Status        ProofStatus
+	RejectedCause *string
+	CreatedAt     pgtype.Timestamptz
 }

@@ -1,8 +1,8 @@
 -- name: CreateNotification :one
 INSERT INTO notifications (
-    user_id, notification_type, message, project_id
+    user_id, notification_type, message, project_id, milestone_id
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetNotificationsForUser :many

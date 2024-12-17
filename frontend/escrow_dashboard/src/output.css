@@ -1758,6 +1758,14 @@ input[type="range"]::-ms-fill-lower {
   aspect-ratio: 5/3;
 }
 
+.aspect-\[16\/0\] {
+  aspect-ratio: 16/0;
+}
+
+.aspect-\[16\/9\] {
+  aspect-ratio: 16/9;
+}
+
 .size-3 {
   width: 0.75rem;
   height: 0.75rem;
@@ -1836,10 +1844,6 @@ input[type="range"]::-ms-fill-lower {
   height: 1.75rem;
 }
 
-.h-72 {
-  height: 18rem;
-}
-
 .h-8 {
   height: 2rem;
 }
@@ -1881,12 +1885,37 @@ input[type="range"]::-ms-fill-lower {
   height: 100vh;
 }
 
+.h-24 {
+  height: 6rem;
+}
+
+.h-32 {
+  height: 8rem;
+}
+
+.h-60 {
+  height: 15rem;
+}
+
+.h-72 {
+  height: 18rem;
+}
+
+.h-52 {
+  height: 13rem;
+}
+
 .max-h-\[228px\] {
   max-height: 228px;
 }
 
 .max-h-\[90dvh\] {
   max-height: 90dvh;
+}
+
+.max-h-fit {
+  max-height: -moz-fit-content;
+  max-height: fit-content;
 }
 
 .min-h-60 {
@@ -2436,6 +2465,18 @@ input[type="range"]::-ms-fill-lower {
   gap: 1.75rem;
 }
 
+.gap-5 {
+  gap: 1.25rem;
+}
+
+.gap-10 {
+  gap: 2.5rem;
+}
+
+.gap-12 {
+  gap: 3rem;
+}
+
 .gap-x-1 {
   -moz-column-gap: 0.25rem;
        column-gap: 0.25rem;
@@ -2596,10 +2637,6 @@ input[type="range"]::-ms-fill-lower {
 
 .overflow-visible {
   overflow: visible;
-}
-
-.overflow-x-auto {
-  overflow-x: auto;
 }
 
 .overflow-y-auto {

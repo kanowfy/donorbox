@@ -13,11 +13,25 @@ const getPending = async (token) => {
   return response.data;
 };
 
-const getUnresolvedMilestones = async (token) => {
-  const response = await axios.get(`${BASE_URL}/milestones/unresolved`, {
+const getFundedMilestones = async (token) => {
+  const response = await axios.get(`${BASE_URL}/milestones/funded`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;
 }
 
-export default { getEnded, getPending, getUnresolvedMilestones };
+const getProjectReports = async (token) => {
+  const response = await axios.get(`${BASE_URL}/projects/reports`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+const getDisputed = async (token) => {
+  const response = await axios.get(`${BASE_URL}/projects/disputed`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+}
+
+export default { getEnded, getPending, getFundedMilestones, getProjectReports, getDisputed };

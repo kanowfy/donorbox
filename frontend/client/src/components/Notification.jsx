@@ -35,7 +35,12 @@ const Notification = () => {
     const eventSource = new EventSource(`${BASE_URL}/notifications/events`);
     eventSource.onmessage = function (event) {
       const notif = JSON.parse(event.data);
-      setNotifs((prev) => [...prev, notif]);
+      setNotifs((prev) => {
+        if (prev.filter(n => n.id === notif.id)) {
+          return prev;
+        }
+        return [...prev, notif];
+      })
       setNotifsLen(prev => prev+1);
     };
 
@@ -45,12 +50,63 @@ const Notification = () => {
   }, []);
 
   const handleReadNotif = async (notif) => {
+    if (notif.is_read) {
+        return;
+    }
+
     try {
       await notificationService.updateReadNotification(token, notif.id);
+      setNotifsLen(prev => prev-1);
     } catch (err) {
       console.error(err);
     }
   };
+
+  const getNotifEndpoint = (notif) => {
+    switch (notif.type) {
+      case 'approved_verification':
+        return "";
+      case 'rejected_verification':
+        return "/account/verify";
+      case 'approved_project':
+        return `/manage/${notif.project_id}`;
+      case 'rejected_project':
+        return "";
+      case 'released_fund_milestone':
+        return `/manage/${notif.project_id}/proofs`
+      case 'completed_milestone':
+        return `/manage/${notif.project_id}`;
+      case 'refuted_milestone':
+        return `/fundraiser/${notif.project_id}`;
+      case 'rejected_proof':
+        return `/manage/${notif.project_id}/proofs`
+      case 'approved_proof':
+        return `/manage/${notif.project_id}`;
+    }
+  }
+
+  const getNotifHeader = (notif) => {
+    switch (notif.type) {
+      case 'approved_verification':
+        return "Verification Approved";
+      case 'rejected_verification':
+        return "Verification Rejected";
+      case 'approved_project':
+        return "Fundraiser Approved";
+      case 'rejected_project':
+        return "Fundraiser Rejected";
+      case 'released_fund_milestone':
+        return "Milestone Fund Released"
+      case 'completed_milestone':
+        return "Milestone Completed"
+      case 'refuted_milestone':
+        return "Milestone Refuted"
+      case 'rejected_proof':
+        return "Expenditure Proof Rejected"
+      case 'approved_proof':
+        return "Expenditure Proof Approved"
+    }
+  }
 
   return (
     <Dropdown
@@ -75,9 +131,9 @@ const Notification = () => {
         </button>
       )}
     >
-      { notifsLen > 0 ? (
+      { notifs?.length > 0 ? (
       notifs?.map((n) => (
-        <Link to={`/fundraiser/${n.project_id}`} key={n.id}>
+        <Link to={getNotifEndpoint(n)} key={n.id}>
           <Dropdown.Item
             className={`max-w-sm ${
               n.is_read ? "text-gray-500" : "text-gray-900"
@@ -86,11 +142,7 @@ const Notification = () => {
           >
             <div className="flex justify-between">
             <div>
-                {n.type === "approved_project" || n.type === "rejected_project" ? (
-                    <div className="font-semibold text-blue-800">Campaign Submission Result</div>
-                ) : (
-                    <div className="font-semibold text-blue-800">Milestone Resolved</div>
-                )}
+                    <div className="font-semibold text-blue-800">{getNotifHeader(n)}</div>
             </div>
                 <div className="text-xs text-gray-500">
                   {utils.formatDate(

@@ -1,4 +1,4 @@
-import { Avatar, Button, Modal } from "flowbite-react";
+import { Avatar, Button, Modal, Banner } from "flowbite-react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Support from "../../components/Support";
 import DonateBox from "../../components/DonateBox";
@@ -8,6 +8,7 @@ import utils from "../../utils/utils";
 import { IoFlag } from "react-icons/io5";
 import MilestoneTL from "../../components/MilestoneTL";
 import MDEditor from "@uiw/react-md-editor";
+import { HiX } from "react-icons/hi";
 
 const Project = () => {
   const params = useParams();
@@ -16,7 +17,8 @@ const Project = () => {
   const [milestones, setMilestones] = useState([]);
   const [owner, setOwner] = useState({});
   const [backings, setBackings] = useState();
-  const [updates, setUpdates] = useState();
+  //const [updates, setUpdates] = useState();
+  const [proofs, setProofs] = useState();
   const [wosList, setWosList] = useState();
   const [isOpenMilestone, setIsOpenMilestone] = useState(false);
   const [milestoneReview, setMilestoneReview] = useState();
@@ -29,8 +31,17 @@ const Project = () => {
         setProject(projectResponse.project);
         setMilestones(projectResponse.milestones);
         setBackings(projectResponse.backings);
-        setUpdates(projectResponse.updates);
+        //setUpdates(projectResponse.updates);
         setOwner(projectResponse.user);
+
+        setProofs(
+          projectResponse.milestones.filter(m => m?.spending_proofs?.length > 0).flatMap((m) =>
+            m.spending_proofs.map((p) => ({
+              ...p,
+              milestone_title: m.title,
+            }))
+          ).filter(p => p.status === "approved")
+        );
 
         console.log("updates ", projectResponse.updates);
 
@@ -52,6 +63,24 @@ const Project = () => {
 
   return (
     <div className="mb-10">
+      {project?.status === "disputed" && (
+        <Banner>
+          <div className="flex w-full justify-between border-b border-gray-200 bg-gray-50 p-4">
+            <div className="mx-auto flex items-center">
+              <p className="flex items-center text-sm font-semibold text-red-700">
+                This fundraiser is under investigation due to violation of the
+                platform policy.
+              </p>
+            </div>
+            <Banner.CollapseButton
+              color="gray"
+              className="border-0 bg-transparent text-gray-500 dark:text-gray-400"
+            >
+              <HiX className="h-4 w-4" />
+            </Banner.CollapseButton>
+          </div>
+        </Banner>
+      )}
       <div className="grid grid-cols-3 gap-7 max-w-7xl min-w-1/2 mx-auto">
         <div className="col-span-2">
           <div className="text-3xl font-bold m-5">{project.title}</div>
@@ -113,30 +142,28 @@ const Project = () => {
 
           <div className="h-px bg-gray-300 mt-4"></div>
 
-          {updates && (
+          {proofs?.length > 0 && (
             <>
               <div className="my-5">
                 <div className="text-xl font-semibold tracking-tight mb-5">
-                  Updates ({updates.length})
+                  Updates ({proofs.length})
                 </div>
                 <div className="space-y-4">
-                  {updates?.map((u) => (
-                    <div key={u.id}>
-                      <div className="font-medium text-sm">
+                  {proofs?.map((p) => (
+                    <div key={p.id}>
+                      <div className="font-medium text-sm text-gray-600">
                         On{" "}
                         {utils.formatDate(
-                          new Date(utils.parseDateFromRFC3339(u.created_at))
+                          new Date(utils.parseDateFromRFC3339(p.created_at))
                         )}
                       </div>
-                      <div className="tracking-tight">{u.description}</div>
-                      {u?.attachment_photo && (
+                      <div className="tracking-tight">{p.description}</div>
                         <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
                           <img
-                            src={u.attachment_photo}
+                            src={p.proof_media}
                             className="w-full h-full m-auto object-cover"
                           />
                         </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -170,7 +197,6 @@ const Project = () => {
             ))}
           </div>
           <div className="h-px bg-gray-300"></div>
-          {/*
           <div className="my-5">
             <Link to={`/fundraiser/${params.id}/report`} className="w-fit">
               <Button color="light" pill size="lg">
@@ -179,7 +205,6 @@ const Project = () => {
               </Button>
             </Link>
           </div>
-          */}
         </div>
         <div className="mt-20 space-y-10">
           <div>
@@ -200,8 +225,12 @@ const Project = () => {
           </div>
         </div>
       </div>
-      <Modal show={isOpenMilestone} onClose={() => setIsOpenMilestone(false)} size="xl">
-        <Modal.Header>Milestone Resolution Receipt</Modal.Header>
+      <Modal
+        show={isOpenMilestone}
+        onClose={() => setIsOpenMilestone(false)}
+        size="xl"
+      >
+        <Modal.Header>Milestone Fund Release Receipt</Modal.Header>
         <Modal.Body>
           <div className="flex flex-col items-center justify-center space-y-2">
             <div className="text-yellow-500 text-5xl">{`₫${milestoneReview?.milestone_completion.transfer_amount.toLocaleString()}`}</div>
@@ -210,7 +239,7 @@ const Project = () => {
               {utils.formatDate(
                 new Date(
                   utils.parseDateFromRFC3339(
-                    milestoneReview?.milestone_completion.completed_at
+                    milestoneReview?.milestone_completion.created_at
                   )
                 )
               )}
@@ -222,10 +251,13 @@ const Project = () => {
               className="aspect-auto h-72"
             ></img>
           </div>
-          {milestoneReview?.milestone_completion.transfer_note && 
-          (<div className="flex space-x-1 mx-4">
-          <div className="text-gray-900">Note: {milestoneReview?.milestone_completion.transfer_note}</div>
-          </div>)}
+          {milestoneReview?.milestone_completion.transfer_note && (
+            <div className="flex space-x-1 mx-4">
+              <div className="text-gray-900">
+                Note: {milestoneReview?.milestone_completion.transfer_note}
+              </div>
+            </div>
+          )}
         </Modal.Body>
       </Modal>
     </div>

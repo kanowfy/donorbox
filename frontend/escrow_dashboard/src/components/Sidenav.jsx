@@ -4,10 +4,12 @@ import { useAuthContext } from "../context/AuthContext";
 import { LuLogOut } from "react-icons/lu";
 import { RxDashboard } from "react-icons/rx";
 import { AiOutlineAudit } from "react-icons/ai";
-import { MdOutlinePostAdd } from "react-icons/md";
+import { MdOutlineCancel, MdOutlinePostAdd } from "react-icons/md";
 import { GoMilestone } from "react-icons/go";
 import { FiUserCheck } from "react-icons/fi";
 import { FiBook } from "react-icons/fi";
+import { MdOutlineReport } from "react-icons/md";
+import { GiCancel } from "react-icons/gi";
 
 const customSidenavTheme = {
   root: {
@@ -135,6 +137,20 @@ const Sidenav = () => {
                   icon={FiUserCheck}
                 >
                   User Verifications
+                </Sidebar.Item>
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/reports"
+                  icon={MdOutlineReport}
+                >
+                  Fundraiser Reports
+                </Sidebar.Item>
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/disputes"
+                  icon={MdOutlineCancel}
+                >
+                  Disputed Fundraisers
                 </Sidebar.Item>
                 {<Sidebar.Item
                   as={Link}

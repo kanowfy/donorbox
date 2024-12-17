@@ -1,21 +1,44 @@
-import { Modal } from "flowbite-react";
+import { Modal, Tabs } from "flowbite-react";
 import { useEffect, useState } from "react";
 import projectService from "../services/project";
 import { useAuthContext } from "../context/AuthContext";
 import MilestoneTable from "../components/MilestoneTable";
+import { HiMiniCurrencyDollar } from "react-icons/hi2";
+import { HiDocumentSearch } from "react-icons/hi";
+import { Card } from "@tremor/react";
+import MilestoneProofTable from "../components/MilestoneProofTable";
 
 const ManageMilestones = () => {
   const { token } = useAuthContext();
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
   const [milestones, setMilestones] = useState();
+  const [proofedMilestones, setProofedMilestones] = useState();
+
+  const hasPendingProof = (m) => {
+    if (m.milestone.status != "fund_released") {
+      return false;
+    }
+
+    if (!m.milestone.spending_proofs) {
+      return false;
+    }
+
+    if (m.milestone.spending_proofs.filter(p => p.status === "pending").length === 0) {
+      return false;
+    }
+
+    return true;
+  }
 
   useEffect(() => {
     const fetchMilestones = async () => {
       try {
-        const response = await projectService.getUnresolvedMilestones(token);
+        const response = await projectService.getFundedMilestones(token);
         setMilestones(response.milestones);
-        console.log(response);
+
+        setProofedMilestones(response.milestones.filter(m => hasPendingProof(m)));
+        console.log(response.milestones.filter(m => hasPendingProof(m)));
       } catch (err) {
         console.error(err);
       }
@@ -30,12 +53,26 @@ const ManageMilestones = () => {
         Pending Milestones
       </div>
       <div className="px-5">
-        <MilestoneTable
-          token={token}
-          data={milestones}
-          setIsSuccessful={setIsSuccessful}
-          setIsFailed={setIsFailed}
-        />
+      <Card className="shadow-lg shadow-gray-500">
+        <Tabs variant="underline">
+          <Tabs.Item active title="Resolve Funds" icon={HiMiniCurrencyDollar}>
+            <MilestoneTable
+              token={token}
+              data={milestones?.filter(m => m.milestone.status === "pending")}
+              setIsSuccessful={setIsSuccessful}
+              setIsFailed={setIsFailed}
+            />
+          </Tabs.Item>
+          <Tabs.Item title="Resolve Proofs" icon={HiDocumentSearch}>
+            <MilestoneProofTable
+              token={token}
+              data={proofedMilestones}
+              setIsSuccessful={setIsSuccessful}
+              setIsFailed={setIsFailed}
+            />
+          </Tabs.Item>
+        </Tabs>
+        </Card>
         <Modal
           show={isSuccessful}
           size="md"

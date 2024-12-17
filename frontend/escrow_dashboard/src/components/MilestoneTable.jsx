@@ -1,19 +1,9 @@
-import {
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
-  Card,
-} from "@tremor/react";
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import utils from "../utils/utils";
 import { IoOpenOutline } from "react-icons/io5";
 import escrowService from "../services/escrow";
 import uploadService from "../services/upload";
-import { Button, FileInput, Modal } from "flowbite-react";
+import { Button, FileInput, Modal, Table } from "flowbite-react";
 import Cleave from "cleave.js/react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -94,26 +84,20 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
 
   return (
     <div>
-      <Card className="my-5 shadow-lg shadow-gray-500">
-        <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong">
-          List of milestones waiting to be resolved
-        </h3>
-        <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>ID</TableHeaderCell>
-              <TableHeaderCell>Project Link</TableHeaderCell>
-              <TableHeaderCell>Title</TableHeaderCell>
-              <TableHeaderCell>Fund Goal</TableHeaderCell>
-              <TableHeaderCell>Total Fund</TableHeaderCell>
-              <TableHeaderCell></TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+        <Table className="mt-5" hoverable striped>
+          <Table.Head>
+              <Table.HeadCell>ID</Table.HeadCell>
+              <Table.HeadCell>Project Link</Table.HeadCell>
+              <Table.HeadCell>Title</Table.HeadCell>
+              <Table.HeadCell>Fund Goal</Table.HeadCell>
+              <Table.HeadCell>Total Fund</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
             {data?.map((item) => (
-              <TableRow key={item.milestone.id}>
-                <TableCell>{item.milestone.id}</TableCell>
-                <TableCell>
+              <Table.Row key={item.milestone.id}>
+                <Table.Cell>{item.milestone.id}</Table.Cell>
+                <Table.Cell>
                   <a
                     target="_blank"
                     href={`http://localhost:4001/fundraiser/${item?.milestone.project_id}`}
@@ -121,30 +105,29 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                   >
                     <IoOpenOutline className="ml-1 w-5 h-5" />
                   </a>
-                </TableCell>
-                <TableCell>{item.milestone.title}</TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>{item.milestone.title}</Table.Cell>
+                <Table.Cell>
                   ₫{item.milestone.fund_goal.toLocaleString()}
-                </TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>
                   ₫{item.milestone.current_fund.toLocaleString()}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    color="blue"
+                </Table.Cell>
+                <Table.Cell>
+                  <button
+                  className="font-semibold text-cyan-600 hover:underline"
                     onClick={() => {
                       setIsOpenReview(true);
                       setReview(item);
                     }}
                   >
                     View
-                  </Button>
-                </TableCell>
-              </TableRow>
+                  </button>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </TableBody>
+          </Table.Body>
         </Table>
-      </Card>
       <Modal
         show={isOpenReview}
         onClose={() => setIsOpenReview(false)}
@@ -156,13 +139,9 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
               isOpenConfirm ? "grid-cols-2" : "grid-cols-1"
             } gap-2`}
           >
-            <div className="border rounded-lg p-4">
-              <h3 className="text-xl font-semibold text-blue-700 underline">
-                Milestone Completion Form:
-              </h3>
               <form
                 id="form1"
-                className={`space-y-4 ${isOpenConfirm ? "" : "hidden"}`}
+                className={`space-y-4 ${isOpenConfirm ? "" : "hidden"} border rounded-lg p-4`}
                 onSubmit={handleSubmit(onSubmit)}
               >
                 <div className="flex items-baseline space-x-1 mt-5">
@@ -193,7 +172,7 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                 </div>
                   {errors.amount?.type === "required" && (
                     <p className="text-red-600 text-sm">
-                      {errors.amount.message}
+                      {errors.amount?.message}
                     </p>
                   )}
                 <div>
@@ -229,7 +208,6 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                   />
                 </div>
               </form>
-            </div>
             <div className="space-y-2 grid-cols-2 md:grid-cols-1 w-full">
               <div className="border rounded-lg p-5 space-y-2">
                 <div className="flex space-x-2 items-baseline">

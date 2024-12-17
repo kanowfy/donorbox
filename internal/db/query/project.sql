@@ -7,7 +7,7 @@ LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE category_id =
     CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
 AND projects.status = 'ongoing'
-GROUP BY projects.ID
+GROUP BY projects.id
 ORDER BY backing_count DESC
 LIMIT @page_limit::integer OFFSET @total_offset::integer;
 
@@ -52,13 +52,14 @@ ORDER BY end_date DESC;
 SELECT projects.*, SUM(milestones.fund_goal) AS fund_goal
 FROM projects
 LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE status = 'pending'
+WHERE projects.status = 'pending'
 GROUP BY projects.ID
 ORDER BY projects.created_at DESC;
 
 -- name: GetMilestoneForProject :many
-SELECT m.*, c.transfer_amount, c.transfer_note, c.transfer_image, c.completed_at FROM milestones m
-LEFT JOIN milestone_completions c ON m.id = c.milestone_id
+SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at
+FROM milestones m
+LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.project_id = $1
 ORDER BY m.id;
 
@@ -98,26 +99,10 @@ SELECT * FROM categories;
 SELECT * FROM categories
 WHERE name = $1;
 
--- name: GetProjectUpdates :many
-SELECT * FROM project_updates
-WHERE project_id = $1
-ORDER BY created_at DESC;
-
--- name: DeleteProjectUpdate :exec
-DELETE FROM project_updates
-WHERE id = $1;
-
--- name: CreateProjectUpdate :one
-INSERT INTO project_updates (
-    project_id, attachment_photo, description
-) VALUES (
-    $1, $2, $3
-)
-RETURNING *;
-
 -- name: GetMilestoneByID :one
-SELECT m.*, c.transfer_amount, c.transfer_note, c.transfer_image, c.completed_at FROM milestones m
-LEFT JOIN milestone_completions c ON m.id = c.milestone_id
+SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at
+FROM milestones m
+LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.id = $1;
 
 -- name: UpdateMilestoneFund :exec
@@ -127,20 +112,73 @@ WHERE id = $1;
 
 -- name: UpdateMilestoneStatus :exec
 UPDATE milestones
-SET completed = TRUE
+SET status = $2
 WHERE id = $1;
 
--- name: GetUnresolvedMilestones :many
-SELECT milestones.*, projects.address, projects.district, projects.city, projects.country, projects.receiver_name, projects.receiver_number
-FROM milestones
-JOIN projects ON milestones.project_id = projects.id
+-- name: GetFundedMilestones :many
+SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at,
+p.address, p.district, p.city, p.country, p.receiver_name, p.receiver_number
+FROM milestones m
+JOIN projects p ON m.project_id = p.id
+LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE current_fund >= fund_goal
-AND completed IS FALSE;
+ORDER BY m.id;
+
+-- name: GetAllMilestones :many
+SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at,
+p.address, p.district, p.city, p.country, p.receiver_name, p.receiver_number
+FROM milestones m
+LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
+JOIN projects p ON m.project_id = p.id
+ORDER BY m.id;
 
 -- name: CreateMilestoneCompletion :one
-INSERT INTO milestone_completions (
+INSERT INTO escrow_milestone_completions (
     milestone_id, transfer_amount, transfer_note, transfer_image
 ) VALUES (
     $1, $2, $3, $4
 )
 RETURNING *;
+
+-- name: GetMilestoneCompletionByMilestoneID :one
+SELECT * FROM escrow_milestone_completions
+WHERE milestone_id = $1;
+
+-- name: CreateSpendingProof :one
+INSERT INTO user_spending_proofs (
+    milestone_id, transfer_image, proof_media_url, description
+) VALUES (
+    $1, $2, $3, $4
+) 
+RETURNING *;
+
+-- name: UpdateSpendingProofStatus :exec
+UPDATE user_spending_proofs
+SET status = $2, rejected_cause = $3
+WHERE id = $1;
+
+-- name: GetSpendingProofByID :one
+SELECT * FROM user_spending_proofs
+WHERE id = $1;
+
+-- name: GetSpendingProofsForMilestone :many
+SELECT * FROM user_spending_proofs
+WHERE milestone_id = $1
+ORDER BY created_at DESC;
+
+-- name: GetMilestoneAndProofs :many
+SELECT p.*, m.title AS milestone_title, m.description AS milestone_description, m.fund_goal, m.current_fund, 
+m.bank_description, m.status AS milestone_status, m.created_at AS milestone_created_at 
+FROM user_spending_proofs p
+JOIN milestones m ON m.id = p.milestone_id
+ORDER BY p.created_at;
+
+-- name: GetDisputedProjects :many
+SELECT p.*, SUM(m.current_fund) AS total_fund,
+SUM(m.fund_goal) AS fund_goal, COUNT(b.project_id) as backing_count
+FROM projects p
+LEFT JOIN backings b ON p.ID = b.project_id
+LEFT JOIN milestones m ON p.ID = m.project_id
+WHERE p.status = 'disputed'
+GROUP BY p.ID
+ORDER BY p.created_at;

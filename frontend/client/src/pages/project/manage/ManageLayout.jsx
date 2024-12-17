@@ -28,7 +28,7 @@ const ManageLayout = () => {
   return (
     <section className="flex justify-center mt-14">
       <div className="grid grid-cols-10 gap-2 w-2/3">
-        <div className="col-span-3">
+        <div className="col-span-3 flex">
           <ManageProjectSidebar id={params.id} />
         </div>
         <div className="col-span-7 space-y-10">

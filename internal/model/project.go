@@ -11,6 +11,25 @@ const (
 	ProjectStatusOngoing  ProjectStatus = "ongoing"
 	ProjectStatusRejected ProjectStatus = "rejected"
 	ProjectStatusFinished ProjectStatus = "finished"
+	ProjectStatusDisputed ProjectStatus = "disputed"
+	ProjectStatusStopped  ProjectStatus = "stopped"
+)
+
+type MilestoneStatus string
+
+const (
+	MilestoneStatusPending      MilestoneStatus = "pending"
+	MilestoneStatusFundReleased MilestoneStatus = "fund_released"
+	MilestoneStatusCompleted    MilestoneStatus = "completed"
+	MilestoneStatusRefuted      MilestoneStatus = "refuted"
+)
+
+type ProofStatus string
+
+const (
+	ProofStatusPending  ProofStatus = "pending"
+	ProofStatusApproved ProofStatus = "approved"
+	ProofStatusRejected ProofStatus = "rejected"
 )
 
 type Project struct {
@@ -42,21 +61,45 @@ type Milestone struct {
 	FundGoal        int64                `json:"fund_goal"`
 	CurrentFund     int64                `json:"current_fund"`
 	BankDescription string               `json:"bank_description"`
-	Completed       bool                 `json:"completed"`
+	Status          MilestoneStatus      `json:"status"`
 	Completion      *MilestoneCompletion `json:"milestone_completion,omitempty"`
+	SpendingProofs  []SpendingProof      `json:"spending_proofs,omitempty"`
 }
 
 type MilestoneCompletion struct {
 	TransferAmount int64     `json:"transfer_amount"`
 	TransferNote   *string   `json:"transfer_note,omitempty"`
 	TransferImage  *string   `json:"transfer_image,omitempty"`
-	CompletedAt    time.Time `json:"completed_at"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
-type ProjectUpdate struct {
-	ID              int64     `json:"id"`
-	ProjectID       int64     `json:"project_id"`
-	AttachmentPhoto *string   `json:"attachment_photo,omitempty"`
-	Description     string    `json:"description"`
-	CreatedAt       time.Time `json:"created_at"`
+type SpendingProof struct {
+	ID            int64       `json:"id"`
+	TransferImage string      `json:"transfer_image"`
+	Description   string      `json:"description"`
+	ProofMedia    string      `json:"proof_media"`
+	Status        ProofStatus `json:"status"`
+	RejectedCause *string     `json:"rejected_cause,omitempty"`
+	CreatedAt     time.Time   `json:"created_at"`
+}
+
+type ReportStatus string
+
+const (
+	ReportStatusPending   ReportStatus = "pending"
+	ReportStatusDismissed ReportStatus = "dismissed"
+	ReportStatusResolved  ReportStatus = "resolved"
+)
+
+type ProjecReport struct {
+	ID          int64        `json:"id"`
+	ProjectID   int64        `json:"project_id"`
+	Email       string       `json:"email"`
+	FullName    string       `json:"full_name"`
+	PhoneNumber string       `json:"phone_number"`
+	Relation    *string      `json:"relation,omitempty"`
+	Reason      string       `json:"reason"`
+	Details     string       `json:"details"`
+	Status      ReportStatus `json:"status"`
+	CreatedAt   time.Time    `json:"created_at"`
 }

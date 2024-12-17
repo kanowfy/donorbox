@@ -5,15 +5,21 @@ import (
 	"embed"
 	"fmt"
 	"log/slog"
+	"math/big"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/kanowfy/donorbox/internal/config"
+	"github.com/kanowfy/donorbox/internal/contract"
 	"github.com/kanowfy/donorbox/internal/log"
 	"github.com/kanowfy/donorbox/internal/mail"
 	"github.com/markbates/goth"
@@ -39,6 +45,8 @@ type application struct {
 	weaviateClient *weaviate.Client
 	embedModel     *genai.EmbeddingModel
 	genModel       *genai.GenerativeModel
+
+	blockchainTransactor *contract.BlockchainTransactor
 }
 
 func init() {
@@ -83,7 +91,7 @@ func main() {
 
 	stripe.Key = cfg.StripeSecretKey
 
-	weaviateClient, err := initiateWeaviate(ctx, cfg)
+	weaviateClient, err := initWeaviate(ctx, cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -93,15 +101,24 @@ func main() {
 		panic(err)
 	}
 
+	transactor, err := initBlockchain(ctx, cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	app := &application{
-		ctx:            ctx,
-		cfg:            cfg,
-		dbpool:         dbpool,
-		validator:      validator.New(validator.WithRequiredStructEnabled()),
-		mailer:         mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+		ctx:       ctx,
+		cfg:       cfg,
+		dbpool:    dbpool,
+		validator: validator.New(validator.WithRequiredStructEnabled()),
+
+		mailer: mail.New(cfg.SmtpHost, cfg.SmtpPort, cfg.SmtpUsername, cfg.SmtpPassword, cfg.SmtpSender),
+
 		weaviateClient: weaviateClient,
 		embedModel:     genaiClient.EmbeddingModel("text-embedding-004"),
 		genModel:       genaiClient.GenerativeModel("gemini-1.5-flash"),
+
+		blockchainTransactor: transactor,
 	}
 
 	err = app.run()
@@ -130,7 +147,7 @@ func openDB(cfg config.Config) (*pgxpool.Pool, error) {
 	return dbpool, nil
 }
 
-func initiateWeaviate(ctx context.Context, cfg config.Config) (*weaviate.Client, error) {
+func initWeaviate(ctx context.Context, cfg config.Config) (*weaviate.Client, error) {
 	client, err := weaviate.NewClient(weaviate.Config{
 		Host:   "localhost:" + cfg.WeaviatePort,
 		Scheme: "http",
@@ -156,4 +173,32 @@ func initiateWeaviate(ctx context.Context, cfg config.Config) (*weaviate.Client,
 	}
 
 	return client, nil
+}
+
+func initBlockchain(ctx context.Context, cfg config.Config) (*contract.BlockchainTransactor, error) {
+	client, err := ethclient.DialContext(ctx, fmt.Sprintf("https://sepolia.infura.io/v3/%s", cfg.InfuraApiKey))
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, err := crypto.HexToECDSA(cfg.MetamaskPrivateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(cfg.SepoliaChainID))
+	if err != nil {
+		return nil, err
+	}
+
+	ctr, err := contract.NewContract(common.HexToAddress(cfg.ContractAddress), client)
+	if err != nil {
+		return nil, err
+	}
+
+	return &contract.BlockchainTransactor{
+		EthClient: client,
+		Contract:  ctr,
+		AuthData:  auth,
+	}, err
 }

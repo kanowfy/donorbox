@@ -3,16 +3,23 @@ import ProjectCard from "../components/ProjectCard";
 import { useEffect, useState } from "react";
 import projectService from "../services/project";
 import { FaSearch } from "react-icons/fa";
+import TransactionDisplay from "../components/TransactionDisplay";
 
 const Home = () => {
-  const [projects, setProjects] = useState([]);
+  const [ongoingProjects, setOngoingProjects] = useState([]);
+  //const [successfulProjects, setSuccessfulProjects] = useState([]);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
         const resp = await projectService.getAll();
         console.log(resp.projects);
-        setProjects(resp.projects);
+        setOngoingProjects(resp.projects.filter((p) => p.status === "ongoing"));
+        /*
+        setSuccessfulProjects(
+          resp.projects.filter((p) => p.status === "finished")
+        );
+        */
       } catch (err) {
         console.error(err);
       }
@@ -52,7 +59,7 @@ const Home = () => {
           <div className="min-h-screen px-10 pt-6 bg-gray-50">
             <div className="flex justify-between mx-48">
               <div className="font-medium text-2xl tracking-tight">
-                Trending fundraisers
+                Ongoing fundraisers
               </div>
               <div>
                 <Link to="/search">
@@ -64,9 +71,9 @@ const Home = () => {
               </div>
             </div>
             <div className="flex justify-center">
-              <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-4 mx-16 mt-10 mb-16">
-                {projects &&
-                  projects
+              <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-4 mx-16 mt-10">
+                {ongoingProjects &&
+                  ongoingProjects
                     .slice(0, 8)
                     .map((p) => (
                       <ProjectCard
@@ -83,6 +90,36 @@ const Home = () => {
             </div>
           </div>
         </section>
+        {/*successfulProjects?.length > 0 && (
+            <section>
+              <div className="px-10 pt-6 bg-gray-50">
+                <div className="flex justify-between mx-48">
+                  <div className="font-medium text-2xl tracking-tight">
+                    Successful fundraisers
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-4 mx-16 mb-10">
+                    {successfulProjects.slice(0, 8).map((p) => (
+                      <ProjectCard
+                        id={p.id}
+                        title={p.title}
+                        cover={p.cover_picture}
+                        totalFund={p.total_fund}
+                        fundGoal={p.fund_goal}
+                        numBackings={p.backing_count}
+                        key={p.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )*/}
+          <div className="mb-10">
+          <TransactionDisplay />
+
+          </div>
       </div>
     </>
   );

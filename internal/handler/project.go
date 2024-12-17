@@ -26,9 +26,11 @@ type Project interface {
 	DeleteProject(w http.ResponseWriter, r *http.Request)
 	GetAllCategories(w http.ResponseWriter, r *http.Request)
 	GetCategoryByName(w http.ResponseWriter, r *http.Request)
-	GetProjectUpdates(w http.ResponseWriter, r *http.Request)
-	CreateProjectUpdate(w http.ResponseWriter, r *http.Request)
-	GetUnresolvedMilestones(w http.ResponseWriter, r *http.Request)
+	GetFundedMilestones(w http.ResponseWriter, r *http.Request)
+	CreateMilestoneProof(w http.ResponseWriter, r *http.Request)
+	CreateProjectReport(w http.ResponseWriter, r *http.Request)
+	GetProjectReports(w http.ResponseWriter, r *http.Request)
+	GetDisputedProjects(w http.ResponseWriter, r *http.Request)
 }
 
 type project struct {
@@ -150,7 +152,7 @@ func (p *project) GetProjectDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, milestones, backings, updates, user, err := p.service.GetProjectDetails(r.Context(), id)
+	project, milestones, backings, user, err := p.service.GetProjectDetails(r.Context(), id)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -160,7 +162,6 @@ func (p *project) GetProjectDetails(w http.ResponseWriter, r *http.Request) {
 		"project":    project,
 		"milestones": milestones,
 		"backings":   backings,
-		"updates":    updates,
 		"user":       user,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
@@ -290,32 +291,22 @@ func (p *project) GetCategoryByName(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *project) GetProjectUpdates(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+func (p *project) GetFundedMilestones(w http.ResponseWriter, r *http.Request) {
+	milestones, err := p.service.GetFundedMilestones(r.Context())
 	if err != nil {
-		httperror.NotFoundResponse(w, r)
+		httperror.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	updates, err := p.service.GetProjectUpdates(r.Context(), id)
-	if err != nil {
-		if errors.Is(err, service.ErrProjectNotFound) {
-			httperror.NotFoundResponse(w, r)
-		} else {
-			httperror.ServerErrorResponse(w, r, err)
-		}
-		return
-	}
-
-	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"updates": updates,
+	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"milestones": milestones,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
 }
 
-func (p *project) CreateProjectUpdate(w http.ResponseWriter, r *http.Request) {
-	var req dto.CreateProjectUpdateRequest
+func (p *project) CreateMilestoneProof(w http.ResponseWriter, r *http.Request) {
+	var req dto.CreateMilestoneProofRequest
 
 	err := json.ReadJSON(w, r, &req)
 	if err != nil {
@@ -330,33 +321,73 @@ func (p *project) CreateProjectUpdate(w http.ResponseWriter, r *http.Request) {
 
 	user := rcontext.GetUser(r)
 
-	update, err := p.service.CreateProjectUpdate(r.Context(), user.ID, req)
-	if err != nil {
-		if errors.Is(err, service.ErrProjectNotFound) {
-			httperror.NotFoundResponse(w, r)
-		} else {
-			httperror.ServerErrorResponse(w, r, err)
-		}
-		return
+	if err := p.service.CreateMilestoneProof(r.Context(), user.ID, req); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
 	}
 
 	if err := json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
-		"update": update,
+		"message": "proof created",
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
 }
 
-func (p *project) GetUnresolvedMilestones(w http.ResponseWriter, r *http.Request) {
-	milestones, err := p.service.GetUnresolvedMilestones(r.Context())
+func (p *project) CreateProjectReport(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		httperror.NotFoundResponse(w, r)
+		return
+	}
+
+	var req dto.CreateProjectReportRequest
+
+	if err := json.ReadJSON(w, r, &req); err != nil {
+		httperror.BadRequestResponse(w, r, err)
+		return
+	}
+
+	if err = p.validator.Struct(req); err != nil {
+		httperror.FailedValidationResponse(w, r, err)
+		return
+	}
+
+	if err := p.service.CreateProjectReport(r.Context(), id, req); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
+		"message": "report created",
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
+func (p *project) GetProjectReports(w http.ResponseWriter, r *http.Request) {
+	reports, err := p.service.GetProjectReports(r.Context())
 	if err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}
 
 	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"milestones": milestones,
+		"reports": reports,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
+}
+
+func (p *project) GetDisputedProjects(w http.ResponseWriter, r *http.Request) {
+	projects, err := p.service.GetDisputedProjects(r.Context())
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"projects": projects,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+
 }

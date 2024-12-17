@@ -63,3 +63,23 @@ type CreateProjectCommentRequest struct {
 	ParentCommentID *string `json:"parent_comment_id,omitempty" validate:"omitnil,number"`
 	Content         string  `json:"content" validate:"required"`
 }
+
+type CreateMilestoneProofRequest struct {
+	MilestoneID int64  `json:"milestone_id" validate:"required,number"`
+	Receipt     string `json:"receipt" validate:"required,http_url"`
+	Media       string `json:"media" validate:"required,http_url"`
+	Description string `json:"description" validte:"required"`
+}
+
+type MilestoneAndProof struct {
+	SpendingProof       model.SpendingProof       `json:"spending_proof"`
+	MilestoneCompletion model.MilestoneCompletion `json:"milestone_completion"`
+}
+
+type DisputedProject struct {
+	Project    model.Project        `json:"project"`
+	Milestones []model.Milestone    `json:"milestones"`
+	Reports    []model.ProjecReport `json:"reports,omitempty"`
+	User       model.User           `json:"user"`
+	IsReported bool                 `json:"is_reported"`
+}

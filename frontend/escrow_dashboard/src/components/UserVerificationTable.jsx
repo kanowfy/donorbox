@@ -1,10 +1,4 @@
 import {
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
   Card,
 } from "@tremor/react";
 import PropTypes from "prop-types";
@@ -17,6 +11,7 @@ import {
   Textarea,
   Button,
   Dropdown,
+  Table
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import utils from "../utils/utils";
@@ -80,23 +75,21 @@ const UserVerificationTable = ({
           List of pending verification documents
         </h3>
         <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>User ID</TableHeaderCell>
-              <TableHeaderCell>Email</TableHeaderCell>
-              <TableHeaderCell>Name</TableHeaderCell>
-              <TableHeaderCell>Verification Document</TableHeaderCell>
-              <TableHeaderCell>Account Created</TableHeaderCell>
-              <TableHeaderCell>Action</TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+          <Table.Head>
+              <Table.HeadCell>User ID</Table.HeadCell>
+              <Table.HeadCell>Email</Table.HeadCell>
+              <Table.HeadCell>Name</Table.HeadCell>
+              <Table.HeadCell>Verification Document</Table.HeadCell>
+              <Table.HeadCell>Account Created</Table.HeadCell>
+              <Table.HeadCell>Action</Table.HeadCell>
+          </Table.Head>
+          <Table.Body>
             {data?.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="text-gray-600">{item.id}</TableCell>
-                <TableCell className="text-gray-600">{item.email}</TableCell>
-                <TableCell className="text-gray-600">{`${item.first_name} ${item?.last_name}`}</TableCell>
-                <TableCell>
+              <Table.Row key={item.id}>
+                <Table.Cell className="text-gray-600">{item.id}</Table.Cell>
+                <Table.Cell className="text-gray-600">{item.email}</Table.Cell>
+                <Table.Cell className="text-gray-600">{`${item.first_name} ${item?.last_name}`}</Table.Cell>
+                <Table.Cell>
                   <a
                     target="_blank"
                     href={item.document_url}
@@ -107,13 +100,13 @@ const UserVerificationTable = ({
                       <IoOpenOutline className="w-5 h-5 ml-1" />
                     </div>
                   </a>
-                </TableCell>
-                <TableCell className="text-gray-600">
+                </Table.Cell>
+                <Table.Cell className="text-gray-600">
                   {utils.formatDate(
                     new Date(utils.parseDateFromRFC3339(item.created_at))
                   )}
-                </TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>
                   <Dropdown
                     label=""
                     dismissOnClick={false}
@@ -125,28 +118,29 @@ const UserVerificationTable = ({
                   >
                     <Dropdown.Item>
                       <span
-                        className="text-green-600 text-lg"
+                        className="text-green-600 font-semibold"
                         onClick={() => handleApprove(item.id)}
                       >
-                        Accept
+                        APPROVE
                       </span>
                     </Dropdown.Item>
                     <Dropdown.Item>
                       <span
-                        className="text-red-500 text-lg"
+                        className="text-red-500 font-semibold"
                         onClick={() => {
                           setIsOpenReject(true);
                           setReview(item);
+                          setReviewID(item.id);
                         }}
                       >
-                        Reject
+                        REJECT
                       </span>
                     </Dropdown.Item>
                   </Dropdown>
-                </TableCell>
-              </TableRow>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </TableBody>
+          </Table.Body>
         </Table>
       </Card>
       <Modal

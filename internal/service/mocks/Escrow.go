@@ -72,6 +72,54 @@ func (_c *Escrow_ApproveOfProject_Call) RunAndReturn(run func(context.Context, i
 	return _c
 }
 
+// ApproveSpendingProof provides a mock function with given fields: ctx, escrowID, req
+func (_m *Escrow) ApproveSpendingProof(ctx context.Context, escrowID int64, req dto.ProofApprovalRequest) error {
+	ret := _m.Called(ctx, escrowID, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApproveSpendingProof")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, dto.ProofApprovalRequest) error); ok {
+		r0 = rf(ctx, escrowID, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Escrow_ApproveSpendingProof_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApproveSpendingProof'
+type Escrow_ApproveSpendingProof_Call struct {
+	*mock.Call
+}
+
+// ApproveSpendingProof is a helper method to define mock.On call
+//   - ctx context.Context
+//   - escrowID int64
+//   - req dto.ProofApprovalRequest
+func (_e *Escrow_Expecter) ApproveSpendingProof(ctx interface{}, escrowID interface{}, req interface{}) *Escrow_ApproveSpendingProof_Call {
+	return &Escrow_ApproveSpendingProof_Call{Call: _e.mock.On("ApproveSpendingProof", ctx, escrowID, req)}
+}
+
+func (_c *Escrow_ApproveSpendingProof_Call) Run(run func(ctx context.Context, escrowID int64, req dto.ProofApprovalRequest)) *Escrow_ApproveSpendingProof_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(dto.ProofApprovalRequest))
+	})
+	return _c
+}
+
+func (_c *Escrow_ApproveSpendingProof_Call) Return(_a0 error) *Escrow_ApproveSpendingProof_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Escrow_ApproveSpendingProof_Call) RunAndReturn(run func(context.Context, int64, dto.ProofApprovalRequest) error) *Escrow_ApproveSpendingProof_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ApproveUserVerification provides a mock function with given fields: ctx, escrowID, req
 func (_m *Escrow) ApproveUserVerification(ctx context.Context, escrowID int64, req dto.VerificationApprovalRequest) error {
 	ret := _m.Called(ctx, escrowID, req)
@@ -339,6 +387,54 @@ func (_c *Escrow_ResolveMilestone_Call) Return(_a0 error) *Escrow_ResolveMilesto
 }
 
 func (_c *Escrow_ResolveMilestone_Call) RunAndReturn(run func(context.Context, int64, int64, dto.ResolveMilestoneRequest) error) *Escrow_ResolveMilestone_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ReviewReport provides a mock function with given fields: ctx, escrowID, req
+func (_m *Escrow) ReviewReport(ctx context.Context, escrowID int64, req dto.ReportReviewRequest) error {
+	ret := _m.Called(ctx, escrowID, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReviewReport")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, dto.ReportReviewRequest) error); ok {
+		r0 = rf(ctx, escrowID, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Escrow_ReviewReport_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReviewReport'
+type Escrow_ReviewReport_Call struct {
+	*mock.Call
+}
+
+// ReviewReport is a helper method to define mock.On call
+//   - ctx context.Context
+//   - escrowID int64
+//   - req dto.ReportReviewRequest
+func (_e *Escrow_Expecter) ReviewReport(ctx interface{}, escrowID interface{}, req interface{}) *Escrow_ReviewReport_Call {
+	return &Escrow_ReviewReport_Call{Call: _e.mock.On("ReviewReport", ctx, escrowID, req)}
+}
+
+func (_c *Escrow_ReviewReport_Call) Run(run func(ctx context.Context, escrowID int64, req dto.ReportReviewRequest)) *Escrow_ReviewReport_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(dto.ReportReviewRequest))
+	})
+	return _c
+}
+
+func (_c *Escrow_ReviewReport_Call) Return(_a0 error) *Escrow_ReviewReport_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Escrow_ReviewReport_Call) RunAndReturn(run func(context.Context, int64, dto.ReportReviewRequest) error) *Escrow_ReviewReport_Call {
 	_c.Call.Return(run)
 	return _c
 }

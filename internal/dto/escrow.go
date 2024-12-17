@@ -12,7 +12,7 @@ type ProjectApprovalRequest struct {
 	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
 }
 
-type UnresolvedMilestoneDto struct {
+type FundedMilestoneDto struct {
 	Milestone      model.Milestone `json:"milestone"`
 	Address        string          `json:"address"`
 	District       string          `json:"district"`
@@ -62,4 +62,21 @@ type CategoryCount struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Count int64  `json:"count"`
+}
+
+type ProofApprovalRequest struct {
+	ProofID      int64   `json:"proof_id" validate:"required,number"`
+	Approved     *bool   `json:"approved,omitempty" validate:"omitnil"`
+	RejectReason *string `json:"reject_reason,omitempty" validate:"omitnil"`
+}
+
+type ReportReviewRequest struct {
+	ReportID    int64 `json:"report_id" validate:"required,number"`
+	MarkDispute *bool `json:"mark_dispute,omitempty" validate:"omitnil"`
+}
+
+type DisputedProjectActionRequest struct {
+	ProjectID      int64 `json:"project_id" validate:"required,number"`
+	MarkStopped    *bool `json:"mark_stopped,omitempty" validate:"omitnil"`
+	MarkReconciled *bool `json:"mark_reconciled,omitempty" validate:"omitnil"`
 }

@@ -13,7 +13,7 @@ const ProjectCard = ({
   return (
     <Link to={`/fundraiser/${id}`}>
       <div className="relative flex flex-col mt-6 text-gray-700 bg-green-50 shadow-md bg-clip-border rounded-xl w-72">
-        <div className="relative h-40 mx-4 -mt-6 overflow-hidden text-white shadow-lg bg-clip-border rounded-xl bg-blue-gray-500 shadow-blue-gray-500/40">
+        <div className="relative h-40 mx-4 mt-6 overflow-hidden text-white shadow-lg bg-clip-border rounded-xl bg-blue-gray-500 shadow-blue-gray-500/40">
           <img src={cover} alt="card-image" />
         </div>
         <div className="px-4 pt-3">

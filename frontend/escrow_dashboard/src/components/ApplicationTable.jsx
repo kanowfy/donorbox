@@ -1,12 +1,5 @@
 import {
-  Table,
-  TableHead,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
   Card,
-  Button,
 } from "@tremor/react";
 import PropTypes from "prop-types";
 import { useState } from "react";
@@ -17,13 +10,13 @@ import escrowService from "../services/escrow";
 import {
   Label,
   Modal,
-  ModalBody,
-  ModalHeader,
   Textarea,
   Timeline,
+  Button,
 } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Table } from "flowbite-react";
 
 const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const navigate = useNavigate();
@@ -75,43 +68,41 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong">
           List of projects waiting for approval
         </h3>
-        <Table className="mt-5">
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell>ID</TableHeaderCell>
-              <TableHeaderCell>Title</TableHeaderCell>
-              <TableHeaderCell>Fund Goal</TableHeaderCell>
-              <TableHeaderCell>End date</TableHeaderCell>
-              <TableHeaderCell></TableHeaderCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+        <Table className="mt-5" striped hoverable>
+          <Table.Head className="w-fit">
+              <Table.HeadCell>ID</Table.HeadCell>
+              <Table.HeadCell>Title</Table.HeadCell>
+              <Table.HeadCell>Fund Goal</Table.HeadCell>
+              <Table.HeadCell>End date</Table.HeadCell>
+              <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
             {data?.map((item) => (
-              <TableRow key={item.project.id}>
-                <TableCell>{item.project.id}</TableCell>
-                <TableCell>{item.project.title}</TableCell>
-                <TableCell>
+              <Table.Row key={item.project.id}>
+                <Table.Cell>{item.project.id}</Table.Cell>
+                <Table.Cell>{item.project.title}</Table.Cell>
+                <Table.Cell>
                   ₫{item.project.fund_goal.toLocaleString()}
-                </TableCell>
-                <TableCell>
+                </Table.Cell>
+                <Table.Cell>
                   {utils.formatDate(
                     new Date(utils.parseDateFromRFC3339(item.project.end_date))
                   )}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    variant="secondary"
+                </Table.Cell>
+                <Table.Cell>
+                  <button
+                  className="font-semibold hover:underline text-cyan-600"
                     onClick={() => {
                       setIsOpenReview(true);
                       setReview(item);
                     }}
                   >
                     Review
-                  </Button>
-                </TableCell>
-              </TableRow>
+                  </button>
+                </Table.Cell>
+              </Table.Row>
             ))}
-          </TableBody>
+          </Table.Body>
         </Table>
       </Card>
       <Modal
@@ -238,16 +229,15 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
         <Modal.Footer>
           <div className="w-full flex justify-center">
           <div className="w-1/2 flex space-x-1">
-            <Button className="w-1/2" onClick={handleApprove} size="lg">
-              Approve
+            <Button className="w-1/2 font-semibold" onClick={handleApprove} color="blue">
+              APPROVE
             </Button>
             <Button
-              className="w-1/2"
-              color="red"
-              size="lg"
+              className="w-1/2 font-semibold"
+              color="failure"
               onClick={() => setIsOpenReject(true)}
             >
-              Reject
+              REJECT
             </Button>
           </div>
 
@@ -263,14 +253,15 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
         size="md"
         popup
       >
-        <ModalHeader />
-        <ModalBody>
+        <Modal.Header />
+        <Modal.Body>
           <form
             className="flex max-w-sm flex-col space-y-2"
             onSubmit={handleSubmit(handleReject)}
           >
             <div className="mbblock">
               <Label
+                className="font-semibold"
                 htmlFor="reason"
                 value="Provide reason why this fundraiser is ineligible:"
               />
@@ -287,11 +278,11 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
             {errors.reason?.type === "required" && (
               <p className="text-red-600 text-sm">{errors.reason.message}</p>
             )}
-            <Button type="submit" color="teal">
+            <Button type="submit" color="info">
               Submit
             </Button>
           </form>
-        </ModalBody>
+        </Modal.Body>
       </Modal>
     </div>
   );

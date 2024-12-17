@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"slices"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/convert"
@@ -25,15 +27,18 @@ type Project interface {
 	GetProjectsForUser(ctx context.Context, userID int64) ([]model.Project, error)
 	GetEndedProjects(ctx context.Context) ([]model.Project, error)
 	GetPendingProjects(ctx context.Context) ([]dto.PendingProjectResponse, error)
-	GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error)
+	GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, *model.User, error)
 	CreateProject(ctx context.Context, userID int64, req dto.CreateProjectRequest) (*dto.CreateProjectResponse, error)
 	UpdateProject(ctx context.Context, userID, projectID int64, req dto.UpdateProjectRequest) error
 	DeleteProject(ctx context.Context, userID, projectID int64) error
 	GetAllCategories(ctx context.Context) ([]model.Category, error)
 	GetCategoryByName(ctx context.Context, name string) (*model.Category, error)
-	GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error)
-	CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error)
-	GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error)
+	GetFundedMilestones(ctx context.Context) ([]dto.FundedMilestoneDto, error)
+	CreateMilestoneProof(ctx context.Context, userID int64, req dto.CreateMilestoneProofRequest) error
+	CheckUpdateRefutedMilestones(ctx context.Context) error
+	CreateProjectReport(ctx context.Context, projectID int64, req dto.CreateProjectReportRequest) error
+	GetProjectReports(ctx context.Context) ([]model.ProjecReport, error)
+	GetDisputedProjects(ctx context.Context) ([]*dto.DisputedProject, error)
 	//CheckAndUpdateFinishedProjects(ctx context.Context) error
 }
 
@@ -43,6 +48,8 @@ type project struct {
 	userService    User
 	auditSvc       AuditTrail
 }
+
+const PROOF_PERIOD_DAY = 10
 
 func NewProject(repository db.Querier, backingService Backing, userService User, auditSvc AuditTrail) Project {
 	return &project{
@@ -94,6 +101,7 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 			CreatedAt:      convert.MustPgTimestampToTime(p.CreatedAt),
 			EndDate:        convert.MustPgTimestampToTime(p.EndDate),
 			BackingCount:   &p.BackingCount,
+			Status:         convertProjectStatus(p.Status),
 		})
 	}
 
@@ -285,16 +293,40 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 			FundGoal:        m.FundGoal,
 			CurrentFund:     m.CurrentFund,
 			BankDescription: m.BankDescription,
-			Completed:       m.Completed,
+			Status:          model.MilestoneStatus(m.Status),
 		}
 
-		if ms.Completed {
+		hasFundStatus := []model.MilestoneStatus{model.MilestoneStatusFundReleased, model.MilestoneStatusCompleted, model.MilestoneStatusRefuted}
+
+		if slices.Contains(hasFundStatus, ms.Status) {
 			ms.Completion = &model.MilestoneCompletion{
 				TransferAmount: *m.TransferAmount,
-				TransferNote:   m.TransferNote,
-				TransferImage:  m.TransferImage,
-				CompletedAt:    convert.MustPgTimestampToTime(m.CompletedAt),
+				TransferNote:   m.FundReleasedNote,
+				TransferImage:  m.FundReleasedImage,
+				CreatedAt:      convert.MustPgTimestampToTime(m.FundReleasedAt),
 			}
+		}
+
+		dbProofs, err := p.repository.GetSpendingProofsForMilestone(ctx, m.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(dbProofs) > 0 {
+			var proofs []model.SpendingProof
+			for _, pr := range dbProofs {
+				proofs = append(proofs, model.SpendingProof{
+					ID:            pr.ID,
+					TransferImage: pr.TransferImage,
+					Description:   pr.Description,
+					ProofMedia:    pr.ProofMediaUrl,
+					Status:        model.ProofStatus(pr.Status),
+					RejectedCause: pr.RejectedCause,
+					CreatedAt:     convert.MustPgTimestampToTime(pr.CreatedAt),
+				})
+			}
+
+			ms.SpendingProofs = proofs
 		}
 
 		milestones = append(milestones, ms)
@@ -304,30 +336,25 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 }
 
 // TODO: refactor into one struct
-func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, []model.ProjectUpdate, *model.User, error) {
+func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*model.Project, []model.Milestone, []model.Backing, *model.User, error) {
 	project, err := p.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("fetching project: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("fetching project: %w", err)
 	}
 
 	milestones, err := p.GetMilestonesForProject(ctx, projectID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("fetching milestones: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("fetching milestones: %w", err)
 	}
 
 	backings, err := p.backingService.GetBackingsForProject(ctx, project.ID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("fetching backings: %w", err)
-	}
-
-	updates, err := p.GetProjectUpdates(ctx, project.ID)
-	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("fetching project updates: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("fetching backings: %w", err)
 	}
 
 	user, err := p.userService.GetUserByID(ctx, project.UserID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, fmt.Errorf("fetching user: %w", err)
+		return nil, nil, nil, nil, fmt.Errorf("fetching user: %w", err)
 	}
 
 	return &model.Project{
@@ -348,7 +375,7 @@ func (p *project) GetProjectDetails(ctx context.Context, projectID int64) (*mode
 		CreatedAt:      convert.MustPgTimestampToTime(project.CreatedAt),
 		EndDate:        convert.MustPgTimestampToTime(project.EndDate),
 		Status:         convertProjectStatus(project.Status),
-	}, milestones, backings, updates, user, nil
+	}, milestones, backings, user, nil
 }
 
 // TODO: put the queries in transaction
@@ -622,87 +649,15 @@ func (p *project) GetCategoryByName(ctx context.Context, name string) (*model.Ca
 	}, nil
 }
 
-func (p *project) GetProjectUpdates(ctx context.Context, projectID int64) ([]model.ProjectUpdate, error) {
-	project, err := p.repository.GetProjectByID(ctx, projectID)
-	if err != nil {
-		return nil, ErrProjectNotFound
-	}
-
-	dbUpdates, err := p.repository.GetProjectUpdates(ctx, project.ID)
+func (p *project) GetFundedMilestones(ctx context.Context) ([]dto.FundedMilestoneDto, error) {
+	dbMilestones, err := p.repository.GetFundedMilestones(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var updates []model.ProjectUpdate
-	for _, c := range dbUpdates {
-		updates = append(updates, model.ProjectUpdate{
-			ID:              c.ID,
-			ProjectID:       c.ProjectID,
-			AttachmentPhoto: c.AttachmentPhoto,
-			Description:     c.Description,
-			CreatedAt:       convert.MustPgTimestampToTime(c.CreatedAt),
-		})
-	}
-
-	return updates, nil
-}
-
-func (p *project) CreateProjectUpdate(ctx context.Context, userID int64, req dto.CreateProjectUpdateRequest) (*model.ProjectUpdate, error) {
-	queries := p.repository.(*db.Queries)
-	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback(ctx)
-
-	project, err := q.GetProjectByID(ctx, req.ProjectID)
-	if err != nil {
-		return nil, ErrProjectNotFound
-	}
-
-	if userID != project.UserID {
-		return nil, ErrNotOwner
-	}
-
-	args := db.CreateProjectUpdateParams{
-		ProjectID:       project.ID,
-		AttachmentPhoto: req.AttachmentPhoto,
-		Description:     req.Description,
-	}
-
-	update, err := q.CreateProjectUpdate(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := p.auditSvc.LogAction(ctx, LogActionParams{
-		UserID:        &userID,
-		EntityType:    "project_update",
-		EntityID:      &update.ID,
-		OperationType: "CREATE",
-		NewValue:      update,
-	}); err != nil {
-		return nil, err
-	}
-
-	return &model.ProjectUpdate{
-		ID:              update.ID,
-		ProjectID:       update.ProjectID,
-		AttachmentPhoto: update.AttachmentPhoto,
-		Description:     update.Description,
-		CreatedAt:       convert.MustPgTimestampToTime(update.CreatedAt),
-	}, tx.Commit(ctx)
-}
-
-func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]dto.UnresolvedMilestoneDto, error) {
-	dbMilestones, err := p.repository.GetUnresolvedMilestones(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var milestones []dto.UnresolvedMilestoneDto
+	var milestones []dto.FundedMilestoneDto
 	for _, m := range dbMilestones {
-		milestones = append(milestones, dto.UnresolvedMilestoneDto{
+		ms := dto.FundedMilestoneDto{
 			Milestone: model.Milestone{
 				ID:              m.ID,
 				ProjectID:       m.ProjectID,
@@ -711,6 +666,7 @@ func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]dto.Unresolved
 				CurrentFund:     m.CurrentFund,
 				FundGoal:        m.FundGoal,
 				BankDescription: m.BankDescription,
+				Status:          model.MilestoneStatus(m.Status),
 			},
 			Address:        m.Address,
 			District:       m.District,
@@ -718,10 +674,242 @@ func (p *project) GetUnresolvedMilestones(ctx context.Context) ([]dto.Unresolved
 			Country:        m.Country,
 			ReceiverName:   m.ReceiverName,
 			ReceiverNumber: m.ReceiverNumber,
-		})
+		}
+
+		if ms.Milestone.Status == model.MilestoneStatusFundReleased {
+			ms.Milestone.Completion = &model.MilestoneCompletion{
+				TransferAmount: *m.TransferAmount,
+				TransferNote:   m.FundReleasedNote,
+				TransferImage:  m.FundReleasedImage,
+				CreatedAt:      convert.MustPgTimestampToTime(m.FundReleasedAt),
+			}
+		}
+
+		dbProofs, err := p.repository.GetSpendingProofsForMilestone(ctx, m.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(dbProofs) > 0 {
+			var proofs []model.SpendingProof
+			for _, pr := range dbProofs {
+				proofs = append(proofs, model.SpendingProof{
+					ID:            pr.ID,
+					TransferImage: pr.TransferImage,
+					Description:   pr.Description,
+					ProofMedia:    pr.ProofMediaUrl,
+					Status:        model.ProofStatus(pr.Status),
+					RejectedCause: pr.RejectedCause,
+					CreatedAt:     convert.MustPgTimestampToTime(pr.CreatedAt),
+				})
+			}
+
+			ms.Milestone.SpendingProofs = proofs
+		}
+
+		milestones = append(milestones, ms)
 	}
 
 	return milestones, nil
+}
+
+func (p *project) CreateMilestoneProof(ctx context.Context, userID int64, req dto.CreateMilestoneProofRequest) error {
+	proof, err := p.repository.CreateSpendingProof(ctx, db.CreateSpendingProofParams{
+		MilestoneID:   req.MilestoneID,
+		TransferImage: req.Receipt,
+		ProofMediaUrl: req.Media,
+		Description:   req.Description,
+	})
+	if err != nil {
+		return fmt.Errorf("creating spending proof: %w", err)
+	}
+
+	if err := p.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        &userID,
+		EntityType:    "spending_proof",
+		EntityID:      &proof.ID,
+		OperationType: "CREATE",
+		NewValue:      proof,
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *project) CheckUpdateRefutedMilestones(ctx context.Context) error {
+	milestones, err := p.repository.GetAllMilestones(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, m := range milestones {
+		if m.Status == db.MilestoneStatusFundReleased {
+			proofs, err := p.repository.GetSpendingProofsForMilestone(ctx, m.ID)
+			if err != nil {
+				return err
+			}
+
+			if len(proofs) == 0 {
+				completion, err := p.repository.GetMilestoneCompletionByMilestoneID(ctx, m.ID)
+				if err != nil {
+					return err
+				}
+
+				if time.Since(convert.MustPgTimestampToTime(completion.CreatedAt)).Hours() > PROOF_PERIOD_DAY*24 {
+					if err := p.repository.UpdateMilestoneStatus(ctx, db.UpdateMilestoneStatusParams{
+						ID:     m.ID,
+						Status: db.MilestoneStatusRefuted,
+					}); err != nil {
+						return err
+					}
+				}
+			} else {
+				latestProof := proofs[0]
+				if time.Since(convert.MustPgTimestampToTime(latestProof.CreatedAt)).Hours() > PROOF_PERIOD_DAY*24 {
+					if err := p.repository.UpdateMilestoneStatus(ctx, db.UpdateMilestoneStatusParams{
+						ID:     m.ID,
+						Status: db.MilestoneStatusRefuted,
+					}); err != nil {
+						return err
+					}
+
+				}
+
+			}
+
+		}
+	}
+
+	return nil
+}
+
+func (p *project) CreateProjectReport(ctx context.Context, projectID int64, req dto.CreateProjectReportRequest) error {
+	_, err := p.repository.CreateProjectReport(ctx, db.CreateProjectReportParams{
+		ProjectID:   projectID,
+		Email:       req.Email,
+		FullName:    req.FullName,
+		PhoneNumber: req.PhoneNumber,
+		Relation:    req.Relation,
+		Reason:      req.Reason,
+		Details:     req.Details,
+	})
+
+	if err != nil {
+		return fmt.Errorf("create project report: %w", err)
+	}
+
+	return nil
+}
+
+func (p *project) GetProjectReports(ctx context.Context) ([]model.ProjecReport, error) {
+	dbReports, err := p.repository.GetAllProjectReports(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get project reports: %w", err)
+	}
+
+	var reports []model.ProjecReport
+	for _, r := range dbReports {
+		reports = append(reports, model.ProjecReport{
+			ID:          r.ID,
+			ProjectID:   r.ProjectID,
+			Email:       r.Email,
+			FullName:    r.FullName,
+			PhoneNumber: r.PhoneNumber,
+			Relation:    r.Relation,
+			Reason:      r.Reason,
+			Details:     r.Details,
+			Status:      model.ReportStatus(r.Status),
+			CreatedAt:   convert.MustPgTimestampToTime(r.CreatedAt),
+		})
+	}
+
+	return reports, nil
+}
+
+func (p *project) GetDisputedProjects(ctx context.Context) ([]*dto.DisputedProject, error) {
+	dbProjects, err := p.repository.GetDisputedProjects(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get disputed projects: %w", err)
+	}
+
+	projects := make([]*dto.DisputedProject, len(dbProjects))
+
+	for i, pr := range dbProjects {
+		project := &dto.DisputedProject{
+			Project: model.Project{
+				ID:             pr.ID,
+				UserID:         pr.UserID,
+				CategoryID:     pr.CategoryID,
+				Title:          pr.Title,
+				Description:    pr.Description,
+				FundGoal:       pr.FundGoal,
+				TotalFund:      pr.TotalFund,
+				CoverPicture:   pr.CoverPicture,
+				ReceiverName:   pr.ReceiverName,
+				ReceiverNumber: pr.ReceiverNumber,
+				Address:        pr.Address,
+				District:       pr.District,
+				City:           pr.City,
+				Country:        pr.Country,
+				//EndDate:        time.Time{}, do I need this?
+				Status:       convertProjectStatus(pr.Status),
+				BackingCount: &pr.BackingCount,
+				CreatedAt:    convert.MustPgTimestampToTime(pr.CreatedAt),
+			},
+		}
+
+		milestones, err := p.GetMilestonesForProject(ctx, pr.ID)
+		if err != nil {
+			return nil, fmt.Errorf("get disputed projects: %w", err)
+		}
+
+		var refutedMilestones []model.Milestone
+		for _, m := range milestones {
+			if m.Status == model.MilestoneStatusRefuted {
+				refutedMilestones = append(refutedMilestones, m)
+			}
+		}
+
+		project.Milestones = refutedMilestones
+
+		dbReports, err := p.repository.GetResolvedProjectReportsForProject(ctx, pr.ID)
+		if err != nil {
+			return nil, fmt.Errorf("get disputed projects: %w", err)
+		}
+
+		if len(dbReports) != 0 {
+			project.IsReported = true
+
+			var reports []model.ProjecReport
+			for _, r := range dbReports {
+				reports = append(reports, model.ProjecReport{
+					ID:          r.ID,
+					ProjectID:   r.ProjectID,
+					Email:       r.Email,
+					FullName:    r.FullName,
+					PhoneNumber: r.PhoneNumber,
+					Relation:    r.Relation,
+					Reason:      r.Reason,
+					Details:     r.Details,
+					Status:      model.ReportStatus(r.Status),
+					CreatedAt:   convert.MustPgTimestampToTime(r.CreatedAt),
+				})
+			}
+
+			project.Reports = reports
+		}
+
+		user, err := p.userService.GetUserByID(ctx, project.Project.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("get disputed projects: %w", err)
+		}
+		project.User = *user
+
+		projects[i] = project
+	}
+
+	return projects, nil
 }
 
 func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {
@@ -733,6 +921,12 @@ func convertProjectStatus(dbStatus db.ProjectStatus) model.ProjectStatus {
 		status = model.ProjectStatusOngoing
 	case db.ProjectStatusFinished:
 		status = model.ProjectStatusFinished
+	case db.ProjectStatusRejected:
+		status = model.ProjectStatusRejected
+	case db.ProjectStatusDisputed:
+		status = model.ProjectStatusDisputed
+	case db.ProjectStatusStopped:
+		status = model.ProjectStatusStopped
 	}
 	return status
 }

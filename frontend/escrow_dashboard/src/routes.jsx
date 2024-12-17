@@ -8,6 +8,8 @@ import ManageMilestones from "./pages/ManageMilestones";
 import ManageUserVerifications from "./pages/ManageUserVerifications";
 import ManageDocuments from "./pages/ManageDocuments";
 import AuditTrails from "./pages/AuditTrails";
+import ManageReports from "./pages/ManageReports";
+import ManageDisputes from "./pages/ManageDisputes";
 
 const AppRoutes = () => {
   return (
@@ -17,6 +19,8 @@ const AppRoutes = () => {
         <Route path="manage/verifications" element={<ManageUserVerifications />} />
         <Route path="manage/projects" element={<ManageProjectApplications />} />
         <Route path="manage/milestones" element={<ManageMilestones />} />
+        <Route path="manage/reports" element={<ManageReports />} />
+        <Route path="manage/disputes" element={<ManageDisputes />} />
         <Route path="manage/documents" element={<ManageDocuments />} />
         <Route path="audits" element={<AuditTrails />} />
       </Route>

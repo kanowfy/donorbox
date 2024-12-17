@@ -11,10 +11,10 @@ import (
 
 const createNotification = `-- name: CreateNotification :one
 INSERT INTO notifications (
-    user_id, notification_type, message, project_id
+    user_id, notification_type, message, project_id, milestone_id
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, user_id, notification_type, message, project_id, is_read, created_at
+    $1, $2, $3, $4, $5
+) RETURNING id, user_id, notification_type, message, project_id, milestone_id, is_read, created_at
 `
 
 type CreateNotificationParams struct {
@@ -22,6 +22,7 @@ type CreateNotificationParams struct {
 	NotificationType NotificationType
 	Message          string
 	ProjectID        *int64
+	MilestoneID      *int64
 }
 
 func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotificationParams) (Notification, error) {
@@ -30,6 +31,7 @@ func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotification
 		arg.NotificationType,
 		arg.Message,
 		arg.ProjectID,
+		arg.MilestoneID,
 	)
 	var i Notification
 	err := row.Scan(
@@ -38,6 +40,7 @@ func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotification
 		&i.NotificationType,
 		&i.Message,
 		&i.ProjectID,
+		&i.MilestoneID,
 		&i.IsRead,
 		&i.CreatedAt,
 	)
@@ -45,7 +48,7 @@ func (q *Queries) CreateNotification(ctx context.Context, arg CreateNotification
 }
 
 const getNotificationsForUser = `-- name: GetNotificationsForUser :many
-SELECT id, user_id, notification_type, message, project_id, is_read, created_at FROM notifications
+SELECT id, user_id, notification_type, message, project_id, milestone_id, is_read, created_at FROM notifications
 WHERE user_id = $1
 ORDER BY created_at DESC
 `
@@ -65,6 +68,7 @@ func (q *Queries) GetNotificationsForUser(ctx context.Context, userID int64) ([]
 			&i.NotificationType,
 			&i.Message,
 			&i.ProjectID,
+			&i.MilestoneID,
 			&i.IsRead,
 			&i.CreatedAt,
 		); err != nil {

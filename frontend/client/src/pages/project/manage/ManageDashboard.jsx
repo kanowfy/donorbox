@@ -1,11 +1,13 @@
 import utils from "../../../utils/utils";
 import { Button, Timeline, Tooltip } from "flowbite-react";
 import { CiEdit } from "react-icons/ci";
+import { FiEye } from "react-icons/fi";
 import { FaRegCopy } from "react-icons/fa";
 import { HiCalendar } from "react-icons/hi";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
 
 const ManageDashboard = () => {
+  const navigate = useNavigate();
   const { project, milestones } = useOutletContext();
   return (
     <div>
@@ -33,48 +35,49 @@ const ManageDashboard = () => {
             <div>
               <span className="font-medium">
                 ₫
-                {project?.total_fund &&
-                  utils.formatNumber(project?.total_fund)}
+                {project?.total_fund && utils.formatNumber(project?.total_fund)}
               </span>
               <span className="ml-1">raised of</span>
             </div>
           )}
           <div className="font-medium">
-            ₫{project?.fund_goal && utils.formatNumber(project?.fund_goal)}{" "}
-            goal
+            ₫{project?.fund_goal && utils.formatNumber(project?.fund_goal)} goal
           </div>
         </div>
       </div>
 
       <div className="mt-10">
         <Timeline horizontal>
-            {milestones?.sort((a, b) => a.id - b.id).map((m) => (
-            <Timeline.Item key={m.id}>
-                <Timeline.Point icon={HiCalendar}/>
+          {milestones
+            ?.sort((a, b) => a.id - b.id)
+            .map((m) => (
+              <Timeline.Item key={m.id}>
+                <Timeline.Point icon={HiCalendar} />
                 <Timeline.Content>
-                    <Timeline.Title>{m.title}</Timeline.Title>
-                    <div className=" text-red-500 tracking-tight font-semibold">
-                        ₫{utils.formatNumber(m.current_fund)} / ₫{utils.formatNumber(m.fund_goal)}
-                    </div>
-                    <Timeline.Body>
-                        {m?.description}
-                    </Timeline.Body>
+                  <Timeline.Title>{m.title}</Timeline.Title>
+                  <div className=" text-red-500 tracking-tight font-semibold">
+                    ₫{utils.formatNumber(m.current_fund)} / ₫
+                    {utils.formatNumber(m.fund_goal)}
+                  </div>
+                  <Timeline.Body>{m?.description}</Timeline.Body>
                 </Timeline.Content>
-            </Timeline.Item>
+              </Timeline.Item>
             ))}
         </Timeline>
-
       </div>
       <div className="flex space-x-2 mt-5">
         <Tooltip
-          content="You can edit your fundraiser if it has not received any donation."
+          content="Go to milestone page."
           style="light"
           placement="bottom"
         >
-          <Button color="light" disabled={project?.total_fund > 0} onClick={() => {
-
-          }}>
-            {/*<CiEdit className="mr-2 h-5 w-5" />*/}
+          <Button
+            color="light"
+            onClick={() => {
+              navigate(`/fundraiser/${project?.id}`);
+            }}
+          >
+            <FiEye className="mr-2 h-5 w-5" />
             View
           </Button>
         </Tooltip>

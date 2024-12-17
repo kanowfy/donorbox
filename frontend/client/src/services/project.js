@@ -36,19 +36,6 @@ const create = async (token, data) => {
     return response.data;
 }
 
-const createUpdate = async (token, data) => {
-    const response = await axios.post(`${BASE_URL}/projects/updates`, data, {
-        headers: { Authorization: `Bearer ${token}` }
-    })
-
-    return response.data;
-}
-
-const getUpdates = async (projectID) => {
-    const response = await axios.get(`${BASE_URL}/projects/${projectID}/updates`)
-    return response.data;
-}
-
 const getCategoryByName = async (name) => {
     const response = await axios.get(`${BASE_URL}/categories/${name}`);
     return response.data;
@@ -59,5 +46,19 @@ const getByCategoryID = async (id) => {
     return response.data;
 }
 
+const createProof = async (token, data) => {
+    const response = await axios.post(`${BASE_URL}/milestones/proofs`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
 
-export default { getAll, getForUser, search, getOne, create, createUpdate, getUpdates, getCategoryByName, getByCategoryID }
+    return response.data;
+}
+
+const createReport = async (id, data) => {
+    const response = await axios.post(`${BASE_URL}/projects/${id}/reports`, data)
+    return response.data;
+}
+
+
+
+export default { getAll, getForUser, search, getOne, create, getCategoryByName, getByCategoryID, createProof, createReport }

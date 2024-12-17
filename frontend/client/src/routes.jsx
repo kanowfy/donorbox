@@ -25,12 +25,15 @@ import Payment from "./pages/project/donation/Payment";
 import CheckoutForm from "./pages/project/donation/CheckoutForm";
 import VerifyAccount from "./pages/VerifyAccount";
 import Category from "./pages/project/Category";
+import ManageProofs from "./pages/project/manage/ManageProofs";
+import About from "./pages/About";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
+        <Route path="/about" element={<About />} />
         <Route path="/search" element={<Search />} />
         <Route path="/category/:name" element={<Category />} />
         <Route path="/account/settings" element={<AccountSettings />} />
@@ -45,6 +48,7 @@ const AppRoutes = () => {
           <Route index element={<ManageDashboard />} />
           <Route path="donations" element={<ManageDonations />} />
           <Route path="updates" element={<ManageUpdates />} />
+          <Route path="proofs" element={<ManageProofs />} />
         </Route>
         <Route path="/fundraiser/:id/donate" element={<Donate />} />
         <Route path="/fundraiser/:id/payment" element={<Payment />}>

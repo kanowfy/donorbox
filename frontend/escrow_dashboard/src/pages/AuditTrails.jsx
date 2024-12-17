@@ -104,8 +104,8 @@ const AuditTrails = () => {
           Reset
         </Button>
       </div>
-      <div className="overflow-x-auto">
-        <Table hoverable>
+      <div>
+        <Table hoverable striped>
           <Table.Head className="w-fit">
             <Table.HeadCell>ID</Table.HeadCell>
             <Table.HeadCell>Performer ID</Table.HeadCell>

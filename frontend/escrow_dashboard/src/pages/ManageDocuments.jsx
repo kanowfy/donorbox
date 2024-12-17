@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const ManageDocuments = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
@@ -94,7 +94,7 @@ const ManageDocuments = () => {
           </div>
         </div>
         <div className="flex justify-center">
-          <Button type="Submit" color="blue" size="xl">
+          <Button type="Submit" color="blue" size="xl" isProcessing={isLoading}>
             Add Documents
           </Button>
         </div>
