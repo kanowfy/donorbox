@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"math/big"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/kanowfy/donorbox/internal/contract"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
@@ -37,16 +35,14 @@ type escrow struct {
 	mailer     mail.Mailer
 	publisher  publish.Publisher
 	auditSvc   AuditTrail
-	transactor *contract.BlockchainTransactor
 }
 
-func NewEscrow(querier db.Querier, mailer mail.Mailer, publisher publish.Publisher, auditSvc AuditTrail, transactor *contract.BlockchainTransactor) Escrow {
+func NewEscrow(querier db.Querier, mailer mail.Mailer, publisher publish.Publisher, auditSvc AuditTrail) Escrow {
 	return &escrow{
 		repository: querier,
 		mailer:     mailer,
 		publisher:  publisher,
 		auditSvc:   auditSvc,
-		transactor: transactor,
 	}
 }
 
@@ -320,18 +316,6 @@ func (e *escrow) ResolveMilestone(ctx context.Context, escrowID int64, milestone
 		})
 	})
 
-	var tfNote string
-	if completion.TransferNote != nil {
-		tfNote = *completion.TransferNote
-	}
-
-	// create blockchain tx
-	txn, err := e.transactor.Contract.StoreFundRelease(e.transactor.AuthData, big.NewInt(completion.ID), uint64(project.ID), uint64(milestone.ID), *completion.TransferImage, tfNote, completion.CreatedAt.Time.String())
-	if err != nil {
-		return err
-	}
-	slog.Info("new transaction processed", "txn_id", txn.Hash().String())
-
 	// Send mail
 	return tx.Commit(ctx)
 }
@@ -523,13 +507,6 @@ func (e *escrow) ApproveSpendingProof(ctx context.Context, escrowID int64, req d
 			}
 			e.publisher.Publish(event)
 		})
-
-		// create blockchain tx
-		txn, err := e.transactor.Contract.StoreVerifiedProof(e.transactor.AuthData, big.NewInt(proof.ID), uint64(project.ID), uint64(milestone.ID), proof.TransferImage, proof.ProofMediaUrl, proof.CreatedAt.Time.String())
-		if err != nil {
-			return err
-		}
-		slog.Info("new transaction processed", "txn_id", txn.Hash().String())
 	} else {
 		if err := q.UpdateSpendingProofStatus(ctx, db.UpdateSpendingProofStatusParams{
 			ID:            proof.ID,

@@ -43,12 +43,6 @@ type Config struct {
 
 	WeaviatePort string `env:"WEAVIATE_PORT"`
 	GeminiApiKey string `env:"GEMINI_API_KEY"`
-
-	InfuraApiKey       string `env:"INFURA_API_KEY"`
-	MetamaskPrivateKey string `env:"METAMASK_PRIVATE_KEY"`
-	WalletAddress      string `env:"WALLET_ADDRESS"`
-	ContractAddress    string `env:"CONTRACT_ADDRESS"`
-	SepoliaChainID     int64  `env:"SEPOLIA_CHAIN_ID"`
 }
 
 func Load() (Config, error) {

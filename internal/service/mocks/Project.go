@@ -26,12 +26,12 @@ func (_m *Project) EXPECT() *Project_Expecter {
 	return &Project_Expecter{mock: &_m.Mock}
 }
 
-// CheckUpdateDisputedProjects provides a mock function with given fields: ctx
-func (_m *Project) CheckUpdateDisputedProjects(ctx context.Context) error {
+// CheckUpdateRefutedMilestones provides a mock function with given fields: ctx
+func (_m *Project) CheckUpdateRefutedMilestones(ctx context.Context) error {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CheckUpdateDisputedProjects")
+		panic("no return value specified for CheckUpdateRefutedMilestones")
 	}
 
 	var r0 error
@@ -44,30 +44,30 @@ func (_m *Project) CheckUpdateDisputedProjects(ctx context.Context) error {
 	return r0
 }
 
-// Project_CheckUpdateDisputedProjects_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CheckUpdateDisputedProjects'
-type Project_CheckUpdateDisputedProjects_Call struct {
+// Project_CheckUpdateRefutedMilestones_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CheckUpdateRefutedMilestones'
+type Project_CheckUpdateRefutedMilestones_Call struct {
 	*mock.Call
 }
 
-// CheckUpdateDisputedProjects is a helper method to define mock.On call
+// CheckUpdateRefutedMilestones is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *Project_Expecter) CheckUpdateDisputedProjects(ctx interface{}) *Project_CheckUpdateDisputedProjects_Call {
-	return &Project_CheckUpdateDisputedProjects_Call{Call: _e.mock.On("CheckUpdateDisputedProjects", ctx)}
+func (_e *Project_Expecter) CheckUpdateRefutedMilestones(ctx interface{}) *Project_CheckUpdateRefutedMilestones_Call {
+	return &Project_CheckUpdateRefutedMilestones_Call{Call: _e.mock.On("CheckUpdateRefutedMilestones", ctx)}
 }
 
-func (_c *Project_CheckUpdateDisputedProjects_Call) Run(run func(ctx context.Context)) *Project_CheckUpdateDisputedProjects_Call {
+func (_c *Project_CheckUpdateRefutedMilestones_Call) Run(run func(ctx context.Context)) *Project_CheckUpdateRefutedMilestones_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context))
 	})
 	return _c
 }
 
-func (_c *Project_CheckUpdateDisputedProjects_Call) Return(_a0 error) *Project_CheckUpdateDisputedProjects_Call {
+func (_c *Project_CheckUpdateRefutedMilestones_Call) Return(_a0 error) *Project_CheckUpdateRefutedMilestones_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Project_CheckUpdateDisputedProjects_Call) RunAndReturn(run func(context.Context) error) *Project_CheckUpdateDisputedProjects_Call {
+func (_c *Project_CheckUpdateRefutedMilestones_Call) RunAndReturn(run func(context.Context) error) *Project_CheckUpdateRefutedMilestones_Call {
 	_c.Call.Return(run)
 	return _c
 }

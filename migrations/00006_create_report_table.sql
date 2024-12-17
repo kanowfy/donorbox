@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS project_reports (
   relation text,
   reason text NOT NULL,
   details text NOT NULL,
+  proof_media_url text,
   status report_status NOT NULL DEFAULT 'pending',
   created_at timestamptz NOT NULL DEFAULT NOW()
 );

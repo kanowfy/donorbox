@@ -80,7 +80,7 @@ const Chatbot = () => {
 const ChatMessage = ({ message, isUser }) => {
   return (
     <div className={`mb-2 flex justify-${isUser ? "end" : "start"}`}>
-      <p className={`bg-${isUser ? "gray" : "green"}-200 px-3 py-2 rounded-lg`}>
+      <p className={`bg-${isUser ? "gray-200" : "cyan-100"} px-3 py-2 rounded-lg`}>
         {message}
       </p>
     </div>

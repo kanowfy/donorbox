@@ -57,7 +57,7 @@ INSERT INTO escrow_milestone_completions (
 ) VALUES (
     $1, $2, $3, $4
 )
-RETURNING id, milestone_id, transfer_amount, transfer_note, transfer_image, created_at
+RETURNING id, milestone_id, transfer_amount, transfer_note, transfer_image, created_at, transaction_hash
 `
 
 type CreateMilestoneCompletionParams struct {
@@ -82,6 +82,7 @@ func (q *Queries) CreateMilestoneCompletion(ctx context.Context, arg CreateMiles
 		&i.TransferNote,
 		&i.TransferImage,
 		&i.CreatedAt,
+		&i.TransactionHash,
 	)
 	return i, err
 }
@@ -152,7 +153,7 @@ INSERT INTO user_spending_proofs (
 ) VALUES (
     $1, $2, $3, $4
 ) 
-RETURNING id, milestone_id, transfer_image, proof_media_url, description, status, rejected_cause, created_at
+RETURNING id, milestone_id, transfer_image, proof_media_url, description, status, rejected_cause, created_at, transaction_hash
 `
 
 type CreateSpendingProofParams struct {
@@ -179,6 +180,7 @@ func (q *Queries) CreateSpendingProof(ctx context.Context, arg CreateSpendingPro
 		&i.Status,
 		&i.RejectedCause,
 		&i.CreatedAt,
+		&i.TransactionHash,
 	)
 	return i, err
 }
@@ -301,7 +303,7 @@ LEFT JOIN milestones ON projects.ID = milestones.project_id
 WHERE category_id =
     CASE WHEN $1::integer > 0 THEN $1::integer ELSE category_id END
 AND projects.status = 'ongoing'
-GROUP BY projects.ID
+GROUP BY projects.id
 ORDER BY backing_count DESC
 LIMIT $3::integer OFFSET $2::integer
 `
@@ -604,7 +606,7 @@ func (q *Queries) GetFundedMilestones(ctx context.Context) ([]GetFundedMilestone
 }
 
 const getMilestoneAndProofs = `-- name: GetMilestoneAndProofs :many
-SELECT p.id, p.milestone_id, p.transfer_image, p.proof_media_url, p.description, p.status, p.rejected_cause, p.created_at, m.title AS milestone_title, m.description AS milestone_description, m.fund_goal, m.current_fund, 
+SELECT p.id, p.milestone_id, p.transfer_image, p.proof_media_url, p.description, p.status, p.rejected_cause, p.created_at, p.transaction_hash, m.title AS milestone_title, m.description AS milestone_description, m.fund_goal, m.current_fund, 
 m.bank_description, m.status AS milestone_status, m.created_at AS milestone_created_at 
 FROM user_spending_proofs p
 JOIN milestones m ON m.id = p.milestone_id
@@ -620,6 +622,7 @@ type GetMilestoneAndProofsRow struct {
 	Status               ProofStatus
 	RejectedCause        *string
 	CreatedAt            pgtype.Timestamptz
+	TransactionHash      *string
 	MilestoneTitle       string
 	MilestoneDescription *string
 	FundGoal             int64
@@ -647,6 +650,7 @@ func (q *Queries) GetMilestoneAndProofs(ctx context.Context) ([]GetMilestoneAndP
 			&i.Status,
 			&i.RejectedCause,
 			&i.CreatedAt,
+			&i.TransactionHash,
 			&i.MilestoneTitle,
 			&i.MilestoneDescription,
 			&i.FundGoal,
@@ -666,7 +670,8 @@ func (q *Queries) GetMilestoneAndProofs(ctx context.Context) ([]GetMilestoneAndP
 }
 
 const getMilestoneByID = `-- name: GetMilestoneByID :one
-SELECT m.id, m.project_id, m.title, m.description, m.fund_goal, m.current_fund, m.bank_description, m.status, m.created_at, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at
+SELECT m.id, m.project_id, m.title, m.description, m.fund_goal, m.current_fund, m.bank_description, m.status, m.created_at, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image,
+c.transaction_hash, c.created_at AS fund_released_at
 FROM milestones m
 LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.id = $1
@@ -685,6 +690,7 @@ type GetMilestoneByIDRow struct {
 	TransferAmount    *int64
 	FundReleasedNote  *string
 	FundReleasedImage *string
+	TransactionHash   *string
 	FundReleasedAt    pgtype.Timestamptz
 }
 
@@ -704,13 +710,14 @@ func (q *Queries) GetMilestoneByID(ctx context.Context, id int64) (GetMilestoneB
 		&i.TransferAmount,
 		&i.FundReleasedNote,
 		&i.FundReleasedImage,
+		&i.TransactionHash,
 		&i.FundReleasedAt,
 	)
 	return i, err
 }
 
 const getMilestoneCompletionByMilestoneID = `-- name: GetMilestoneCompletionByMilestoneID :one
-SELECT id, milestone_id, transfer_amount, transfer_note, transfer_image, created_at FROM escrow_milestone_completions
+SELECT id, milestone_id, transfer_amount, transfer_note, transfer_image, created_at, transaction_hash FROM escrow_milestone_completions
 WHERE milestone_id = $1
 `
 
@@ -724,12 +731,14 @@ func (q *Queries) GetMilestoneCompletionByMilestoneID(ctx context.Context, miles
 		&i.TransferNote,
 		&i.TransferImage,
 		&i.CreatedAt,
+		&i.TransactionHash,
 	)
 	return i, err
 }
 
 const getMilestoneForProject = `-- name: GetMilestoneForProject :many
-SELECT m.id, m.project_id, m.title, m.description, m.fund_goal, m.current_fund, m.bank_description, m.status, m.created_at, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at
+SELECT m.id, m.project_id, m.title, m.description, m.fund_goal, m.current_fund, m.bank_description, m.status, m.created_at, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image,
+c.transaction_hash, c.created_at AS fund_released_at
 FROM milestones m
 LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.project_id = $1
@@ -749,6 +758,7 @@ type GetMilestoneForProjectRow struct {
 	TransferAmount    *int64
 	FundReleasedNote  *string
 	FundReleasedImage *string
+	TransactionHash   *string
 	FundReleasedAt    pgtype.Timestamptz
 }
 
@@ -774,6 +784,7 @@ func (q *Queries) GetMilestoneForProject(ctx context.Context, projectID int64) (
 			&i.TransferAmount,
 			&i.FundReleasedNote,
 			&i.FundReleasedImage,
+			&i.TransactionHash,
 			&i.FundReleasedAt,
 		); err != nil {
 			return nil, err
@@ -972,7 +983,7 @@ func (q *Queries) GetProjectsForUser(ctx context.Context, userID int64) ([]GetPr
 }
 
 const getSpendingProofByID = `-- name: GetSpendingProofByID :one
-SELECT id, milestone_id, transfer_image, proof_media_url, description, status, rejected_cause, created_at FROM user_spending_proofs
+SELECT id, milestone_id, transfer_image, proof_media_url, description, status, rejected_cause, created_at, transaction_hash FROM user_spending_proofs
 WHERE id = $1
 `
 
@@ -988,12 +999,13 @@ func (q *Queries) GetSpendingProofByID(ctx context.Context, id int64) (UserSpend
 		&i.Status,
 		&i.RejectedCause,
 		&i.CreatedAt,
+		&i.TransactionHash,
 	)
 	return i, err
 }
 
 const getSpendingProofsForMilestone = `-- name: GetSpendingProofsForMilestone :many
-SELECT id, milestone_id, transfer_image, proof_media_url, description, status, rejected_cause, created_at FROM user_spending_proofs
+SELECT id, milestone_id, transfer_image, proof_media_url, description, status, rejected_cause, created_at, transaction_hash FROM user_spending_proofs
 WHERE milestone_id = $1
 ORDER BY created_at DESC
 `
@@ -1016,6 +1028,7 @@ func (q *Queries) GetSpendingProofsForMilestone(ctx context.Context, milestoneID
 			&i.Status,
 			&i.RejectedCause,
 			&i.CreatedAt,
+			&i.TransactionHash,
 		); err != nil {
 			return nil, err
 		}
@@ -1223,5 +1236,37 @@ type UpdateSpendingProofStatusParams struct {
 
 func (q *Queries) UpdateSpendingProofStatus(ctx context.Context, arg UpdateSpendingProofStatusParams) error {
 	_, err := q.db.Exec(ctx, updateSpendingProofStatus, arg.ID, arg.Status, arg.RejectedCause)
+	return err
+}
+
+const updateTransactionHashForCompletion = `-- name: UpdateTransactionHashForCompletion :exec
+UPDATE escrow_milestone_completions
+SET transaction_hash = $2
+WHERE id = $1
+`
+
+type UpdateTransactionHashForCompletionParams struct {
+	ID              int64
+	TransactionHash *string
+}
+
+func (q *Queries) UpdateTransactionHashForCompletion(ctx context.Context, arg UpdateTransactionHashForCompletionParams) error {
+	_, err := q.db.Exec(ctx, updateTransactionHashForCompletion, arg.ID, arg.TransactionHash)
+	return err
+}
+
+const updateTransactionHashForProof = `-- name: UpdateTransactionHashForProof :exec
+UPDATE user_spending_proofs
+SET transaction_hash = $2
+WHERE id = $1
+`
+
+type UpdateTransactionHashForProofParams struct {
+	ID              int64
+	TransactionHash *string
+}
+
+func (q *Queries) UpdateTransactionHashForProof(ctx context.Context, arg UpdateTransactionHashForProofParams) error {
+	_, err := q.db.Exec(ctx, updateTransactionHashForProof, arg.ID, arg.TransactionHash)
 	return err
 }

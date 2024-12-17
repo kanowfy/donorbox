@@ -1,4 +1,4 @@
-import { Avatar, Button, Modal, Banner } from "flowbite-react";
+import { Avatar, Button, Modal, Banner, Tooltip } from "flowbite-react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Support from "../../components/Support";
 import DonateBox from "../../components/DonateBox";
@@ -35,12 +35,15 @@ const Project = () => {
         setOwner(projectResponse.user);
 
         setProofs(
-          projectResponse.milestones.filter(m => m?.spending_proofs?.length > 0).flatMap((m) =>
-            m.spending_proofs.map((p) => ({
-              ...p,
-              milestone_title: m.title,
-            }))
-          ).filter(p => p.status === "approved")
+          projectResponse.milestones
+            .filter((m) => m?.spending_proofs?.length > 0)
+            .flatMap((m) =>
+              m.spending_proofs.map((p) => ({
+                ...p,
+                milestone_title: m.title,
+              }))
+            )
+            .filter((p) => p.status === "approved")
         );
 
         console.log("updates ", projectResponse.updates);
@@ -151,19 +154,33 @@ const Project = () => {
                 <div className="space-y-4">
                   {proofs?.map((p) => (
                     <div key={p.id}>
+                      <div className="flex justify-between">
                       <div className="font-medium text-sm text-gray-600">
                         On{" "}
                         {utils.formatDate(
                           new Date(utils.parseDateFromRFC3339(p.created_at))
                         )}
                       </div>
+                      <div>
+              { p.transaction_hash && (<a className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
+              target="_blank"
+              href={`https://sepolia.etherscan.io/tx/${p?.transaction_hash}`}
+              >
+                <Tooltip content="View on blockchain explorer">
+                  Txn: {p?.transaction_hash.substring(0, 20)}
+                </Tooltip>
+              </a>)}
+
+                      </div>
+
+                      </div>
                       <div className="tracking-tight">{p.description}</div>
-                        <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
-                          <img
-                            src={p.proof_media}
-                            className="w-full h-full m-auto object-cover"
-                          />
-                        </div>
+                      <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
+                        <img
+                          src={p.proof_media}
+                          className="w-full h-full m-auto object-cover"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -251,6 +268,19 @@ const Project = () => {
               className="aspect-auto h-72"
             ></img>
           </div>
+          {milestoneReview?.milestone_completion?.transaction_hash && (
+            <div className="flex flex-col items-center font-semibold space-y-1">
+              Blockchain Hash:{" "}
+              <a className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
+              target="_blank"
+              href={`https://sepolia.etherscan.io/tx/${milestoneReview?.milestone_completion?.transaction_hash}`}
+              >
+                <Tooltip content="View on blockchain explorer">
+                  {milestoneReview?.milestone_completion?.transaction_hash}
+                </Tooltip>
+              </a>
+            </div>
+          )}
           {milestoneReview?.milestone_completion.transfer_note && (
             <div className="flex space-x-1 mx-4">
               <div className="text-gray-900">

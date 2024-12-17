@@ -342,6 +342,54 @@ func (_c *Escrow_Login_Call) RunAndReturn(run func(context.Context, dto.LoginReq
 	return _c
 }
 
+// ResolveDispute provides a mock function with given fields: ctx, escrowID, req
+func (_m *Escrow) ResolveDispute(ctx context.Context, escrowID int64, req dto.DisputedProjectActionRequest) error {
+	ret := _m.Called(ctx, escrowID, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResolveDispute")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, dto.DisputedProjectActionRequest) error); ok {
+		r0 = rf(ctx, escrowID, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Escrow_ResolveDispute_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveDispute'
+type Escrow_ResolveDispute_Call struct {
+	*mock.Call
+}
+
+// ResolveDispute is a helper method to define mock.On call
+//   - ctx context.Context
+//   - escrowID int64
+//   - req dto.DisputedProjectActionRequest
+func (_e *Escrow_Expecter) ResolveDispute(ctx interface{}, escrowID interface{}, req interface{}) *Escrow_ResolveDispute_Call {
+	return &Escrow_ResolveDispute_Call{Call: _e.mock.On("ResolveDispute", ctx, escrowID, req)}
+}
+
+func (_c *Escrow_ResolveDispute_Call) Run(run func(ctx context.Context, escrowID int64, req dto.DisputedProjectActionRequest)) *Escrow_ResolveDispute_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(dto.DisputedProjectActionRequest))
+	})
+	return _c
+}
+
+func (_c *Escrow_ResolveDispute_Call) Return(_a0 error) *Escrow_ResolveDispute_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Escrow_ResolveDispute_Call) RunAndReturn(run func(context.Context, int64, dto.DisputedProjectActionRequest) error) *Escrow_ResolveDispute_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ResolveMilestone provides a mock function with given fields: ctx, escorwID, milestoneID, req
 func (_m *Escrow) ResolveMilestone(ctx context.Context, escorwID int64, milestoneID int64, req dto.ResolveMilestoneRequest) error {
 	ret := _m.Called(ctx, escorwID, milestoneID, req)

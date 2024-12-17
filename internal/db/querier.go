@@ -67,6 +67,8 @@ type Querier interface {
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error
 	UpdateReadNotification(ctx context.Context, id int64) error
 	UpdateSpendingProofStatus(ctx context.Context, arg UpdateSpendingProofStatusParams) error
+	UpdateTransactionHashForCompletion(ctx context.Context, arg UpdateTransactionHashForCompletionParams) error
+	UpdateTransactionHashForProof(ctx context.Context, arg UpdateTransactionHashForProofParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) error

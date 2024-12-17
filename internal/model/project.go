@@ -67,20 +67,22 @@ type Milestone struct {
 }
 
 type MilestoneCompletion struct {
-	TransferAmount int64     `json:"transfer_amount"`
-	TransferNote   *string   `json:"transfer_note,omitempty"`
-	TransferImage  *string   `json:"transfer_image,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
+	TransferAmount  int64     `json:"transfer_amount"`
+	TransferNote    *string   `json:"transfer_note,omitempty"`
+	TransferImage   *string   `json:"transfer_image,omitempty"`
+	TransactionHash *string   `json:"transaction_hash,omitempty"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type SpendingProof struct {
-	ID            int64       `json:"id"`
-	TransferImage string      `json:"transfer_image"`
-	Description   string      `json:"description"`
-	ProofMedia    string      `json:"proof_media"`
-	Status        ProofStatus `json:"status"`
-	RejectedCause *string     `json:"rejected_cause,omitempty"`
-	CreatedAt     time.Time   `json:"created_at"`
+	ID              int64       `json:"id"`
+	TransferImage   string      `json:"transfer_image"`
+	Description     string      `json:"description"`
+	ProofMedia      string      `json:"proof_media"`
+	Status          ProofStatus `json:"status"`
+	RejectedCause   *string     `json:"rejected_cause,omitempty"`
+	TransactionHash *string     `json:"transaction_hash,omitempty"`
+	CreatedAt       time.Time   `json:"created_at"`
 }
 
 type ReportStatus string

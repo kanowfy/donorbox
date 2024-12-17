@@ -116,10 +116,6 @@ const Home = () => {
               </div>
             </section>
           )*/}
-          <div className="mb-10">
-          <TransactionDisplay />
-
-          </div>
       </div>
     </>
   );

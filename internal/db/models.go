@@ -309,12 +309,13 @@ type Category struct {
 }
 
 type EscrowMilestoneCompletion struct {
-	ID             int64
-	MilestoneID    int64
-	TransferAmount int64
-	TransferNote   *string
-	TransferImage  *string
-	CreatedAt      pgtype.Timestamptz
+	ID              int64
+	MilestoneID     int64
+	TransferAmount  int64
+	TransferNote    *string
+	TransferImage   *string
+	CreatedAt       pgtype.Timestamptz
+	TransactionHash *string
 }
 
 type EscrowUser struct {
@@ -392,12 +393,13 @@ type User struct {
 }
 
 type UserSpendingProof struct {
-	ID            int64
-	MilestoneID   int64
-	TransferImage string
-	ProofMediaUrl string
-	Description   string
-	Status        ProofStatus
-	RejectedCause *string
-	CreatedAt     pgtype.Timestamptz
+	ID              int64
+	MilestoneID     int64
+	TransferImage   string
+	ProofMediaUrl   string
+	Description     string
+	Status          ProofStatus
+	RejectedCause   *string
+	CreatedAt       pgtype.Timestamptz
+	TransactionHash *string
 }

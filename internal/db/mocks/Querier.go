@@ -3267,6 +3267,100 @@ func (_c *Querier_UpdateSpendingProofStatus_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// UpdateTransactionHashForCompletion provides a mock function with given fields: ctx, arg
+func (_m *Querier) UpdateTransactionHashForCompletion(ctx context.Context, arg db.UpdateTransactionHashForCompletionParams) error {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateTransactionHashForCompletion")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateTransactionHashForCompletionParams) error); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateTransactionHashForCompletion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTransactionHashForCompletion'
+type Querier_UpdateTransactionHashForCompletion_Call struct {
+	*mock.Call
+}
+
+// UpdateTransactionHashForCompletion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.UpdateTransactionHashForCompletionParams
+func (_e *Querier_Expecter) UpdateTransactionHashForCompletion(ctx interface{}, arg interface{}) *Querier_UpdateTransactionHashForCompletion_Call {
+	return &Querier_UpdateTransactionHashForCompletion_Call{Call: _e.mock.On("UpdateTransactionHashForCompletion", ctx, arg)}
+}
+
+func (_c *Querier_UpdateTransactionHashForCompletion_Call) Run(run func(ctx context.Context, arg db.UpdateTransactionHashForCompletionParams)) *Querier_UpdateTransactionHashForCompletion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.UpdateTransactionHashForCompletionParams))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateTransactionHashForCompletion_Call) Return(_a0 error) *Querier_UpdateTransactionHashForCompletion_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateTransactionHashForCompletion_Call) RunAndReturn(run func(context.Context, db.UpdateTransactionHashForCompletionParams) error) *Querier_UpdateTransactionHashForCompletion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateTransactionHashForProof provides a mock function with given fields: ctx, arg
+func (_m *Querier) UpdateTransactionHashForProof(ctx context.Context, arg db.UpdateTransactionHashForProofParams) error {
+	ret := _m.Called(ctx, arg)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateTransactionHashForProof")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateTransactionHashForProofParams) error); ok {
+		r0 = rf(ctx, arg)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Querier_UpdateTransactionHashForProof_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTransactionHashForProof'
+type Querier_UpdateTransactionHashForProof_Call struct {
+	*mock.Call
+}
+
+// UpdateTransactionHashForProof is a helper method to define mock.On call
+//   - ctx context.Context
+//   - arg db.UpdateTransactionHashForProofParams
+func (_e *Querier_Expecter) UpdateTransactionHashForProof(ctx interface{}, arg interface{}) *Querier_UpdateTransactionHashForProof_Call {
+	return &Querier_UpdateTransactionHashForProof_Call{Call: _e.mock.On("UpdateTransactionHashForProof", ctx, arg)}
+}
+
+func (_c *Querier_UpdateTransactionHashForProof_Call) Run(run func(ctx context.Context, arg db.UpdateTransactionHashForProofParams)) *Querier_UpdateTransactionHashForProof_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(db.UpdateTransactionHashForProofParams))
+	})
+	return _c
+}
+
+func (_c *Querier_UpdateTransactionHashForProof_Call) Return(_a0 error) *Querier_UpdateTransactionHashForProof_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Querier_UpdateTransactionHashForProof_Call) RunAndReturn(run func(context.Context, db.UpdateTransactionHashForProofParams) error) *Querier_UpdateTransactionHashForProof_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserByID provides a mock function with given fields: ctx, arg
 func (_m *Querier) UpdateUserByID(ctx context.Context, arg db.UpdateUserByIDParams) error {
 	ret := _m.Called(ctx, arg)

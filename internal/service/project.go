@@ -300,10 +300,11 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 
 		if slices.Contains(hasFundStatus, ms.Status) {
 			ms.Completion = &model.MilestoneCompletion{
-				TransferAmount: *m.TransferAmount,
-				TransferNote:   m.FundReleasedNote,
-				TransferImage:  m.FundReleasedImage,
-				CreatedAt:      convert.MustPgTimestampToTime(m.FundReleasedAt),
+				TransferAmount:  *m.TransferAmount,
+				TransferNote:    m.FundReleasedNote,
+				TransferImage:   m.FundReleasedImage,
+				TransactionHash: m.TransactionHash,
+				CreatedAt:       convert.MustPgTimestampToTime(m.FundReleasedAt),
 			}
 		}
 
@@ -316,13 +317,14 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 			var proofs []model.SpendingProof
 			for _, pr := range dbProofs {
 				proofs = append(proofs, model.SpendingProof{
-					ID:            pr.ID,
-					TransferImage: pr.TransferImage,
-					Description:   pr.Description,
-					ProofMedia:    pr.ProofMediaUrl,
-					Status:        model.ProofStatus(pr.Status),
-					RejectedCause: pr.RejectedCause,
-					CreatedAt:     convert.MustPgTimestampToTime(pr.CreatedAt),
+					ID:              pr.ID,
+					TransferImage:   pr.TransferImage,
+					Description:     pr.Description,
+					ProofMedia:      pr.ProofMediaUrl,
+					Status:          model.ProofStatus(pr.Status),
+					RejectedCause:   pr.RejectedCause,
+					TransactionHash: pr.TransactionHash,
+					CreatedAt:       convert.MustPgTimestampToTime(pr.CreatedAt),
 				})
 			}
 

@@ -57,7 +57,8 @@ GROUP BY projects.ID
 ORDER BY projects.created_at DESC;
 
 -- name: GetMilestoneForProject :many
-SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at
+SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image,
+c.transaction_hash, c.created_at AS fund_released_at
 FROM milestones m
 LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.project_id = $1
@@ -100,7 +101,8 @@ SELECT * FROM categories
 WHERE name = $1;
 
 -- name: GetMilestoneByID :one
-SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image, c.created_at AS fund_released_at
+SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image,
+c.transaction_hash, c.created_at AS fund_released_at
 FROM milestones m
 LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.id = $1;
@@ -182,3 +184,13 @@ LEFT JOIN milestones m ON p.ID = m.project_id
 WHERE p.status = 'disputed'
 GROUP BY p.ID
 ORDER BY p.created_at;
+
+-- name: UpdateTransactionHashForCompletion :exec
+UPDATE escrow_milestone_completions
+SET transaction_hash = $2
+WHERE id = $1;
+
+-- name: UpdateTransactionHashForProof :exec
+UPDATE user_spending_proofs
+SET transaction_hash = $2
+WHERE id = $1;
