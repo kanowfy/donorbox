@@ -917,9 +917,9 @@ func (_c *Querier_GetAllProjectReports_Call) RunAndReturn(run func(context.Conte
 	return _c
 }
 
-// GetAllProjects provides a mock function with given fields: ctx, arg
-func (_m *Querier) GetAllProjects(ctx context.Context, arg db.GetAllProjectsParams) ([]db.GetAllProjectsRow, error) {
-	ret := _m.Called(ctx, arg)
+// GetAllProjects provides a mock function with given fields: ctx, category
+func (_m *Querier) GetAllProjects(ctx context.Context, category int32) ([]db.GetAllProjectsRow, error) {
+	ret := _m.Called(ctx, category)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllProjects")
@@ -927,19 +927,19 @@ func (_m *Querier) GetAllProjects(ctx context.Context, arg db.GetAllProjectsPara
 
 	var r0 []db.GetAllProjectsRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.GetAllProjectsParams) ([]db.GetAllProjectsRow, error)); ok {
-		return rf(ctx, arg)
+	if rf, ok := ret.Get(0).(func(context.Context, int32) ([]db.GetAllProjectsRow, error)); ok {
+		return rf(ctx, category)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, db.GetAllProjectsParams) []db.GetAllProjectsRow); ok {
-		r0 = rf(ctx, arg)
+	if rf, ok := ret.Get(0).(func(context.Context, int32) []db.GetAllProjectsRow); ok {
+		r0 = rf(ctx, category)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]db.GetAllProjectsRow)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, db.GetAllProjectsParams) error); ok {
-		r1 = rf(ctx, arg)
+	if rf, ok := ret.Get(1).(func(context.Context, int32) error); ok {
+		r1 = rf(ctx, category)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -954,14 +954,14 @@ type Querier_GetAllProjects_Call struct {
 
 // GetAllProjects is a helper method to define mock.On call
 //   - ctx context.Context
-//   - arg db.GetAllProjectsParams
-func (_e *Querier_Expecter) GetAllProjects(ctx interface{}, arg interface{}) *Querier_GetAllProjects_Call {
-	return &Querier_GetAllProjects_Call{Call: _e.mock.On("GetAllProjects", ctx, arg)}
+//   - category int32
+func (_e *Querier_Expecter) GetAllProjects(ctx interface{}, category interface{}) *Querier_GetAllProjects_Call {
+	return &Querier_GetAllProjects_Call{Call: _e.mock.On("GetAllProjects", ctx, category)}
 }
 
-func (_c *Querier_GetAllProjects_Call) Run(run func(ctx context.Context, arg db.GetAllProjectsParams)) *Querier_GetAllProjects_Call {
+func (_c *Querier_GetAllProjects_Call) Run(run func(ctx context.Context, category int32)) *Querier_GetAllProjects_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.GetAllProjectsParams))
+		run(args[0].(context.Context), args[1].(int32))
 	})
 	return _c
 }
@@ -971,7 +971,7 @@ func (_c *Querier_GetAllProjects_Call) Return(_a0 []db.GetAllProjectsRow, _a1 er
 	return _c
 }
 
-func (_c *Querier_GetAllProjects_Call) RunAndReturn(run func(context.Context, db.GetAllProjectsParams) ([]db.GetAllProjectsRow, error)) *Querier_GetAllProjects_Call {
+func (_c *Querier_GetAllProjects_Call) RunAndReturn(run func(context.Context, int32) ([]db.GetAllProjectsRow, error)) *Querier_GetAllProjects_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -2822,9 +2822,9 @@ func (_c *Querier_GetUserByID_Call) RunAndReturn(run func(context.Context, int64
 	return _c
 }
 
-// SearchProjects provides a mock function with given fields: ctx, arg
-func (_m *Querier) SearchProjects(ctx context.Context, arg db.SearchProjectsParams) ([]db.SearchProjectsRow, error) {
-	ret := _m.Called(ctx, arg)
+// SearchProjects provides a mock function with given fields: ctx, searchQuery
+func (_m *Querier) SearchProjects(ctx context.Context, searchQuery string) ([]db.SearchProjectsRow, error) {
+	ret := _m.Called(ctx, searchQuery)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SearchProjects")
@@ -2832,19 +2832,19 @@ func (_m *Querier) SearchProjects(ctx context.Context, arg db.SearchProjectsPara
 
 	var r0 []db.SearchProjectsRow
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.SearchProjectsParams) ([]db.SearchProjectsRow, error)); ok {
-		return rf(ctx, arg)
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]db.SearchProjectsRow, error)); ok {
+		return rf(ctx, searchQuery)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, db.SearchProjectsParams) []db.SearchProjectsRow); ok {
-		r0 = rf(ctx, arg)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []db.SearchProjectsRow); ok {
+		r0 = rf(ctx, searchQuery)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]db.SearchProjectsRow)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, db.SearchProjectsParams) error); ok {
-		r1 = rf(ctx, arg)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, searchQuery)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -2859,14 +2859,14 @@ type Querier_SearchProjects_Call struct {
 
 // SearchProjects is a helper method to define mock.On call
 //   - ctx context.Context
-//   - arg db.SearchProjectsParams
-func (_e *Querier_Expecter) SearchProjects(ctx interface{}, arg interface{}) *Querier_SearchProjects_Call {
-	return &Querier_SearchProjects_Call{Call: _e.mock.On("SearchProjects", ctx, arg)}
+//   - searchQuery string
+func (_e *Querier_Expecter) SearchProjects(ctx interface{}, searchQuery interface{}) *Querier_SearchProjects_Call {
+	return &Querier_SearchProjects_Call{Call: _e.mock.On("SearchProjects", ctx, searchQuery)}
 }
 
-func (_c *Querier_SearchProjects_Call) Run(run func(ctx context.Context, arg db.SearchProjectsParams)) *Querier_SearchProjects_Call {
+func (_c *Querier_SearchProjects_Call) Run(run func(ctx context.Context, searchQuery string)) *Querier_SearchProjects_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.SearchProjectsParams))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -2876,7 +2876,7 @@ func (_c *Querier_SearchProjects_Call) Return(_a0 []db.SearchProjectsRow, _a1 er
 	return _c
 }
 
-func (_c *Querier_SearchProjects_Call) RunAndReturn(run func(context.Context, db.SearchProjectsParams) ([]db.SearchProjectsRow, error)) *Querier_SearchProjects_Call {
+func (_c *Querier_SearchProjects_Call) RunAndReturn(run func(context.Context, string) ([]db.SearchProjectsRow, error)) *Querier_SearchProjects_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -3263,100 +3263,6 @@ func (_c *Querier_UpdateSpendingProofStatus_Call) Return(_a0 error) *Querier_Upd
 }
 
 func (_c *Querier_UpdateSpendingProofStatus_Call) RunAndReturn(run func(context.Context, db.UpdateSpendingProofStatusParams) error) *Querier_UpdateSpendingProofStatus_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateTransactionHashForCompletion provides a mock function with given fields: ctx, arg
-func (_m *Querier) UpdateTransactionHashForCompletion(ctx context.Context, arg db.UpdateTransactionHashForCompletionParams) error {
-	ret := _m.Called(ctx, arg)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateTransactionHashForCompletion")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateTransactionHashForCompletionParams) error); ok {
-		r0 = rf(ctx, arg)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Querier_UpdateTransactionHashForCompletion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTransactionHashForCompletion'
-type Querier_UpdateTransactionHashForCompletion_Call struct {
-	*mock.Call
-}
-
-// UpdateTransactionHashForCompletion is a helper method to define mock.On call
-//   - ctx context.Context
-//   - arg db.UpdateTransactionHashForCompletionParams
-func (_e *Querier_Expecter) UpdateTransactionHashForCompletion(ctx interface{}, arg interface{}) *Querier_UpdateTransactionHashForCompletion_Call {
-	return &Querier_UpdateTransactionHashForCompletion_Call{Call: _e.mock.On("UpdateTransactionHashForCompletion", ctx, arg)}
-}
-
-func (_c *Querier_UpdateTransactionHashForCompletion_Call) Run(run func(ctx context.Context, arg db.UpdateTransactionHashForCompletionParams)) *Querier_UpdateTransactionHashForCompletion_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.UpdateTransactionHashForCompletionParams))
-	})
-	return _c
-}
-
-func (_c *Querier_UpdateTransactionHashForCompletion_Call) Return(_a0 error) *Querier_UpdateTransactionHashForCompletion_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *Querier_UpdateTransactionHashForCompletion_Call) RunAndReturn(run func(context.Context, db.UpdateTransactionHashForCompletionParams) error) *Querier_UpdateTransactionHashForCompletion_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateTransactionHashForProof provides a mock function with given fields: ctx, arg
-func (_m *Querier) UpdateTransactionHashForProof(ctx context.Context, arg db.UpdateTransactionHashForProofParams) error {
-	ret := _m.Called(ctx, arg)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateTransactionHashForProof")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, db.UpdateTransactionHashForProofParams) error); ok {
-		r0 = rf(ctx, arg)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// Querier_UpdateTransactionHashForProof_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateTransactionHashForProof'
-type Querier_UpdateTransactionHashForProof_Call struct {
-	*mock.Call
-}
-
-// UpdateTransactionHashForProof is a helper method to define mock.On call
-//   - ctx context.Context
-//   - arg db.UpdateTransactionHashForProofParams
-func (_e *Querier_Expecter) UpdateTransactionHashForProof(ctx interface{}, arg interface{}) *Querier_UpdateTransactionHashForProof_Call {
-	return &Querier_UpdateTransactionHashForProof_Call{Call: _e.mock.On("UpdateTransactionHashForProof", ctx, arg)}
-}
-
-func (_c *Querier_UpdateTransactionHashForProof_Call) Run(run func(ctx context.Context, arg db.UpdateTransactionHashForProofParams)) *Querier_UpdateTransactionHashForProof_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(db.UpdateTransactionHashForProofParams))
-	})
-	return _c
-}
-
-func (_c *Querier_UpdateTransactionHashForProof_Call) Return(_a0 error) *Querier_UpdateTransactionHashForProof_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *Querier_UpdateTransactionHashForProof_Call) RunAndReturn(run func(context.Context, db.UpdateTransactionHashForProofParams) error) *Querier_UpdateTransactionHashForProof_Call {
 	_c.Call.Return(run)
 	return _c
 }

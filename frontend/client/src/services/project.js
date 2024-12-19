@@ -19,8 +19,8 @@ const getOne = async (id) => {
     return response.data;
 }
 
-const search = async (query, page, pageSize) => {
-    const response = await axios.post(`${BASE_URL}/projects/search?page=${page}&page_size=${pageSize}`, {
+const search = async (query) => {
+    const response = await axios.post(`${BASE_URL}/projects/search`, {
         "query": query
     }
     )

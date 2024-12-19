@@ -6,8 +6,6 @@ import (
 	context "context"
 
 	dto "github.com/kanowfy/donorbox/internal/dto"
-	filters "github.com/kanowfy/donorbox/internal/filters"
-
 	mock "github.com/stretchr/testify/mock"
 
 	model "github.com/kanowfy/donorbox/internal/model"
@@ -334,41 +332,34 @@ func (_c *Project_GetAllCategories_Call) RunAndReturn(run func(context.Context) 
 	return _c
 }
 
-// GetAllProjects provides a mock function with given fields: ctx, pageNum, pageSize, categoryIndex
-func (_m *Project) GetAllProjects(ctx context.Context, pageNum int, pageSize int, categoryIndex int) ([]model.Project, filters.Metadata, error) {
-	ret := _m.Called(ctx, pageNum, pageSize, categoryIndex)
+// GetAllProjects provides a mock function with given fields: ctx, categoryID
+func (_m *Project) GetAllProjects(ctx context.Context, categoryID int) ([]model.Project, error) {
+	ret := _m.Called(ctx, categoryID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAllProjects")
 	}
 
 	var r0 []model.Project
-	var r1 filters.Metadata
-	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, int) ([]model.Project, filters.Metadata, error)); ok {
-		return rf(ctx, pageNum, pageSize, categoryIndex)
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int) ([]model.Project, error)); ok {
+		return rf(ctx, categoryID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int, int, int) []model.Project); ok {
-		r0 = rf(ctx, pageNum, pageSize, categoryIndex)
+	if rf, ok := ret.Get(0).(func(context.Context, int) []model.Project); ok {
+		r0 = rf(ctx, categoryID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]model.Project)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int, int, int) filters.Metadata); ok {
-		r1 = rf(ctx, pageNum, pageSize, categoryIndex)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, categoryID)
 	} else {
-		r1 = ret.Get(1).(filters.Metadata)
+		r1 = ret.Error(1)
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, int, int, int) error); ok {
-		r2 = rf(ctx, pageNum, pageSize, categoryIndex)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // Project_GetAllProjects_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAllProjects'
@@ -378,26 +369,24 @@ type Project_GetAllProjects_Call struct {
 
 // GetAllProjects is a helper method to define mock.On call
 //   - ctx context.Context
-//   - pageNum int
-//   - pageSize int
-//   - categoryIndex int
-func (_e *Project_Expecter) GetAllProjects(ctx interface{}, pageNum interface{}, pageSize interface{}, categoryIndex interface{}) *Project_GetAllProjects_Call {
-	return &Project_GetAllProjects_Call{Call: _e.mock.On("GetAllProjects", ctx, pageNum, pageSize, categoryIndex)}
+//   - categoryID int
+func (_e *Project_Expecter) GetAllProjects(ctx interface{}, categoryID interface{}) *Project_GetAllProjects_Call {
+	return &Project_GetAllProjects_Call{Call: _e.mock.On("GetAllProjects", ctx, categoryID)}
 }
 
-func (_c *Project_GetAllProjects_Call) Run(run func(ctx context.Context, pageNum int, pageSize int, categoryIndex int)) *Project_GetAllProjects_Call {
+func (_c *Project_GetAllProjects_Call) Run(run func(ctx context.Context, categoryID int)) *Project_GetAllProjects_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int), args[2].(int), args[3].(int))
+		run(args[0].(context.Context), args[1].(int))
 	})
 	return _c
 }
 
-func (_c *Project_GetAllProjects_Call) Return(_a0 []model.Project, _a1 filters.Metadata, _a2 error) *Project_GetAllProjects_Call {
-	_c.Call.Return(_a0, _a1, _a2)
+func (_c *Project_GetAllProjects_Call) Return(_a0 []model.Project, _a1 error) *Project_GetAllProjects_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Project_GetAllProjects_Call) RunAndReturn(run func(context.Context, int, int, int) ([]model.Project, filters.Metadata, error)) *Project_GetAllProjects_Call {
+func (_c *Project_GetAllProjects_Call) RunAndReturn(run func(context.Context, int) ([]model.Project, error)) *Project_GetAllProjects_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -896,41 +885,34 @@ func (_c *Project_GetProjectsForUser_Call) RunAndReturn(run func(context.Context
 	return _c
 }
 
-// SearchProjects provides a mock function with given fields: ctx, query, pageNum, pageSize
-func (_m *Project) SearchProjects(ctx context.Context, query string, pageNum int, pageSize int) ([]model.Project, filters.Metadata, error) {
-	ret := _m.Called(ctx, query, pageNum, pageSize)
+// SearchProjects provides a mock function with given fields: ctx, query
+func (_m *Project) SearchProjects(ctx context.Context, query string) ([]model.Project, error) {
+	ret := _m.Called(ctx, query)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SearchProjects")
 	}
 
 	var r0 []model.Project
-	var r1 filters.Metadata
-	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, int, int) ([]model.Project, filters.Metadata, error)); ok {
-		return rf(ctx, query, pageNum, pageSize)
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]model.Project, error)); ok {
+		return rf(ctx, query)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, int, int) []model.Project); ok {
-		r0 = rf(ctx, query, pageNum, pageSize)
+	if rf, ok := ret.Get(0).(func(context.Context, string) []model.Project); ok {
+		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]model.Project)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, int, int) filters.Metadata); ok {
-		r1 = rf(ctx, query, pageNum, pageSize)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, query)
 	} else {
-		r1 = ret.Get(1).(filters.Metadata)
+		r1 = ret.Error(1)
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, string, int, int) error); ok {
-		r2 = rf(ctx, query, pageNum, pageSize)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
+	return r0, r1
 }
 
 // Project_SearchProjects_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SearchProjects'
@@ -941,25 +923,23 @@ type Project_SearchProjects_Call struct {
 // SearchProjects is a helper method to define mock.On call
 //   - ctx context.Context
 //   - query string
-//   - pageNum int
-//   - pageSize int
-func (_e *Project_Expecter) SearchProjects(ctx interface{}, query interface{}, pageNum interface{}, pageSize interface{}) *Project_SearchProjects_Call {
-	return &Project_SearchProjects_Call{Call: _e.mock.On("SearchProjects", ctx, query, pageNum, pageSize)}
+func (_e *Project_Expecter) SearchProjects(ctx interface{}, query interface{}) *Project_SearchProjects_Call {
+	return &Project_SearchProjects_Call{Call: _e.mock.On("SearchProjects", ctx, query)}
 }
 
-func (_c *Project_SearchProjects_Call) Run(run func(ctx context.Context, query string, pageNum int, pageSize int)) *Project_SearchProjects_Call {
+func (_c *Project_SearchProjects_Call) Run(run func(ctx context.Context, query string)) *Project_SearchProjects_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(int), args[3].(int))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *Project_SearchProjects_Call) Return(_a0 []model.Project, _a1 filters.Metadata, _a2 error) *Project_SearchProjects_Call {
-	_c.Call.Return(_a0, _a1, _a2)
+func (_c *Project_SearchProjects_Call) Return(_a0 []model.Project, _a1 error) *Project_SearchProjects_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *Project_SearchProjects_Call) RunAndReturn(run func(context.Context, string, int, int) ([]model.Project, filters.Metadata, error)) *Project_SearchProjects_Call {
+func (_c *Project_SearchProjects_Call) RunAndReturn(run func(context.Context, string) ([]model.Project, error)) *Project_SearchProjects_Call {
 	_c.Call.Return(run)
 	return _c
 }

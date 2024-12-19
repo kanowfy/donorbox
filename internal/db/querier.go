@@ -25,7 +25,7 @@ type Querier interface {
 	GetAllCategories(ctx context.Context) ([]Category, error)
 	GetAllMilestones(ctx context.Context) ([]GetAllMilestonesRow, error)
 	GetAllProjectReports(ctx context.Context) ([]ProjectReport, error)
-	GetAllProjects(ctx context.Context, arg GetAllProjectsParams) ([]GetAllProjectsRow, error)
+	GetAllProjects(ctx context.Context, category int32) ([]GetAllProjectsRow, error)
 	GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error)
 	GetAuditHistory(ctx context.Context) ([]AuditTrail, error)
 	GetBackingByID(ctx context.Context, id int64) (Backing, error)
@@ -58,7 +58,7 @@ type Querier interface {
 	GetStatsAggregation(ctx context.Context) (GetStatsAggregationRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
-	SearchProjects(ctx context.Context, arg SearchProjectsParams) ([]SearchProjectsRow, error)
+	SearchProjects(ctx context.Context, searchQuery string) ([]SearchProjectsRow, error)
 	UpdateEscrowUserByID(ctx context.Context, arg UpdateEscrowUserByIDParams) error
 	UpdateMilestoneFund(ctx context.Context, arg UpdateMilestoneFundParams) error
 	UpdateMilestoneStatus(ctx context.Context, arg UpdateMilestoneStatusParams) error
@@ -67,8 +67,6 @@ type Querier interface {
 	UpdateProjectStatus(ctx context.Context, arg UpdateProjectStatusParams) error
 	UpdateReadNotification(ctx context.Context, id int64) error
 	UpdateSpendingProofStatus(ctx context.Context, arg UpdateSpendingProofStatusParams) error
-	UpdateTransactionHashForCompletion(ctx context.Context, arg UpdateTransactionHashForCompletionParams) error
-	UpdateTransactionHashForProof(ctx context.Context, arg UpdateTransactionHashForProofParams) error
 	UpdateUserByID(ctx context.Context, arg UpdateUserByIDParams) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateVerificationStatus(ctx context.Context, arg UpdateVerificationStatusParams) error

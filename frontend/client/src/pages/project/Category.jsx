@@ -57,7 +57,7 @@ const Category = () => {
       <section className="flex flex-col items-center mx-36 mt-10 mb-20">
         <div className="text-2xl text-black font-bold">Explore {category?.name} fundraisers</div>
         <div className="flex justify-center">
-          <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-4 mx-16 mt-10 mb-16">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-3 mx-16 mt-10 mb-16">
             {projects &&
               projects
                 .slice(0, 8)

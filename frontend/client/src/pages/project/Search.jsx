@@ -36,11 +36,11 @@ const Search = () => {
   useEffect(() => {
     const searchProjects = async (q) => {
       try {
-        const response = await projectService.search(q, 1, 50);
+        const response = await projectService.search(q);
         // change to ssp
         console.log(response.projects);
-        setProjects(response.projects);
-        setFiltered(response.projects);
+        setProjects(response.projects.filter(p => ["ongoing", "finished"].includes(p.status)));
+        setFiltered(response.projects.filter(p => ["ongoing", "finished"].includes(p.status)));
       } catch (err) {
         console.log(err);
       }
@@ -264,7 +264,7 @@ const Search = () => {
                 </Button>
               </div>
               <div className="flex justify-center">
-                <div className="grid grid-cols-1 gap-7 md:grid-cols-3 xl:grid-cols-4 mx-16 mt-10 mb-16">
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-3 xl:grid-cols-3 mx-16 mt-10 mb-16">
                   {filtered?.map((p) => (
                     <ProjectCard
                       id={p.id}

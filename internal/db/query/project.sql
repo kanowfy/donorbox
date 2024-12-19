@@ -1,27 +1,50 @@
 -- name: GetAllProjects :many
-SELECT projects.*, SUM(milestones.current_fund) AS total_fund,
-SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count
-FROM projects
-LEFT JOIN backings ON projects.ID = backings.project_id
-LEFT JOIN milestones ON projects.ID = milestones.project_id
-WHERE category_id =
-    CASE WHEN @category::integer > 0 THEN @category::integer ELSE category_id END
-AND projects.status = 'ongoing'
-GROUP BY projects.id
-ORDER BY backing_count DESC
-LIMIT @page_limit::integer OFFSET @total_offset::integer;
+WITH aggregated_backings AS (
+    SELECT project_id, COUNT(*) AS backing_count
+    FROM backings
+    GROUP BY project_id
+),
+aggregated_milestones AS (
+    SELECT project_id, 
+           SUM(current_fund) AS total_fund, 
+           SUM(fund_goal) AS fund_goal
+    FROM milestones
+    GROUP BY project_id
+)
+SELECT p.*, 
+       COALESCE(m.total_fund, 0) AS total_fund,
+       COALESCE(m.fund_goal, 0) AS fund_goal,
+       COALESCE(b.backing_count, 0) AS backing_count
+FROM projects p
+LEFT JOIN aggregated_backings b ON p.id = b.project_id
+LEFT JOIN aggregated_milestones m ON p.id = m.project_id
+WHERE p.category_id =
+    CASE WHEN @category::integer > 0 THEN @category::integer ELSE p.category_id END
+ORDER BY backing_count DESC;
 
 -- name: SearchProjects :many
-SELECT projects.*, SUM(milestones.current_fund) AS total_fund,
-SUM(milestones.fund_goal) AS fund_goal, COUNT(backings.project_id) as backing_count
-FROM projects
-LEFT JOIN backings ON projects.ID = backings.project_id
-LEFT JOIN milestones ON projects.ID = milestones.project_id
+WITH aggregated_backings AS (
+    SELECT project_id, COUNT(*) AS backing_count
+    FROM backings
+    GROUP BY project_id
+),
+aggregated_milestones AS (
+    SELECT project_id, 
+           SUM(current_fund) AS total_fund, 
+           SUM(fund_goal) AS fund_goal
+    FROM milestones
+    GROUP BY project_id
+)
+SELECT p.*, 
+       COALESCE(m.total_fund, 0) AS total_fund,
+       COALESCE(m.fund_goal, 0) AS fund_goal,
+       COALESCE(b.backing_count, 0) AS backing_count
+FROM projects p
+LEFT JOIN aggregated_backings b ON p.id = b.project_id
+LEFT JOIN aggregated_milestones m ON p.id = m.project_id
 WHERE
-    to_tsvector('english', projects.title || ' ' || projects.description || ' ' || city || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
-AND projects.status = 'ongoing'
-GROUP BY projects.ID
-LIMIT @page_limit::integer OFFSET @total_offset::integer;
+    to_tsvector('english', p.title || ' ' || p.description || ' ' || city || ' ' || country) @@ plainto_tsquery('english', @search_query::text)
+ORDER BY backing_count DESC;
 
 -- name: GetProjectByID :one
 SELECT projects.*, SUM(milestones.current_fund) AS total_fund, SUM(milestones.fund_goal) AS fund_goal
@@ -58,7 +81,7 @@ ORDER BY projects.created_at DESC;
 
 -- name: GetMilestoneForProject :many
 SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image,
-c.transaction_hash, c.created_at AS fund_released_at
+c.created_at AS fund_released_at
 FROM milestones m
 LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.project_id = $1
@@ -102,7 +125,7 @@ WHERE name = $1;
 
 -- name: GetMilestoneByID :one
 SELECT m.*, c.transfer_amount, c.transfer_note AS fund_released_note, c.transfer_image AS fund_released_image,
-c.transaction_hash, c.created_at AS fund_released_at
+c.created_at AS fund_released_at
 FROM milestones m
 LEFT JOIN escrow_milestone_completions c ON m.id = c.milestone_id
 WHERE m.id = $1;
@@ -184,13 +207,3 @@ LEFT JOIN milestones m ON p.ID = m.project_id
 WHERE p.status = 'disputed'
 GROUP BY p.ID
 ORDER BY p.created_at;
-
--- name: UpdateTransactionHashForCompletion :exec
-UPDATE escrow_milestone_completions
-SET transaction_hash = $2
-WHERE id = $1;
-
--- name: UpdateTransactionHashForProof :exec
-UPDATE user_spending_proofs
-SET transaction_hash = $2
-WHERE id = $1;

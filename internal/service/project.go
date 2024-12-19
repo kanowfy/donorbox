@@ -12,7 +12,6 @@ import (
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
 	"github.com/kanowfy/donorbox/internal/dto"
-	"github.com/kanowfy/donorbox/internal/filters"
 	"github.com/kanowfy/donorbox/internal/model"
 )
 
@@ -22,8 +21,8 @@ var (
 )
 
 type Project interface {
-	GetAllProjects(ctx context.Context, pageNum, pageSize, categoryIndex int) ([]model.Project, filters.Metadata, error)
-	SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error)
+	GetAllProjects(ctx context.Context, categoryID int) ([]model.Project, error)
+	SearchProjects(ctx context.Context, query string) ([]model.Project, error)
 	GetProjectsForUser(ctx context.Context, userID int64) ([]model.Project, error)
 	GetEndedProjects(ctx context.Context) ([]model.Project, error)
 	GetPendingProjects(ctx context.Context) ([]dto.PendingProjectResponse, error)
@@ -60,26 +59,11 @@ func NewProject(repository db.Querier, backingService Backing, userService User,
 	}
 }
 
-func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categoryIndex int) ([]model.Project, filters.Metadata, error) {
-	f := filters.Filters{
-		Category: categoryIndex,
-		Page:     pageNum,
-		PageSize: pageSize,
-	}
-
-	var args db.GetAllProjectsParams
-
-	args.Category = int32(categoryIndex)
-	args.PageLimit = int32(f.Limit())
-	args.TotalOffset = int32(f.Offset())
-
-	dbProjects, err := p.repository.GetAllProjects(ctx, args)
+func (p *project) GetAllProjects(ctx context.Context, categoryIndex int) ([]model.Project, error) {
+	dbProjects, err := p.repository.GetAllProjects(ctx, int32(categoryIndex))
 	if err != nil {
-		return nil, filters.Metadata{}, fmt.Errorf("GetAllProjects svc: %w", err)
+		return nil, fmt.Errorf("get all projects: %w", err)
 	}
-
-	metadata := filters.CalculateMetadata(len(dbProjects), f.Page, f.PageSize)
-
 	var projects []model.Project
 
 	for _, p := range dbProjects {
@@ -105,27 +89,14 @@ func (p *project) GetAllProjects(ctx context.Context, pageNum, pageSize, categor
 		})
 	}
 
-	return projects, metadata, nil
+	return projects, nil
 }
 
-func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pageSize int) ([]model.Project, filters.Metadata, error) {
-	f := filters.Filters{
-		Page:     pageNum,
-		PageSize: pageSize,
-	}
-
-	args := db.SearchProjectsParams{
-		SearchQuery: query,
-		PageLimit:   int32(f.Limit()),
-		TotalOffset: int32(f.Offset()),
-	}
-
-	dbProjects, err := p.repository.SearchProjects(ctx, args)
+func (p *project) SearchProjects(ctx context.Context, query string) ([]model.Project, error) {
+	dbProjects, err := p.repository.SearchProjects(ctx, query)
 	if err != nil {
-		return nil, filters.Metadata{}, err
+		return nil, err
 	}
-
-	metadata := filters.CalculateMetadata(len(dbProjects), f.Page, f.PageSize)
 
 	var projects []model.Project
 
@@ -145,13 +116,14 @@ func (p *project) SearchProjects(ctx context.Context, query string, pageNum, pag
 			District:       p.District,
 			City:           p.City,
 			Country:        p.Country,
+			Status:         convertProjectStatus(p.Status),
 			CreatedAt:      convert.MustPgTimestampToTime(p.CreatedAt),
 			EndDate:        convert.MustPgTimestampToTime(p.EndDate),
 			BackingCount:   &p.BackingCount,
 		})
 	}
 
-	return projects, metadata, nil
+	return projects, nil
 }
 
 func (p *project) GetProjectsForUser(ctx context.Context, userID int64) ([]model.Project, error) {
@@ -300,11 +272,10 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 
 		if slices.Contains(hasFundStatus, ms.Status) {
 			ms.Completion = &model.MilestoneCompletion{
-				TransferAmount:  *m.TransferAmount,
-				TransferNote:    m.FundReleasedNote,
-				TransferImage:   m.FundReleasedImage,
-				TransactionHash: m.TransactionHash,
-				CreatedAt:       convert.MustPgTimestampToTime(m.FundReleasedAt),
+				TransferAmount: *m.TransferAmount,
+				TransferNote:   m.FundReleasedNote,
+				TransferImage:  m.FundReleasedImage,
+				CreatedAt:      convert.MustPgTimestampToTime(m.FundReleasedAt),
 			}
 		}
 
@@ -317,14 +288,13 @@ func (p *project) GetMilestonesForProject(ctx context.Context, projectID int64) 
 			var proofs []model.SpendingProof
 			for _, pr := range dbProofs {
 				proofs = append(proofs, model.SpendingProof{
-					ID:              pr.ID,
-					TransferImage:   pr.TransferImage,
-					Description:     pr.Description,
-					ProofMedia:      pr.ProofMediaUrl,
-					Status:          model.ProofStatus(pr.Status),
-					RejectedCause:   pr.RejectedCause,
-					TransactionHash: pr.TransactionHash,
-					CreatedAt:       convert.MustPgTimestampToTime(pr.CreatedAt),
+					ID:            pr.ID,
+					TransferImage: pr.TransferImage,
+					Description:   pr.Description,
+					ProofMedia:    pr.ProofMediaUrl,
+					Status:        model.ProofStatus(pr.Status),
+					RejectedCause: pr.RejectedCause,
+					CreatedAt:     convert.MustPgTimestampToTime(pr.CreatedAt),
 				})
 			}
 

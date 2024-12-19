@@ -1,3 +1,5 @@
+import { CategoryIndexMap } from "../constants";
+
 const formatNumber = (num) => {
     return num.toLocaleString();
 }
@@ -43,4 +45,10 @@ const getCitiesByCountry = (data, country) => {
     return record?.states.map(s => s.name);
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry }
+const getCategoryNameByID = (id) => {
+    return Object.keys(CategoryIndexMap).find(
+        key => CategoryIndexMap[key] === id
+    );
+}
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry, getCategoryNameByID }

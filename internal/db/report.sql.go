@@ -15,7 +15,7 @@ INSERT INTO project_reports (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, project_id, email, full_name, phone_number, relation, reason, details, status, created_at
+RETURNING id, project_id, email, full_name, phone_number, relation, reason, details, proof_media_url, status, created_at
 `
 
 type CreateProjectReportParams struct {
@@ -48,6 +48,7 @@ func (q *Queries) CreateProjectReport(ctx context.Context, arg CreateProjectRepo
 		&i.Relation,
 		&i.Reason,
 		&i.Details,
+		&i.ProofMediaUrl,
 		&i.Status,
 		&i.CreatedAt,
 	)
@@ -55,7 +56,7 @@ func (q *Queries) CreateProjectReport(ctx context.Context, arg CreateProjectRepo
 }
 
 const getAllProjectReports = `-- name: GetAllProjectReports :many
-SELECT id, project_id, email, full_name, phone_number, relation, reason, details, status, created_at FROM project_reports
+SELECT id, project_id, email, full_name, phone_number, relation, reason, details, proof_media_url, status, created_at FROM project_reports
 ORDER BY created_at
 `
 
@@ -77,6 +78,7 @@ func (q *Queries) GetAllProjectReports(ctx context.Context) ([]ProjectReport, er
 			&i.Relation,
 			&i.Reason,
 			&i.Details,
+			&i.ProofMediaUrl,
 			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
@@ -91,7 +93,7 @@ func (q *Queries) GetAllProjectReports(ctx context.Context) ([]ProjectReport, er
 }
 
 const getProjectReportByID = `-- name: GetProjectReportByID :one
-SELECT id, project_id, email, full_name, phone_number, relation, reason, details, status, created_at FROM project_reports
+SELECT id, project_id, email, full_name, phone_number, relation, reason, details, proof_media_url, status, created_at FROM project_reports
 WHERE id = $1
 `
 
@@ -107,6 +109,7 @@ func (q *Queries) GetProjectReportByID(ctx context.Context, id int64) (ProjectRe
 		&i.Relation,
 		&i.Reason,
 		&i.Details,
+		&i.ProofMediaUrl,
 		&i.Status,
 		&i.CreatedAt,
 	)
@@ -114,7 +117,7 @@ func (q *Queries) GetProjectReportByID(ctx context.Context, id int64) (ProjectRe
 }
 
 const getResolvedProjectReportsForProject = `-- name: GetResolvedProjectReportsForProject :many
-SELECT id, project_id, email, full_name, phone_number, relation, reason, details, status, created_at FROM project_reports
+SELECT id, project_id, email, full_name, phone_number, relation, reason, details, proof_media_url, status, created_at FROM project_reports
 WHERE project_id = $1 AND status = 'resolved'
 `
 
@@ -136,6 +139,7 @@ func (q *Queries) GetResolvedProjectReportsForProject(ctx context.Context, proje
 			&i.Relation,
 			&i.Reason,
 			&i.Details,
+			&i.ProofMediaUrl,
 			&i.Status,
 			&i.CreatedAt,
 		); err != nil {

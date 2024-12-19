@@ -48,11 +48,9 @@ func NewProject(service service.Project, validator *validator.Validate) Project 
 func (p *project) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 	qs := r.URL.Query()
 
-	page, _ := helper.ReadInt(qs, "page", 1)
-	pageSize, _ := helper.ReadInt(qs, "page_size", 10)
 	category, _ := helper.ReadInt(qs, "category", 0)
 
-	projects, metadata, err := p.service.GetAllProjects(r.Context(), page, pageSize, category)
+	projects, err := p.service.GetAllProjects(r.Context(), category)
 	if err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
@@ -60,18 +58,12 @@ func (p *project) GetAllProjects(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"projects": projects,
-		"metadata": metadata,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
 }
 
 func (p *project) SearchProjects(w http.ResponseWriter, r *http.Request) {
-	qs := r.URL.Query()
-
-	page, _ := helper.ReadInt(qs, "page", 1)
-	pageSize, _ := helper.ReadInt(qs, "page_size", 12)
-
 	var req struct {
 		Query string `json:"query" validate:"required"`
 	}
@@ -87,7 +79,7 @@ func (p *project) SearchProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projects, metadata, err := p.service.SearchProjects(r.Context(), req.Query, page, pageSize)
+	projects, err := p.service.SearchProjects(r.Context(), req.Query)
 	if err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
@@ -95,7 +87,6 @@ func (p *project) SearchProjects(w http.ResponseWriter, r *http.Request) {
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"projects": projects,
-		"metadata": metadata,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
