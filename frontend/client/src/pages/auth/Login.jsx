@@ -138,7 +138,7 @@ const Login = () => {
               </div>
               <Button
                 gradientDuoTone="greenToBlue"
-                className="w-full"
+                className="w-full font-semibold"
                 type="submit"
               >
                 Sign in

@@ -56,6 +56,7 @@ type Querier interface {
 	GetSpendingProofByID(ctx context.Context, id int64) (UserSpendingProof, error)
 	GetSpendingProofsForMilestone(ctx context.Context, milestoneID int64) ([]UserSpendingProof, error)
 	GetStatsAggregation(ctx context.Context) (GetStatsAggregationRow, error)
+	GetTotalBackingByMonth(ctx context.Context) ([]GetTotalBackingByMonthRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	SearchProjects(ctx context.Context, searchQuery string) ([]SearchProjectsRow, error)

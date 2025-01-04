@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge, Table, Dropdown } from "flowbite-react";
 import { FaDownload } from "react-icons/fa";
 import { IoIosMore } from "react-icons/io";
+import { CLIENT_URL } from "../constants";
 
 const ReportStatusMap = {
   pending: {
@@ -105,7 +106,7 @@ const DisputeTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                 <Table.Cell>{item.project.id}</Table.Cell>
                 <Table.Cell>
                   <a
-                    href={`http://localhost:4001/fundraiser/${item.project.id}`}
+                    href={`${CLIENT_URL}/fundraiser/${item.project.id}`}
                     target="_blank"
                     className="hover:text-blue-600"
                   >

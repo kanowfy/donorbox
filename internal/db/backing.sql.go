@@ -277,3 +277,44 @@ func (q *Queries) GetMostRecentBackingDonor(ctx context.Context, projectID int64
 	)
 	return i, err
 }
+
+const getTotalBackingByMonth = `-- name: GetTotalBackingByMonth :many
+WITH months AS (
+    SELECT generate_series(
+            date_trunc('month', (SELECT MIN(created_at) FROM backings)), 
+            date_trunc('month', current_date), 
+            interval '1 month') AS month
+)
+SELECT 
+    to_char(months.month, 'YYYY-MM') AS month,
+    COALESCE(SUM(backings.amount), 0)::bigint AS total_donated
+FROM months
+LEFT JOIN backings ON date_trunc('month', backings.created_at) = months.month
+GROUP BY months.month
+ORDER BY months.month
+`
+
+type GetTotalBackingByMonthRow struct {
+	Month        string
+	TotalDonated int64
+}
+
+func (q *Queries) GetTotalBackingByMonth(ctx context.Context) ([]GetTotalBackingByMonthRow, error) {
+	rows, err := q.db.Query(ctx, getTotalBackingByMonth)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTotalBackingByMonthRow
+	for rows.Next() {
+		var i GetTotalBackingByMonthRow
+		if err := rows.Scan(&i.Month, &i.TotalDonated); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -1,4 +1,5 @@
 import { CategoryIndexMap } from "../constants";
+import uploadService from "../services/upload";
 
 const formatNumber = (num) => {
     return num.toLocaleString();
@@ -51,4 +52,16 @@ const getCategoryNameByID = (id) => {
     );
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry, getCategoryNameByID }
+const uploadImage = async (image) => {
+    if (!image) {
+      throw new Error("Missing image");
+    }
+
+    const formData = new FormData();
+    formData.append("file", image);
+
+    const response = await uploadService.uploadImage(formData);
+    return response.url;
+  };
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry, getCategoryNameByID, uploadImage }

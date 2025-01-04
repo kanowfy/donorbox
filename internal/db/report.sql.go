@@ -11,21 +11,22 @@ import (
 
 const createProjectReport = `-- name: CreateProjectReport :one
 INSERT INTO project_reports (
-    project_id, email, full_name, phone_number, relation, reason, details
+    project_id, email, full_name, phone_number, relation, reason, details, proof_media_url
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
 RETURNING id, project_id, email, full_name, phone_number, relation, reason, details, proof_media_url, status, created_at
 `
 
 type CreateProjectReportParams struct {
-	ProjectID   int64
-	Email       string
-	FullName    string
-	PhoneNumber string
-	Relation    *string
-	Reason      string
-	Details     string
+	ProjectID     int64
+	Email         string
+	FullName      string
+	PhoneNumber   string
+	Relation      *string
+	Reason        string
+	Details       string
+	ProofMediaUrl *string
 }
 
 func (q *Queries) CreateProjectReport(ctx context.Context, arg CreateProjectReportParams) (ProjectReport, error) {
@@ -37,6 +38,7 @@ func (q *Queries) CreateProjectReport(ctx context.Context, arg CreateProjectRepo
 		arg.Relation,
 		arg.Reason,
 		arg.Details,
+		arg.ProofMediaUrl,
 	)
 	var i ProjectReport
 	err := row.Scan(

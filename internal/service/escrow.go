@@ -409,6 +409,20 @@ func (e *escrow) GetStatistics(ctx context.Context) (*dto.GetStatisticsResponse,
 		})
 	}
 
+	monthlyDonations, err := e.repository.GetTotalBackingByMonth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var md []dto.MonthlyDonation
+
+	for _, dbDonation := range monthlyDonations {
+		md = append(md, dto.MonthlyDonation{
+			Month:        dbDonation.Month,
+			TotalDonated: dbDonation.TotalDonated,
+		})
+	}
+
 	return &dto.GetStatisticsResponse{
 		TotalFund:     stats.TotalFund,
 		DonationCount: stats.BackingCount,
@@ -420,6 +434,7 @@ func (e *escrow) GetStatistics(ctx context.Context) (*dto.GetStatisticsResponse,
 		},
 		PendingVerificationCount: stats.VerificationCount,
 		CategoriesCount:          cc,
+		MonthlyDonations:         md,
 	}, nil
 }
 

@@ -53,3 +53,18 @@ INSERT INTO backings (
     $1, $2, $3, $4
 ) 
 RETURNING *;
+
+-- name: GetTotalBackingByMonth :many
+WITH months AS (
+    SELECT generate_series(
+            date_trunc('month', (SELECT MIN(created_at) FROM backings)), 
+            date_trunc('month', current_date), 
+            interval '1 month') AS month
+)
+SELECT 
+    to_char(months.month, 'YYYY-MM') AS month,
+    COALESCE(SUM(backings.amount), 0)::bigint AS total_donated
+FROM months
+LEFT JOIN backings ON date_trunc('month', backings.created_at) = months.month
+GROUP BY months.month
+ORDER BY months.month;

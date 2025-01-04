@@ -44,11 +44,12 @@ type VerificationApprovalRequest struct {
 }
 
 type GetStatisticsResponse struct {
-	TotalFund                int64           `json:"total_fund"`
-	DonationCount            int64           `json:"donation_count"`
-	ProjectCount             ProjectCount    `json:"project_count"`
-	PendingVerificationCount int64           `json:"verification_count"`
-	CategoriesCount          []CategoryCount `json:"categories_count"`
+	TotalFund                int64             `json:"total_fund"`
+	DonationCount            int64             `json:"donation_count"`
+	ProjectCount             ProjectCount      `json:"project_count"`
+	PendingVerificationCount int64             `json:"verification_count"`
+	CategoriesCount          []CategoryCount   `json:"categories_count"`
+	MonthlyDonations         []MonthlyDonation `json:"monthly_donations"`
 }
 
 type ProjectCount struct {
@@ -62,6 +63,11 @@ type CategoryCount struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Count int64  `json:"count"`
+}
+
+type MonthlyDonation struct {
+	Month        string `json:"month"`
+	TotalDonated int64  `json:"total_donated"`
 }
 
 type ProofApprovalRequest struct {

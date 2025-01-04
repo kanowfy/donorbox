@@ -7,4 +7,5 @@ type CreateProjectReportRequest struct {
 	Relation    *string `json:"relation,omitempty" validate:"omitnil"`
 	Reason      string  `json:"reason" validate:"required"`
 	Details     string  `json:"details" validate:"required"`
+	ProofImage  *string `json:"proof_image,omitempty" validate:"omitnil"`
 }

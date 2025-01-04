@@ -5,6 +5,7 @@ import { FiEye } from "react-icons/fi";
 import { FaRegCopy } from "react-icons/fa";
 import { HiCalendar } from "react-icons/hi";
 import { useOutletContext, useNavigate } from "react-router-dom";
+import { SERVE_URL } from "../../../constants";
 
 const ManageDashboard = () => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ const ManageDashboard = () => {
             color="light"
             onClick={() =>
               navigator.clipboard.writeText(
-                `localhost:5173/fundraiser/${project?.id}`
+                `${SERVE_URL}/fundraiser/${project?.id}`
               )
             }
           >

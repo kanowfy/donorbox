@@ -1408,6 +1408,10 @@ input[type="range"]::-ms-fill-lower {
   margin-bottom: 1.5rem;
 }
 
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
 .me-1 {
   margin-inline-end: 0.25rem;
 }
@@ -1542,10 +1546,6 @@ input[type="range"]::-ms-fill-lower {
 
 .mt-auto {
   margin-top: auto;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
 }
 
 .line-clamp-2 {
@@ -1683,6 +1683,10 @@ input[type="range"]::-ms-fill-lower {
   height: 10rem;
 }
 
+.h-48 {
+  height: 12rem;
+}
+
 .h-5 {
   height: 1.25rem;
 }
@@ -1738,10 +1742,6 @@ input[type="range"]::-ms-fill-lower {
 
 .h-screen {
   height: 100vh;
-}
-
-.h-48 {
-  height: 12rem;
 }
 
 .max-h-128 {
@@ -1846,10 +1846,6 @@ input[type="range"]::-ms-fill-lower {
 
 .w-7 {
   width: 1.75rem;
-}
-
-.w-72 {
-  width: 18rem;
 }
 
 .w-8 {
@@ -3584,6 +3580,10 @@ input[type="range"]::-ms-fill-lower {
   line-height: 1;
 }
 
+.text-\[0\.1em\] {
+  font-size: 0.1em;
+}
+
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
@@ -3958,11 +3958,6 @@ input[type="range"]::-ms-fill-lower {
 .text-zinc-800 {
   --tw-text-opacity: 1;
   color: rgb(39 39 42 / var(--tw-text-opacity));
-}
-
-.text-yellow-600 {
-  --tw-text-opacity: 1;
-  color: rgb(159 88 10 / var(--tw-text-opacity));
 }
 
 .underline {
@@ -4579,11 +4574,6 @@ input[type="range"]::-ms-fill-lower {
 .hover\:text-gray-900:hover {
   --tw-text-opacity: 1;
   color: rgb(17 24 39 / var(--tw-text-opacity));
-}
-
-.hover\:text-sky-700:hover {
-  --tw-text-opacity: 1;
-  color: rgb(3 105 161 / var(--tw-text-opacity));
 }
 
 .hover\:underline:hover {

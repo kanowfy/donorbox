@@ -758,13 +758,14 @@ func (p *project) CheckUpdateRefutedMilestones(ctx context.Context) error {
 
 func (p *project) CreateProjectReport(ctx context.Context, projectID int64, req dto.CreateProjectReportRequest) error {
 	_, err := p.repository.CreateProjectReport(ctx, db.CreateProjectReportParams{
-		ProjectID:   projectID,
-		Email:       req.Email,
-		FullName:    req.FullName,
-		PhoneNumber: req.PhoneNumber,
-		Relation:    req.Relation,
-		Reason:      req.Reason,
-		Details:     req.Details,
+		ProjectID:     projectID,
+		Email:         req.Email,
+		FullName:      req.FullName,
+		PhoneNumber:   req.PhoneNumber,
+		Relation:      req.Relation,
+		Reason:        req.Reason,
+		Details:       req.Details,
+		ProofMediaUrl: req.ProofImage,
 	})
 
 	if err != nil {
@@ -791,6 +792,7 @@ func (p *project) GetProjectReports(ctx context.Context) ([]model.ProjecReport, 
 			Relation:    r.Relation,
 			Reason:      r.Reason,
 			Details:     r.Details,
+			ProofImage:  r.ProofMediaUrl,
 			Status:      model.ReportStatus(r.Status),
 			CreatedAt:   convert.MustPgTimestampToTime(r.CreatedAt),
 		})

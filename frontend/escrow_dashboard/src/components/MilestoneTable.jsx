@@ -7,6 +7,7 @@ import { Button, FileInput, Modal, Table } from "flowbite-react";
 import Cleave from "cleave.js/react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { CLIENT_URL } from "../constants";
 
 const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const navigate = useNavigate();
@@ -100,7 +101,7 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                 <Table.Cell>
                   <a
                     target="_blank"
-                    href={`http://localhost:4001/fundraiser/${item?.milestone.project_id}`}
+                    href={`${CLIENT_URL}/fundraiser/${item?.milestone.project_id}`}
                     className="flex text-gray-700 hover:font-semibold text-sm hover:text-blue-700"
                   >
                     <IoOpenOutline className="ml-1 w-5 h-5" />
@@ -146,7 +147,7 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
               >
                 <div className="flex items-baseline space-x-1 mt-5">
                   <label className="block mb-2 font-medium text-gray-900">
-                    Amount transferred:
+                    Amount transferred <span className="text-red-600">*</span>
                   </label>
                   <div className="flex items-baseline bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 px-3 py-1">
                     <span className="block mb-1 font-medium">₫</span>
@@ -177,7 +178,7 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                   )}
                 <div>
                   <label className="block mb-1 font-medium text-gray-900">
-                    Proof image:
+                    Receipt photo <span className="text-red-600">*</span>
                   </label>
                   <div className="flex flex-col items-start space-y-4">
                     <FileInput
@@ -198,7 +199,7 @@ const MilestoneTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                 </div>
                 <div>
                   <label className="block mb-1 font-medium text-gray-900">
-                    Note:
+                    Note
                   </label>
                   <textarea
                     {...register(`description`, {})}

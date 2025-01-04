@@ -44,6 +44,7 @@ jobs:
           tags: ${{ env.IMAGE_CLIENT }}:latest
           build-args: |
             API_URL=${{ secrets.API_URL }}
+            CLIENT_URL=${{ secrets.CLIENT_URL }}
 
       - name: Build and push dashboard
         uses: docker/build-push-action@v5
@@ -54,3 +55,4 @@ jobs:
           tags: ${{ env.IMAGE_DASHBOARD }}:latest
           build-args: |
             API_URL=${{ secrets.API_URL }}
+            CLIENT_URL=${{ secrets.CLIENT_URL }}

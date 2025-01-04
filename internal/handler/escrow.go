@@ -324,13 +324,15 @@ func generatePdfReport(w io.Writer, item dto.DisputedProject) error {
 	pdf.Cell(50, 10, item.Project.Title)
 	pdf.Ln(10)
 
-	x, y = pdf.GetX(), pdf.GetY()
-	pdf.SetFont("Arial", "B", 12)
-	pdf.Cell(50, 10, "Link to Project: ")
-	pdf.SetFont("Arial", "", 12)
-	pdf.SetXY(x+50, y)
-	pdf.Cell(50, 10, fmt.Sprintf("http://localhost:4001/fundraiser/%d", item.Project.ID))
-	pdf.Ln(10)
+	/*
+		x, y = pdf.GetX(), pdf.GetY()
+		pdf.SetFont("Arial", "B", 12)
+		pdf.Cell(50, 10, "Link to Project: ")
+		pdf.SetFont("Arial", "", 12)
+		pdf.SetXY(x+50, y)
+		pdf.Cell(50, 10, fmt.Sprintf("http://localhost:4001/fundraiser/%d", item.Project.ID))
+		pdf.Ln(10)
+	*/
 
 	x, y = pdf.GetX(), pdf.GetY()
 	pdf.SetFont("Arial", "B", 12)

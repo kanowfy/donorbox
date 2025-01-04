@@ -8,7 +8,7 @@ const MilestoneInput = ({ index, register, setValue, errors }) => {
       </div>
       {/* Title */}
       <div>
-        <label className="block mb-2 font-medium text-gray-900">Title:</label>
+        <label className="block mb-2 font-medium text-gray-900">Title <span className="text-red-700">*</span></label>
         <input
           {...register(`milestones.${index}.title`, {
             required: "Title is required",
@@ -20,9 +20,9 @@ const MilestoneInput = ({ index, register, setValue, errors }) => {
         />
       </div>
 
-      <div>
+      <div className="mt-2">
         <label className="block mb-2 font-medium text-gray-900">
-          Description:
+          Details of the milestone
         </label>
         <textarea
           {...register(`milestones.${index}.description`)}
@@ -34,7 +34,7 @@ const MilestoneInput = ({ index, register, setValue, errors }) => {
       {/* Goal */}
       <div className="flex items-baseline space-x-1 mt-5">
         <label className="block mb-2 font-medium text-gray-900">
-          Set goal:
+          Fund goal <span className="text-red-700">*</span>
         </label>
         <div className="flex items-baseline bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 px-3 py-1">
           <span className="block mb-1 font-medium">₫</span>
@@ -64,9 +64,9 @@ const MilestoneInput = ({ index, register, setValue, errors }) => {
           <p className="text-red-600 text-sm">{errors.goal_amount.message}</p>
         )*/}
       </div>
-      <div>
+      <div className="mt-2">
         <label className="block mb-2 font-medium text-gray-900">
-          Bank description:
+          Bank description <span className="text-red-700">*</span>
         </label>
         <textarea
           {...register(`milestones.${index}.bank_description`, {

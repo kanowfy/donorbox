@@ -100,6 +100,7 @@ type ProjecReport struct {
 	Relation    *string      `json:"relation,omitempty"`
 	Reason      string       `json:"reason"`
 	Details     string       `json:"details"`
+	ProofImage  *string      `json:"proof_image,omitempty"`
 	Status      ReportStatus `json:"status"`
 	CreatedAt   time.Time    `json:"created_at"`
 }

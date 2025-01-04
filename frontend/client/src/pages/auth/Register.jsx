@@ -45,7 +45,7 @@ const Register = () => {
             >
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Email
+                  Email <span className="text-red-700">*</span>
                 </label>
                 <input
                   {...register("email", {
@@ -70,7 +70,7 @@ const Register = () => {
               <div className="flex gap-4">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900">
-                    First name
+                    First name <span className="text-red-700">*</span>
                   </label>
                   <input
                     {...register("first_name", {
@@ -96,7 +96,7 @@ const Register = () => {
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-900">
-                    Last name
+                    Last name <span className="text-red-700">*</span>
                   </label>
                   <input
                     {...register("last_name", {
@@ -123,7 +123,7 @@ const Register = () => {
               </div>
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Password
+                  Password <span className="text-red-700">*</span>
                 </label>
                 <input
                   {...register("password", {
@@ -147,7 +147,7 @@ const Register = () => {
               </div>
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Confirm password
+                  Confirm password <span className="text-red-700">*</span>
                 </label>
                 <input
                   {...register("repassword", {
@@ -174,7 +174,7 @@ const Register = () => {
               </div>
               <Button
                 gradientDuoTone="greenToBlue"
-                className="w-full"
+                className="w-full font-semibold"
                 type="submit"
               >
                 Sign up

@@ -101,11 +101,11 @@ const Home = () => {
           {/* Monthly fund release */}
           <Line
             data={{
-              labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+              labels: stats?.monthly_donations?.map(d => d.month),
               datasets: [
                 {
                   label: "Fund donated per Month",
-                  data: [20000000, 30000000, 25000000, 21000000, 26000000, 15000000, 16000000, 24000000, 25000000, 27000000, 29000000, 28000000],
+                  data: stats?.monthly_donations?.map(d => d.total_donated),
                 },
               ],
             }}

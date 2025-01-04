@@ -85,7 +85,7 @@ const Donate = () => {
           </div>
           <div>
             <label className="block mb-2 font-medium text-gray-900">
-              Select amount to donate:
+              Select amount to donate <span className="text-red-700">*</span>
             </label>
             <div className="flex items-baseline bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 w-full px-5 py-3">
               <span className="block mb-1 font-medium">₫</span>

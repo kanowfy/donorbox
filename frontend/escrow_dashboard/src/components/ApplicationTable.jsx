@@ -17,6 +17,7 @@ import {
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Table } from "flowbite-react";
+import { CLIENT_URL } from "../constants";
 
 const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const navigate = useNavigate();
@@ -165,7 +166,7 @@ const ApplicationTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                   <div className="font-semibold text-black text-sm">Link: </div>
                   <a
                     target="_blank"
-                    href={`http://localhost:4001/fundraiser/${review?.project.id}`}
+                    href={`${CLIENT_URL}/fundraiser/${review?.project.id}`}
                     className="flex text-gray-700 hover:font-semibold text-sm hover:text-blue-700 hover:underline"
                   >
                     Go to Fundraiser

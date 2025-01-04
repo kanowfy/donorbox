@@ -15,6 +15,7 @@ import {
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Table } from "flowbite-react";
+import { CLIENT_URL } from "../constants";
 
 const ReportStatusMap = {
   pending: {
@@ -34,6 +35,7 @@ const ReportStatusMap = {
 const ReportTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const navigate = useNavigate();
   const [isOpenReview, setIsOpenReview] = useState(false);
+  const [isOpenImagePreview, setIsOpenImagePreview] = useState(false);
   const [review, setReview] = useState();
 
   const handleApprove = async () => {
@@ -65,7 +67,6 @@ const ReportTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
       console.error(err);
       setIsFailed(true);
     }
-
   };
 
   return (
@@ -91,7 +92,7 @@ const ReportTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                 <Table.Cell>
                   <a
                     target="_blank"
-                    href={`http://localhost:4001/fundraiser/${item?.project_id}`}
+                    href={`${CLIENT_URL}/fundraiser/${item?.project_id}`}
                     className="flex text-gray-700 hover:font-semibold text-sm hover:text-blue-700"
                   >
                     <IoOpenOutline className="ml-1 w-5 h-5" />
@@ -105,7 +106,10 @@ const ReportTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                   )}
                 </Table.Cell>
                 <Table.Cell>
-                  <Badge color={ReportStatusMap[item.status].color} className="w-fit">
+                  <Badge
+                    color={ReportStatusMap[item.status].color}
+                    className="w-fit"
+                  >
                     {ReportStatusMap[item.status].text}
                   </Badge>
                 </Table.Cell>
@@ -155,9 +159,20 @@ const ReportTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
               <div>
                 <div className="font-semibold text-black text-sm">
                   Details:{" "}
-                  <span className="text-gray-700 text-base font-normal">{review?.details}</span>
+                  <span className="text-gray-700 text-base font-normal">
+                    {review?.details}
+                  </span>
                 </div>
               </div>
+              {review?.proof_image && (
+                <div className="flex gap-1">
+                  <div className="font-semibold text-black text-sm mt-2">
+                    Proof Photo:{" "}
+                  </div>
+                  <Button onClick={() => setIsOpenImagePreview(true)} size="sm" color="light">Click to View
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="border rounded-lg p-5 space-y-2">
               <div className="flex space-x-2 items-baseline">
@@ -206,6 +221,16 @@ const ReportTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
             </div>
           </div>
         </Modal.Footer>
+      </Modal>
+      <Modal
+        show={isOpenImagePreview}
+        onClose={() => setIsOpenImagePreview(false)}
+        >
+          <Modal.Header />
+          <Modal.Body>
+            <img src={review?.proof_image}/>
+          </Modal.Body>
+
       </Modal>
     </div>
   );

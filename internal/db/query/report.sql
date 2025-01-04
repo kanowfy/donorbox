@@ -1,8 +1,8 @@
 -- name: CreateProjectReport :one
 INSERT INTO project_reports (
-    project_id, email, full_name, phone_number, relation, reason, details
+    project_id, email, full_name, phone_number, relation, reason, details, proof_media_url
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
 RETURNING *;
 

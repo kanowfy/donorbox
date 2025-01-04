@@ -217,7 +217,7 @@ const ManageProofs = () => {
         <div className="flex gap-4">
           <div>
             <Label className="block text-sm font-bold mb-2">
-              Payment receipt
+              Payment receipt <span className="text-red-700">*</span>
             </Label>
             <div className="flex flex-col items-start space-y-4">
               <FileInput
@@ -239,7 +239,7 @@ const ManageProofs = () => {
 
           <div>
             <Label className="block text-sm font-bold mb-2">
-              Photo or Video proof
+              Photo or Video proof <span className="text-red-700">*</span>
             </Label>
             <div className="flex flex-col items-start space-y-4">
               <FileInput
@@ -252,7 +252,7 @@ const ManageProofs = () => {
           </div>
         </div>
 
-        <Label className="block text-sm font-bold mb-2">Description</Label>
+        <Label className="block text-sm font-bold mb-2">Description <span className="text-red-700">*</span></Label>
         <Textarea
           {...register("description", {
             required: "Description is required",

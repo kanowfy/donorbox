@@ -183,8 +183,8 @@ const CreateProject = () => {
             {step === 1 && (
               <>
                 <div className="flex items-end space-x-3">
-                  <label className="block mb-2 font-medium text-gray-900">
-                    Select category:{" "}
+                  <label className="block mb-2 text-lg font-medium text-gray-900">
+                    Select a category for your fundraiser <span className="text-red-700">*</span>
                   </label>
                   <select
                     {...register("category", {
@@ -203,8 +203,8 @@ const CreateProject = () => {
                   </select>
                 </div>
                 <div className="flex items-end space-x-3">
-                  <label className="block mb-2 font-medium text-gray-900">
-                    Choose cover picture:
+                  <label className="block mb-2 text-lg font-medium text-gray-900">
+                    Choose a cover picture <span className="text-red-700">*</span>
                   </label>
                   <FileInput
                     accept="image/png, image/jpeg"
@@ -220,8 +220,8 @@ const CreateProject = () => {
                   </div>
                 )}
                 <div>
-                  <label className="block mb-2 font-medium text-gray-900">
-                    Title:
+                  <label className="block mb-2 text-lg font-medium text-gray-900">
+                    Enter title <span className="text-red-700">*</span>
                   </label>
                   <input
                     {...register("title", {
@@ -238,8 +238,8 @@ const CreateProject = () => {
                   )}
                 </div>
                 <div data-color-mode="light">
-                  <label className="block mb-2 font-medium text-gray-900">
-                    Description:
+                  <label className="block mb-2 text-lg font-medium text-gray-900">
+                    Please provide a comprehensive description of the fundraiser <span className="text-red-700">*</span>
                   </label>
                   {/*<textarea
               {...register("description", {
@@ -255,6 +255,9 @@ const CreateProject = () => {
                     height={400}
                     required
                   />
+                  <div className="block mb-2 font-normal text-[0.1em] text-gray-600">
+                    Describe your situation, who is the beneficiary, the goal of this fundraiser and how the fund will be used,...
+                  </div>
                   {errors.description?.type === "required" && (
                     <p className="text-red-600 text-sm">
                       {errors.description.message}
@@ -262,8 +265,8 @@ const CreateProject = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block mb-2 font-medium text-gray-900">
-                    Set due date:
+                  <label className="block mb-2 text-lg font-medium text-gray-900">
+                    Set due date <span className="text-red-700">*</span>
                   </label>
                   <Datepicker
                     minDate={new Date(Date.now())}
@@ -278,11 +281,11 @@ const CreateProject = () => {
                 </div>
 
                 <div className="p-5 border rounded-lg space-y-4">
-                  <div className="font-semibold">Beneficiary Information</div>
+                  <div className="font-semibold">Beneficiary Information <span className="text-red-700">*</span></div>
                   <div className="flex space-x-4">
                     <div className="flex items-end space-x-3">
-                      <label className="block mb-2 font-medium text-gray-900">
-                        Name:{" "}
+                      <label className="block mb-2 text-lg font-medium text-gray-900">
+                        Name
                       </label>
                       <input
                         {...register("receiver_name", {
@@ -301,7 +304,7 @@ const CreateProject = () => {
                     </div>
                     <div className="flex items-end space-x-3">
                       <label className="block font-medium text-gray-900">
-                        Phone number:{" "}
+                        Phone number
                       </label>
                       <input
                         {...register("receiver_number", {
@@ -321,8 +324,8 @@ const CreateProject = () => {
                   </div>
 
                   <div className="flex items-end space-x-3">
-                    <label className="block mb-2 font-medium text-gray-900">
-                      Select location:{" "}
+                    <label className="block mb-2 text-lg font-medium text-gray-900">
+                      Select location
                     </label>
                     <select
                       {...register("country", {
@@ -390,7 +393,7 @@ const CreateProject = () => {
                   </div>
                 </div>
                 {/*<div className="flex items-baseline space-x-1">
-            <label className="block mb-2 font-medium text-gray-900">
+            <label className="block mb-2 text-lg font-medium text-gray-900">
               Set goal:
             </label>
             <div className="flex items-baseline bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 px-3 py-1">

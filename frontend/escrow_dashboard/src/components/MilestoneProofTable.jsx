@@ -6,6 +6,7 @@ import escrowService from "../services/escrow";
 import { Button, Modal, Table, Label, Textarea } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { CLIENT_URL } from "../constants";
 
 const MilestoneProofTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const MilestoneProofTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
               <Table.Cell>
                 <a
                   target="_blank"
-                  href={`http://localhost:4001/fundraiser/${item?.milestone.project_id}`}
+                  href={`${CLIENT_URL}/fundraiser/${item?.milestone.project_id}`}
                   className="flex text-gray-700 hover:font-semibold text-sm hover:text-blue-700"
                 >
                   <IoOpenOutline className="ml-1 w-5 h-5" />
