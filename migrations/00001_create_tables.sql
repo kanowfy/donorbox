@@ -4,7 +4,8 @@ CREATE TYPE project_status AS ENUM (
   'ongoing',
   'rejected',
   'finished',
-  'disputed'
+  'disputed',
+  'stopped'
 );
 
 CREATE TYPE verification_status AS ENUM (
@@ -36,6 +37,12 @@ CREATE TYPE proof_status AS ENUM (
   'pending',
   'rejected',
   'approved'
+);
+
+CREATE TYPE report_status AS ENUM (
+  'pending',
+  'dismissed',
+  'resolved'
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -148,7 +155,22 @@ CREATE TABLE IF NOT EXISTS audit_trails (
   created_at timestamptz NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS project_reports (
+  id bigserial PRIMARY KEY,
+  project_id bigint NOT NULL REFERENCES projects(id),
+  email varchar(255) UNIQUE NOT NULL,
+  full_name varchar(100) NOT NULL,
+  phone_number varchar(11) NOT NULL,
+  relation text,
+  reason text NOT NULL,
+  details text NOT NULL,
+  proof_media_url text,
+  status report_status NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT NOW()
+);
+
 -- +goose Down
+DROP TABLE IF EXISTS project_reports;
 DROP TABLE IF EXISTS audit_trails;
 DROP TABLE IF EXISTS backings;
 DROP TABLE IF EXISTS notifications;
@@ -157,10 +179,11 @@ DROP TABLE IF EXISTS user_spending_proofs;
 DROP TABLE IF EXISTS milestones;
 DROP TABLE IF EXISTS projects;
 DROP TABLE IF EXISTS categories;
--- DROP TABLE IF EXISTS escrow_users;
--- DROP TABLE IF EXISTS users;
--- DROP TYPE verification_status;
+DROP TABLE IF EXISTS escrow_users;
+DROP TABLE IF EXISTS users;
+DROP TYPE verification_status;
 DROP TYPE project_status;
 DROP TYPE milestone_status;
 DROP TYPE notification_type;
 DROP TYPE proof_status;
+DROP TYPE report_status;
