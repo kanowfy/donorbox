@@ -42,7 +42,7 @@ type Config struct {
 	DropboxAppKey       string `env:"DROPBOX_APP_KEY"`
 	DropboxAppSecret    string `env:"DROPBOX_APP_SECRET"`
 
-	WeaviateHost string `env:"WEAIVATE_HOST" envDefault:"localhost"`
+	WeaviateHost string `env:"WEAVIATE_HOST" envDefault:"localhost"`
 	WeaviatePort string `env:"WEAVIATE_PORT" envDetault:"9000"`
 	GeminiApiKey string `env:"GEMINI_API_KEY"`
 }
