@@ -24,7 +24,7 @@ services:
     ports:
       - "4000:4000"
     env_file:
-      - ./.env
+      - ../.env.prod
     depends_on:
       - postgres
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/api"]

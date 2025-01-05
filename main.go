@@ -134,7 +134,7 @@ func openDB(cfg config.Config) (*pgxpool.Pool, error) {
 
 func initWeaviate(ctx context.Context, cfg config.Config) (*weaviate.Client, error) {
 	client, err := weaviate.NewClient(weaviate.Config{
-		Host:   "localhost:" + cfg.WeaviatePort,
+		Host:   fmt.Sprintf("%s:%s", cfg.WeaviateHost, cfg.WeaviatePort),
 		Scheme: "http",
 	})
 	if err != nil {
