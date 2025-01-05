@@ -45,6 +45,7 @@ jobs:
           build-args: |
             API_URL=${{ secrets.API_URL }}
             CLIENT_URL=${{ secrets.CLIENT_URL }}
+            STRIPE_PK=${{ secrets.STRIPE_PK }}
 
       - name: Build and push dashboard
         uses: docker/build-push-action@v5

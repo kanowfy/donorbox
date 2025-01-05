@@ -14,7 +14,7 @@ services:
     image: cr.weaviate.io/semitechnologies/weaviate:1.27.6
     container_name: donorbox-vector-db
     ports:
-      - 9000:8080
+      - 8080:8080
       - 50051:50051
     restart: on-failure:0
 
@@ -27,6 +27,7 @@ services:
       - ../.env.prod
     depends_on:
       - postgres
+      - weaviate
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/api"]
 
   client:
