@@ -8,6 +8,7 @@ import (
 	"github.com/kanowfy/donorbox/internal/middleware"
 )
 
+// Setup configure the endpoints for the handlers and returns a router.
 func Setup(handlers handler.Handlers, authMiddleware middleware.Auth, cfg config.Config) http.Handler {
 	router := http.NewServeMux()
 

@@ -17,6 +17,7 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
+// GenerateToken creates a JWT token for the specified userID and valid duration.
 func GenerateToken(userID int64, ttl time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
@@ -33,6 +34,7 @@ func GenerateToken(userID int64, ttl time.Duration) (string, error) {
 	return tokenString, nil
 }
 
+// VerifyToken parses a JWT token and returns the associated user ID.
 func VerifyToken(tokenString string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
@@ -67,6 +69,7 @@ func VerifyToken(tokenString string) (int64, error) {
 	return int64(id.(float64)), nil
 }
 
+// VerifyRequestToken grabs the JWT token from a request header and call VerifyToken to verifies it.
 func VerifyRequestToken(r *http.Request) (int64, error) {
 	val := r.Header.Get("Authorization")
 	if val == "" {

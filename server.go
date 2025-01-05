@@ -75,7 +75,7 @@ func (app *application) run() error {
 	}
 
 	cronJobs := cron.New(projectService)
-	cronJobs.Start()
+	cronJobs.RunDaily()
 
 	go func() {
 		slog.Info(fmt.Sprintf("starting server at %s", srv.Addr))

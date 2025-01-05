@@ -16,6 +16,7 @@ func New(notifChan chan model.Notification) Publisher {
 	}
 }
 
+// Publish sends a notification to the configured notification channel
 func (p *publisher) Publish(notification model.Notification) {
 	p.notifChan <- notification
 }

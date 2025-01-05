@@ -9,11 +9,13 @@ import (
 	"github.com/kanowfy/donorbox/internal/service"
 )
 
+// CronJob contains dependencies for running cronjob.
 type CronJob struct {
 	projectService service.Project
 	scheduler      *gocron.Scheduler
 }
 
+// New creates a new CronJob instance.
 func New(service service.Project) *CronJob {
 	return &CronJob{
 		projectService: service,
@@ -21,8 +23,9 @@ func New(service service.Project) *CronJob {
 	}
 }
 
-func (c *CronJob) Start() {
-	slog.Info("Starting cronjob...")
+// RunDaily schedules jobs to be run at 0:00 local time everyday.
+func (c *CronJob) RunDaily() {
+	slog.Info("Starting cronjob at daily interval...")
 	s := gocron.NewScheduler(time.Local)
 	s.Every(1).Day().At("00:00").StartImmediately().Do(c.checkRefutedMilestones)
 	s.StartAsync()
@@ -34,12 +37,3 @@ func (c *CronJob) checkRefutedMilestones() {
 		slog.Error("error running cronjob", "error", err)
 	}
 }
-
-/*
-func (c *CronJob) updateProjectStatus() {
-	err := c.projectService.CheckAndUpdateFinishedProjects(context.Background())
-	if err != nil {
-		slog.Error(err.Error())
-	}
-}
-*/

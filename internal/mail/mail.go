@@ -30,6 +30,7 @@ func New(host string, port int, username, password, sender string) Mailer {
 	}
 }
 
+// Send sends a template email with data to a recipient with configured mailer settings.
 func (m mailer) Send(recipient, templateFile string, data interface{}) error {
 	// Parse the required templates from the embedded file system
 	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)

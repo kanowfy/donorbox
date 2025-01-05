@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config holds application wide configurations
 type Config struct {
 	Host string `env:"HOST" envDefault:"localhost"`
 	Port int    `env:"PORT" envDefault:"4000"`
@@ -45,6 +46,7 @@ type Config struct {
 	GeminiApiKey string `env:"GEMINI_API_KEY"`
 }
 
+// Load loads configuration values from .env file
 func Load() (Config, error) {
 	godotenv.Load(".env")
 	var cfg Config
