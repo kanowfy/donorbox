@@ -12,7 +12,11 @@ import (
 //go:embed "templates"
 var templateFS embed.FS
 
-type Mailer struct {
+type Mailer interface {
+	Send(recipient, templateFile string, data interface{}) error
+}
+
+type mailer struct {
 	dialer *mail.Dialer
 	sender string
 }
@@ -20,13 +24,14 @@ type Mailer struct {
 func New(host string, port int, username, password, sender string) Mailer {
 	dialer := mail.NewDialer(host, port, username, password)
 	dialer.Timeout = time.Second * 5
-	return Mailer{
+	return mailer{
 		dialer: dialer,
 		sender: sender,
 	}
 }
 
-func (m Mailer) Send(recipient, templateFile string, data interface{}) error {
+// Send sends a template email with data to a recipient with configured mailer settings.
+func (m mailer) Send(recipient, templateFile string, data interface{}) error {
 	// Parse the required templates from the embedded file system
 	tmpl, err := template.New("email").ParseFS(templateFS, "templates/"+templateFile)
 	if err != nil {

@@ -1,12 +1,15 @@
 import utils from "../../../utils/utils";
-import { Button, Tooltip } from "flowbite-react";
+import { Button, Timeline, Tooltip } from "flowbite-react";
 import { CiEdit } from "react-icons/ci";
+import { FiEye } from "react-icons/fi";
 import { FaRegCopy } from "react-icons/fa";
-import { MdPayment } from "react-icons/md";
-import { Link, useOutletContext } from "react-router-dom";
+import { HiCalendar } from "react-icons/hi";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { SERVE_URL } from "../../../constants";
 
 const ManageDashboard = () => {
-  const { project } = useOutletContext();
+  const navigate = useNavigate();
+  const { project, milestones } = useOutletContext();
   return (
     <div>
       <div className="rounded-xl overflow-hidden h-96 aspect-[4/3] object-cover">
@@ -21,40 +24,62 @@ const ManageDashboard = () => {
           className="bg-green-400 h-1 rounded-full"
           style={{
             width: `${utils.calculateProgress(
-              project?.current_amount,
-              project?.goal_amount
+              project?.total_fund,
+              project?.fund_goal
             )}%`,
           }}
         ></div>
       </div>
       <div className="flex justify-between">
-        <div className="flex space-x-1">
-          {project?.current_amount > 0 && (
+        <div className="flex space-x-1 text-xl">
+          {project?.total_fund > 0 && (
             <div>
               <span className="font-medium">
                 ₫
-                {project?.current_amount &&
-                  utils.formatNumber(project?.current_amount)}
+                {project?.total_fund && utils.formatNumber(project?.total_fund)}
               </span>
               <span className="ml-1">raised of</span>
             </div>
           )}
           <div className="font-medium">
-            ₫{project?.goal_amount && utils.formatNumber(project?.goal_amount)}{" "}
-            goal
+            ₫{project?.fund_goal && utils.formatNumber(project?.fund_goal)} goal
           </div>
         </div>
       </div>
 
+      <div className="mt-10">
+        <Timeline horizontal>
+          {milestones
+            ?.sort((a, b) => a.id - b.id)
+            .map((m) => (
+              <Timeline.Item key={m.id}>
+                <Timeline.Point icon={HiCalendar} />
+                <Timeline.Content>
+                  <Timeline.Title>{m.title}</Timeline.Title>
+                  <div className=" text-red-500 tracking-tight font-semibold">
+                    ₫{utils.formatNumber(m.current_fund)} / ₫
+                    {utils.formatNumber(m.fund_goal)}
+                  </div>
+                  <Timeline.Body>{m?.description}</Timeline.Body>
+                </Timeline.Content>
+              </Timeline.Item>
+            ))}
+        </Timeline>
+      </div>
       <div className="flex space-x-2 mt-5">
         <Tooltip
-          content="You can edit your fundraiser if it has not received any donation."
+          content="Go to milestone page."
           style="light"
           placement="bottom"
         >
-          <Button color="light" disabled={project?.current_amount > 0}>
-            <CiEdit className="mr-2 h-5 w-5" />
-            Edit
+          <Button
+            color="light"
+            onClick={() => {
+              navigate(`/fundraiser/${project?.id}`);
+            }}
+          >
+            <FiEye className="mr-2 h-5 w-5" />
+            View
           </Button>
         </Tooltip>
 
@@ -67,26 +92,13 @@ const ManageDashboard = () => {
             color="light"
             onClick={() =>
               navigator.clipboard.writeText(
-                `localhost:5173/fundraiser/${project?.id}`
+                `${SERVE_URL}/fundraiser/${project?.id}`
               )
             }
           >
             <FaRegCopy className="mr-2 h-5 w-5" />
             Copy link
           </Button>
-        </Tooltip>
-
-        <Tooltip
-          content="Setup transfer before due date so you can receive funds when your fundraiser succeeds."
-          style="light"
-          placement="bottom"
-        >
-          <Link to={`/manage/${project?.id}/transfer`}>
-            <Button color="light" disabled={project?.card_id}>
-              <MdPayment className="mr-2 h-5 w-5" />
-              Setup Transfer
-            </Button>
-          </Link>
         </Tooltip>
       </div>
     </div>

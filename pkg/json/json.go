@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// WriteJSON writes a response with data, status and any custom headers.
 func WriteJSON(w http.ResponseWriter, status int, data map[string]interface{}, headers http.Header) error {
 	encoded, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
@@ -28,6 +29,7 @@ func WriteJSON(w http.ResponseWriter, status int, data map[string]interface{}, h
 	return nil
 }
 
+// ReadJSON parses a request body from a request into dest.
 func ReadJSON(w http.ResponseWriter, r *http.Request, dest interface{}) error {
 	// limit request body to maximum of 1MB
 	maxBytes := 1_048_576

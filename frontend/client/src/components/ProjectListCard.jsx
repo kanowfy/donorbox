@@ -1,8 +1,22 @@
-import { Button } from "flowbite-react";
+import { Badge, Button } from "flowbite-react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
-const ProjectListCard = ({ id, img, title, date }) => {
+const ProjectListCard = ({ id, img, title, status, date }) => {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "pending":
+        return "warning"
+      case "ongoing":
+        return "info"
+      case "finished":
+        return "success"
+      case "rejected":
+        return "failure"
+      default:
+        return "dark"
+    }
+  }
   return (
     <div className="rounded-lg border py-5 px-4 grid grid-cols-10 gap-4">
       <div className="overflow-hidden col-span-3">
@@ -12,7 +26,10 @@ const ProjectListCard = ({ id, img, title, date }) => {
       </div>
       <div className="col-span-7 flex flex-col justify-between">
         <div className="space-y-4">
-          <div className="font-medium">{title}</div>
+          <div className="flex justify-between">
+            <div className="font-medium">{title}</div>
+            <Badge color={getStatusColor(status)}>{status}</Badge>
+          </div>
           <div className="text-sm text-gray-600">
             Fundraiser created on {date}
           </div>
@@ -34,6 +51,7 @@ ProjectListCard.propTypes = {
   id: PropTypes.string,
   img: PropTypes.string,
   title: PropTypes.string,
+  status: PropTypes.string,
   date: PropTypes.string,
 };
 

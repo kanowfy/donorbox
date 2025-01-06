@@ -1,7 +1,24 @@
--- name: CreateReport :one
-INSERT INTO reports (
-    project_id, reporter_email, reporter_phone_number, reason, details
+-- name: CreateProjectReport :one
+INSERT INTO project_reports (
+    project_id, email, full_name, phone_number, relation, reason, details, proof_media_url
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
 RETURNING *;
+
+-- name: GetAllProjectReports :many
+SELECT * FROM project_reports
+ORDER BY created_at;
+
+-- name: UpdateProjectReportStatus :exec
+UPDATE project_reports
+SET status = $2
+WHERE id = $1;
+
+-- name: GetProjectReportByID :one
+SELECT * FROM project_reports
+WHERE id = $1;
+
+-- name: GetResolvedProjectReportsForProject :many
+SELECT * FROM project_reports
+WHERE project_id = $1 AND status = 'resolved';

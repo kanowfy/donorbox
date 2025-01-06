@@ -19,6 +19,7 @@ type BeginTXer interface {
 	BeginTX(ctx context.Context, opt pgx.TxOptions) (Querier, TX, error)
 }
 
+// BeginTX creates resources to run a database transaction
 func (q *Queries) BeginTX(ctx context.Context, opt pgx.TxOptions) (Querier, TX, error) {
 	txer, ok := q.db.(*pgxpool.Pool)
 	if !ok {

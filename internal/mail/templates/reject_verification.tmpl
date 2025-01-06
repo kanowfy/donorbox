@@ -1,0 +1,33 @@
+{{define "subject"}}Donorbox - Account verification result{{end}}
+
+{{define "plainBody"}}
+Hi {{.firstName}},
+
+Thanks for your account verification submission.
+
+We are sorry to inform you that your provided document did not meet the requirement.
+
+Reason: {{.rejectReason}}
+
+Sincerely,
+
+Donorbox Team
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <p>Hi, </p>
+    <p>Thanks for your account verification submission.</p>
+    <p>We are sorry to inform you that your provided document did not meet the requirement.</p>
+    <p>Reason: {{.rejectReason}}</p>
+    <p>Sincerely,</p>
+    <p>Donorbox Team</p>
+</body>
+</html>
+{{end}}

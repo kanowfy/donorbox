@@ -14,6 +14,7 @@ const (
 	escrowContextKey = contextKey("escrow")
 )
 
+// SetUser attaches current user to the request context.
 func SetUser(r *http.Request, user *model.User) *http.Request {
 	ctx := context.WithValue(r.Context(), userContextKey, user)
 	return r.WithContext(ctx)
@@ -28,6 +29,7 @@ func GetUser(r *http.Request) *model.User {
 	return user
 }
 
+// SetEscrowUser attaches current escrow user to the request context.
 func SetEscrowUser(r *http.Request, escrow *model.EscrowUser) *http.Request {
 	ctx := context.WithValue(r.Context(), escrowContextKey, escrow)
 	return r.WithContext(ctx)

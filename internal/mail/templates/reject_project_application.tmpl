@@ -1,0 +1,31 @@
+{{define "subject"}}Donorbox - Fundraiser submission result{{end}}
+
+{{define "plainBody"}}
+Hi,
+
+We are sorry to inform you that your fundraiser submission "{{.title}} did not meet the requirement for launch.
+
+Reason: {{.rejectReason}}
+
+Sincerely,
+
+Donorbox Team
+{{end}}
+
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <p>Hi, </p>
+    <p>Thanks for your account verification submission.</p>
+    <p>We are sorry to inform you that your fundraiser submission "{{.title}} did not meet the requirement for launch.</p>
+    <p>Reason: {{.rejectReason}}</p>
+    <p>Sincerely,</p>
+    <p>Donorbox Team</p>
+</body>
+</html>
+{{end}}

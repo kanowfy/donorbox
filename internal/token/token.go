@@ -17,7 +17,8 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 )
 
-func GenerateToken(userID string, ttl time.Duration) (string, error) {
+// GenerateToken creates a JWT token for the specified userID and valid duration.
+func GenerateToken(userID int64, ttl time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"iss": "donorbox",
@@ -33,7 +34,8 @@ func GenerateToken(userID string, ttl time.Duration) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (string, error) {
+// VerifyToken parses a JWT token and returns the associated user ID.
+func VerifyToken(tokenString string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		_, ok := t.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -46,12 +48,12 @@ func VerifyToken(tokenString string) (string, error) {
 
 	if err != nil {
 		slog.Debug(fmt.Sprintf("can not parse token: %v", err))
-		return "", ErrInvalidToken
+		return 0, ErrInvalidToken
 	}
 
 	if !token.Valid {
 		slog.Debug("invalid token")
-		return "", ErrInvalidToken
+		return 0, ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -64,25 +66,26 @@ func VerifyToken(tokenString string) (string, error) {
 		panic("missing id claims")
 	}
 
-	return id.(string), nil
+	return int64(id.(float64)), nil
 }
 
-func VerifyRequestToken(r *http.Request) (string, error) {
+// VerifyRequestToken grabs the JWT token from a request header and call VerifyToken to verifies it.
+func VerifyRequestToken(r *http.Request) (int64, error) {
 	val := r.Header.Get("Authorization")
 	if val == "" {
-		return "", ErrMissingToken
+		return 0, ErrMissingToken
 	}
 
 	parts := strings.Split(val, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", ErrInvalidToken
+		return 0, ErrInvalidToken
 	}
 
 	tokenString := parts[1]
 
 	id, err := VerifyToken(tokenString)
 	if err != nil {
-		return "", ErrInvalidToken
+		return 0, ErrInvalidToken
 	}
 
 	return id, nil

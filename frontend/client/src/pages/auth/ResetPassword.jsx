@@ -38,7 +38,7 @@ const ResetPassword = () => {
               </div>
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900">
-                  New password
+                  New password <span className="text-red-700">*</span>
                 </label>
                 <input
                   {...register("new_password", {
@@ -62,7 +62,7 @@ const ResetPassword = () => {
               </div>
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Confirm new password
+                  Confirm new password <span className="text-red-700">*</span>
                 </label>
                 <input
                   {...register("password", {

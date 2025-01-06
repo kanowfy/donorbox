@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import projectService from "../../services/project";
-import { Button } from "flowbite-react";
+import { Button, Modal, FileInput } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import Cleave from "cleave.js/react";
 import "cleave.js/dist/addons/cleave-phone.i18n.js";
+import utils from "../../utils/utils";
 
 const reasons = [
   "Fundraiser contains factually incorrect information",
@@ -15,10 +16,16 @@ const reasons = [
 
 const ReportProject = () => {
   const params = useParams();
+  const navigate = useNavigate();
   const [countries, setCountries] = useState();
   const [phoneCode, setPhoneCode] = useState("VN");
   const [project, setProject] = useState();
-  const navigate = useNavigate();
+  const [isCheckRelated, setIsCheckRelated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
+  const [img, setImg] = useState();
+  const [preview, setPreview] = useState();
 
   const {
     register,
@@ -28,9 +35,37 @@ const ReportProject = () => {
     reset,
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    reset();
+  const onSubmit = async (data) => {
+    setIsLoading(true);
+    try {
+      let payload = {
+        full_name: data.full_name,
+        email: data.email,
+        phone_number: data.phone_number,
+        reason: data.reason,
+        details: data.details,
+      };
+
+      if (data.relation) {
+        payload.relation = data.relation;
+      }
+
+      if (data.img) {
+        payload.proof_image = await utils.uploadImage(data.img);
+      }
+
+      await projectService.createReport(project?.id, payload);
+      setIsLoading(false);
+      setIsSuccessful(true);
+      setTimeout(() => {
+        setIsSuccessful(false);
+        navigate(0);
+      }, 3000);
+    } catch (err) {
+      //modal
+      setIsFailed(true);
+      setIsLoading(false);
+    }
   };
 
   const handleSelectCountry = (e) => {
@@ -62,6 +97,28 @@ const ReportProject = () => {
     fetchProject();
   }, [params.id, navigate]);
 
+  useEffect(() => {
+    if (!img) {
+      setPreview(undefined);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(img);
+    setPreview(objectUrl);
+
+    return () => URL.revokeObjectURL(img);
+  }, [img]);
+
+  function onSelectImage(e) {
+    if (!e.target.files || e.target.files.length == 0) {
+      setImg(undefined);
+      return;
+    }
+
+    setImg(e.target.files[0]);
+    setValue("img", e.target.files[0]);
+  }
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-1/3 my-10 space-y-7">
@@ -75,8 +132,8 @@ const ReportProject = () => {
               details.
             </div>
             <div>
-              <label className="block  font-medium text-gray-600">
-                Your full name:
+              <label className="block font-medium text-gray-600">
+                Your full name <span className="text-red-700">*</span>
               </label>
               <input
                 {...register("full_name", {
@@ -93,8 +150,8 @@ const ReportProject = () => {
               )}
             </div>
             <div>
-              <label className="block  font-medium text-gray-600">
-                Your Email:
+              <label className="block font-medium text-gray-600">
+                Your Email <span className="text-red-700">*</span>
               </label>
               <input
                 {...register("email", {
@@ -109,8 +166,8 @@ const ReportProject = () => {
               )}
             </div>
             <div>
-              <label className="block  font-medium text-gray-600">
-                Your phone number:
+              <label className="block font-medium text-gray-600">
+                Your phone number <span className="text-red-700">*</span>
               </label>
               <div className="grid grid-cols-10 gap-1">
                 <select
@@ -161,9 +218,56 @@ const ReportProject = () => {
                 {project?.title}
               </Link>
             </div>
+            <fieldset>
+              <legend className="block font-medium text-gray-600">
+                Do you know about the owner or beneficiary of the campaign?
+              </legend>
+              <div className="flex gap-5 my-2">
+                <div className="space-x-1">
+                  <input
+                    type="radio"
+                    id="yes"
+                    checked={isCheckRelated}
+                    onChange={(e) => setIsCheckRelated(true)}
+                  />
+                  <label htmlFor="yes">Yes</label>
+                </div>
+                <div className="space-x-1">
+                  <input
+                    type="radio"
+                    id="no"
+                    checked={!isCheckRelated}
+                    onChange={(e) => setIsCheckRelated(false)}
+                  />
+                  <label htmlFor="no">No</label>
+                </div>
+              </div>
+            </fieldset>
+
+            {isCheckRelated && (
+              <div>
+                <label className="block font-medium text-gray-600">
+                  Tell us about your relation with the fundraiser
+                </label>
+                <input
+                  {...register("relation", {
+                    required:
+                      "Please specify your relation with the fundraiser",
+                  })}
+                  type="text"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                  placeholder=""
+                />
+                {errors.relationship?.type === "required" && (
+                  <p className="text-red-600 text-sm">
+                    {errors.relationship.message}
+                  </p>
+                )}
+              </div>
+            )}
             <div>
               <label className="block  font-medium text-gray-600">
-                Reason:
+                Reason <span className="text-red-700">*</span>
               </label>
               <select
                 {...register("reason", {
@@ -187,8 +291,8 @@ const ReportProject = () => {
               )}
             </div>
             <div>
-              <label className="block  font-medium text-gray-600">
-                Details of the report:
+              <label className="block font-medium text-gray-600">
+                Details of the report <span className="text-red-700">*</span>
               </label>
               <textarea
                 {...register("details", {
@@ -202,12 +306,66 @@ const ReportProject = () => {
                 <p className="text-red-600 text-sm">{errors.details.message}</p>
               )}
             </div>
+
+            <div>
+              <label className="block font-medium text-gray-600">
+                Attach a photo proof - <i>Optional</i>
+              </label>
+              <FileInput
+                accept="image/png, image/jpeg"
+                onChange={onSelectImage}
+              />
+            </div>
+            {img && (
+              <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover">
+                <img
+                  src={preview}
+                  className="w-full h-full m-auto object-cover"
+                />
+              </div>
+            )}
           </div>
-          <Button color="dark" size="lg" type="submit">
+          <Button color="dark" size="lg" type="submit" isProcessing={isLoading}>
             Submit report
           </Button>
         </form>
       </div>
+      <Modal
+        show={isSuccessful}
+        size="md"
+        onClose={() => setIsSuccessful(false)}
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center flex flex-col space-y-2">
+            <img
+              src="/success.svg"
+              height={32}
+              width={32}
+              className="mx-auto"
+            />
+            <h3 className="mb-5 text-xl font-normal text-gray-500 dark:text-gray-400">
+              Reported created successfully
+            </h3>
+            <p className="text-xs text-gray-600">
+              We will contact you should we require more details about the report
+            </p>
+          </div>
+        </Modal.Body>
+      </Modal>
+      <Modal show={isFailed} size="md" onClose={() => setIsFailed(false)} popup>
+        <Modal.Header />
+        <Modal.Body>
+          <div className="text-center flex flex-col space-y-2">
+            <img src="/fail.svg" height={32} width={32} className="mx-auto" />
+            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+              Failed to create report
+            </h3>
+            <h3 className="mb-5 text-red-500">Please try again later</h3>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

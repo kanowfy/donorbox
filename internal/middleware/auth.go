@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/kanowfy/donorbox/internal/token"
@@ -28,6 +27,8 @@ func NewAuth(userService service.User, escrowService service.Escrow) Auth {
 	}
 }
 
+// RequireUserAuthentication checks for valid JWT token from user request,
+// it short circuit the request if the token is missing or malformed.
 func (a *auth) RequireUserAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// extract and verify token
@@ -41,7 +42,7 @@ func (a *auth) RequireUserAuthentication(next http.HandlerFunc) http.HandlerFunc
 			return
 		}
 
-		user, err := a.userService.GetUserByID(r.Context(), uuid.MustParse(id))
+		user, err := a.userService.GetUserByID(r.Context(), id)
 		if err != nil {
 			httperror.InvalidCredentialsResponse(w, r)
 			return
@@ -52,6 +53,8 @@ func (a *auth) RequireUserAuthentication(next http.HandlerFunc) http.HandlerFunc
 	})
 }
 
+// RequireUserAuthentication checks for valid JWT token from escrow user request,
+// it short circuit the request if the token is missing or malformed.
 func (a *auth) RequireEscrowAuthentication(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id, err := token.VerifyRequestToken(r)
@@ -64,7 +67,7 @@ func (a *auth) RequireEscrowAuthentication(next http.HandlerFunc) http.HandlerFu
 			return
 		}
 
-		user, err := a.escrowService.GetEscrowByID(r.Context(), uuid.MustParse(id))
+		user, err := a.escrowService.GetEscrowByID(r.Context(), id)
 		if err != nil {
 			httperror.InvalidCredentialsResponse(w, r)
 			return

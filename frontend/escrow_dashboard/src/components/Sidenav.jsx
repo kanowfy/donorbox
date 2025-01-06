@@ -3,9 +3,13 @@ import { Link } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { LuLogOut } from "react-icons/lu";
 import { RxDashboard } from "react-icons/rx";
-import { MdPayments } from "react-icons/md";
-import { RiRefund2Fill } from "react-icons/ri";
 import { AiOutlineAudit } from "react-icons/ai";
+import { MdOutlineCancel, MdOutlinePostAdd } from "react-icons/md";
+import { GoMilestone } from "react-icons/go";
+import { FiUserCheck } from "react-icons/fi";
+import { FiBook } from "react-icons/fi";
+import { MdOutlineReport } from "react-icons/md";
+import { GiCancel } from "react-icons/gi";
 
 const customSidenavTheme = {
   root: {
@@ -113,23 +117,56 @@ const Sidenav = () => {
                 <Sidebar.Item as={Link} to="/" icon={RxDashboard}>
                   Dashboard
                 </Sidebar.Item>
-                <Sidebar.Item as={Link} to="/manage/payout" icon={MdPayments}>
-                  Manage Payouts
-                </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}
-                  to="/manage/refund"
-                  icon={RiRefund2Fill}
+                  to="/manage/projects"
+                  icon={MdOutlinePostAdd}
                 >
-                  Manage Refunds
+                  Manage Projects 
                 </Sidebar.Item>
                 <Sidebar.Item
                   as={Link}
-                  to="/transactions"
+                  to="/manage/milestones"
+                  icon={GoMilestone}
+                >
+                  Resolve Milestones 
+                </Sidebar.Item>
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/verifications"
+                  icon={FiUserCheck}
+                >
+                  User Verifications
+                </Sidebar.Item>
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/reports"
+                  icon={MdOutlineReport}
+                >
+                  Fundraiser Reports
+                </Sidebar.Item>
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/disputes"
+                  icon={MdOutlineCancel}
+                >
+                  Disputed Fundraisers
+                </Sidebar.Item>
+                {<Sidebar.Item
+                  as={Link}
+                  to="/audits"
                   icon={AiOutlineAudit}
                 >
-                  Transaction Audits
+                  Audit Trails
+                </Sidebar.Item>}
+                <Sidebar.Item
+                  as={Link}
+                  to="/manage/documents"
+                  icon={FiBook}
+                >
+                  Knowledge Base
                 </Sidebar.Item>
+
               </Sidebar.ItemGroup>
               <Sidebar.ItemGroup>
                 <Sidebar.Item as={Link} to="/logout" icon={LuLogOut}>

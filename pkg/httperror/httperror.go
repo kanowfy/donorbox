@@ -91,3 +91,9 @@ func FailedValidationResponse(w http.ResponseWriter, r *http.Request, err error)
 
 	errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
+
+func ServiceUnavailableResponse(w http.ResponseWriter, r *http.Request, err error) {
+	LogError(r, err)
+
+	errorResponse(w, r, http.StatusServiceUnavailable, "unable to serve request")
+}

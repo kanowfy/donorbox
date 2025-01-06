@@ -36,10 +36,11 @@ const Search = () => {
   useEffect(() => {
     const searchProjects = async (q) => {
       try {
-        const response = await projectService.search(q, 1, 50);
+        const response = await projectService.search(q);
         // change to ssp
-        setProjects(response.projects.filter((p) => p.status === "ongoing"));
-        setFiltered(response.projects.filter((p) => p.status === "ongoing"));
+        console.log(response.projects);
+        setProjects(response.projects.filter(p => ["ongoing", "finished"].includes(p.status)));
+        setFiltered(response.projects.filter(p => ["ongoing", "finished"].includes(p.status)));
       } catch (err) {
         console.log(err);
       }
@@ -52,13 +53,13 @@ const Search = () => {
 
   return (
     <>
-      <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-sky-200 mt-20">
+      <section className="min-h-screen bg-cover bg-gradient-to-b from-white to-gray-200 mt-20">
         <div className="flex flex-col items-center">
           <div className="pb-7 font-semibold text-4xl tracking-tight">
-            Search for fundraising projects
+            Explore fundraising campaigns
           </div>
           <div className="pb-10 font-normal text-lg">
-            Find fundraisers by category, description or location
+            Find and filter for fundraisers by category, title, description,...
           </div>
           <div>
             <form
@@ -108,6 +109,7 @@ const Search = () => {
           {initialSearchQuery ? (
             <div>
               <div className="flex gap-1">
+                {/*
                 <Dropdown
                   label="Location"
                   dismissOnClick={false}
@@ -120,7 +122,7 @@ const Search = () => {
                     <span>Choose location worldwide</span>
                   </Dropdown.Header>
                   <Dropdown.Item></Dropdown.Item>
-                </Dropdown>
+                </Dropdown>*/}
                 <Dropdown
                   label="Category"
                   dismissOnClick={false}
@@ -161,7 +163,7 @@ const Search = () => {
                   onClick={() => {
                     setFiltered(
                       filtered.filter(
-                        (p) => p.goal_amount - p.current_amount < 1000000
+                        (p) => p.fund_goal - p.total_fund < 1000000
                       )
                     );
                   }}
@@ -233,7 +235,7 @@ const Search = () => {
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => {
-                      sortList("-current_amount");
+                      sortList("-total_fund");
                     }}
                   >
                     <ImSortAlphaAsc className="mr-2 h-5 w-5" />
@@ -241,7 +243,7 @@ const Search = () => {
                   </Dropdown.Item>
                   <Dropdown.Item
                     onClick={() => {
-                      sortList("current_amount");
+                      sortList("total_fund");
                     }}
                   >
                     <ImSortAlphaDesc className="mr-2 h-5 w-5" />
@@ -262,14 +264,14 @@ const Search = () => {
                 </Button>
               </div>
               <div className="flex justify-center">
-                <div className="grid grid-cols-1 gap-7 md:grid-cols-3 xl:grid-cols-4 mx-16 mt-10 mb-16">
-                  {filtered.map((p) => (
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-3 xl:grid-cols-3 mx-16 mt-10 mb-16">
+                  {filtered?.map((p) => (
                     <ProjectCard
                       id={p.id}
                       title={p.title}
                       cover={p.cover_picture}
-                      currentAmount={p.current_amount}
-                      goalAmount={p.goal_amount}
+                      totalFund={p.total_fund}
+                      fundGoal={p.fund_goal}
                       numBackings={p.backing_count}
                       key={p.id}
                     />

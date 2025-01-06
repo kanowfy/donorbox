@@ -4,14 +4,21 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import backingService from "../services/backing";
 import { Avatar, Modal } from "flowbite-react";
-import Donator from "./Donator";
+import { PiShareFatThin } from "react-icons/pi";
+import { FaFacebook } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { IoIosMail } from "react-icons/io";
+import { IoMdCopy } from "react-icons/io";
+import Donor from "./Donor";
+import { SERVE_URL } from "../constants";
 
-const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
+const DonateBox = ({ id, totalFund, fundGoal, backings, status }) => {
   const [recentBacking, setRecentBacking] = useState({});
   const [mostBacking, setMostBacking] = useState({});
   const [firstBacking, setFirstBacking] = useState({});
   const [backingCount, setBackingCount] = useState(0);
   const [viewDonations, setViewDonations] = useState(false);
+  const [isOpenShare, setIsOpenShare] = useState(false);
 
   useEffect(() => {
     const fetchBackingStats = async (projectID) => {
@@ -31,32 +38,35 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
   }, [id]);
 
   return (
-    <div className="shadow-xl p-6 rounded-lg">
-      <div>
-        <Link to={`/${id}/donate`}>
+    <div className="w-full shadow-xl p-6 rounded-lg">
+      <div className="space-y-2">
+        {status === "ongoing" && 
+        (<>
+        <Link to={`/fundraiser/${id}/donate`}>
           <div className="py-3 px-10 bg-gradient-to-b from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 flex items-center justify-center font-semibold text-lg rounded-xl">
             Donate
           </div>
         </Link>
-      </div>
-      <div className="flex my-3 gap-2 items-end justify-end mx-2 tracking-tight">
-        <span className="block text-xl font-medium">
-          ₫{currentAmount?.toLocaleString()}
-        </span>
-        <span className="text-sm text-center block text-gray-700">
-          of ₫{goalAmount?.toLocaleString()} raised
-        </span>
-      </div>
-      <div className="mx-2 my-2 bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
         <div
-          className="bg-blue-500 h-1.5 rounded-full"
-          style={{
-            width: `${utils.calculateProgress(currentAmount, goalAmount)}%`,
-          }}
-        ></div>
+          className="cursor-pointer hover:bg-gray-200 py-3 px-10 border-gray-900 border flex items-center justify-center font-semibold text-lg rounded-xl"
+          onClick={() => setIsOpenShare(true)}
+        >
+          Share
+        </div>
+        </>)}
       </div>
-      <div className="flex justify-end font-sans text-sm antialiased font-normal text-gray-700 mx-2">
-        {backingCount} donations
+      <div className="flex flex-col my-5 space-y-1 justify-center items-center">
+        <div className="block text-4xl font-bold text-yellow-400">
+          ₫{totalFund?.toLocaleString()}
+        </div>
+        <div className="text-gray-700">
+          raised of{" "}
+          <span className="text-yellow-500">₫{fundGoal?.toLocaleString()}</span>{" "}
+          target
+        </div>
+        <div className="text-gray-700">
+          from <span className="text-teal-500">{backingCount}</span> donations
+        </div>
       </div>
 
       {backingCount ? (
@@ -66,8 +76,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
               <Avatar
                 alt="avatar"
                 img={
-                  recentBacking.profile_picture
-                    ? recentBacking.profile_picture
+                  recentBacking.backer.profile_picture
+                    ? recentBacking.backer.profile_picture
                     : "/avatar.svg"
                 }
                 rounded
@@ -75,8 +85,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
             </div>
             <div className="col-span-10 flex flex-col">
               <div className="font-normal">
-                {recentBacking.first_name
-                  ? `${recentBacking.first_name} ${recentBacking.last_name}`
+                {recentBacking.backer.first_name
+                  ? `${recentBacking.backer.first_name} ${recentBacking.backer.last_name}`
                   : "Anonymous"}
               </div>
               <div className="flex gap-2 my-1">
@@ -102,8 +112,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
               <Avatar
                 alt="avatar"
                 img={
-                  mostBacking.profile_picture
-                    ? mostBacking.profile_picture
+                  mostBacking.backer.profile_picture
+                    ? mostBacking.backer.profile_picture
                     : "/avatar.svg"
                 }
                 rounded
@@ -111,8 +121,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
             </div>
             <div className="col-span-10 flex flex-col">
               <div className="font-normal">
-                {mostBacking.first_name
-                  ? `${mostBacking.first_name} ${mostBacking.last_name}`
+                {mostBacking.backer.first_name
+                  ? `${mostBacking.backer.first_name} ${mostBacking.backer.last_name}`
                   : "Anonymous"}
               </div>
               <div className="flex gap-2 my-1">
@@ -138,8 +148,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
               <Avatar
                 alt="avatar"
                 img={
-                  firstBacking.profile_picture
-                    ? firstBacking.profile_picture
+                  firstBacking.backer.profile_picture
+                    ? firstBacking.backer.profile_picture
                     : "/avatar.svg"
                 }
                 rounded
@@ -147,8 +157,8 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
             </div>
             <div className="col-span-10 flex flex-col">
               <div className="font-normal">
-                {firstBacking.first_name
-                  ? `${firstBacking.first_name} ${firstBacking.last_name}`
+                {firstBacking.backer.first_name
+                  ? `${firstBacking.backer.first_name} ${firstBacking.backer.last_name}`
                   : "Anonymous"}
               </div>
               <div className="flex gap-2 my-1">
@@ -187,13 +197,17 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
               <div className="mb-4 underline">List of donations</div>
               <div className="space-y-1">
                 {backings?.map((b) => (
-                  <Donator
+                  <Donor
                     key={b.id}
                     profile_picture={
-                      b.profile_picture ? b.profile_picture : "/avatar.svg"
+                      b.backer.profile_picture
+                        ? b.backer.profile_picture
+                        : "/avatar.svg"
                     }
-                    first_name={b.first_name ? b.first_name : "Anonymous"}
-                    last_name={b.last_name ? b.last_name : ""}
+                    first_name={
+                      b.backer.first_name ? b.backer.first_name : "Anonymous"
+                    }
+                    last_name={b.backer.last_name ? b.backer.last_name : ""}
                     amount={b.amount}
                     created_at={b.created_at}
                   />
@@ -203,25 +217,79 @@ const DonateBox = ({ id, currentAmount, goalAmount, backings }) => {
           </Modal>
         </div>
       ) : (
-        <div className="flex items-center justify-center space-x-1 mt-5">
+        <>
+        {status === "ongoing" && (<div className="flex items-center justify-center space-x-1 mt-5">
           <div>Be the first to help!</div>
           <Link
-            to={`/${id}/donate`}
+            to={`/fundraiser/${id}/donate`}
             className="font-semibold text-gray-600 underline hover:text-black"
           >
             Donate now
           </Link>
-        </div>
+        </div>)}
+        </>
       )}
+      <Modal show={isOpenShare} onClose={() => setIsOpenShare(false)} size="xl">
+        <Modal.Header>
+          <div className="flex">
+            Share this Campaign
+            <PiShareFatThin className="w-7 h-7 ml-2" />
+          </div>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="grid grid-cols-4 items-center justify-center leading-tight text-gray-700 px-10">
+            <a
+              className="flex flex-col items-center space-y-1"
+              href={`mailto:?body=${encodeURI(
+                `${SERVE_URL}/fundraiser/${id}`
+              )}`}
+              target="_blank"
+            >
+              <IoIosMail className="text-red-500 w-16 h-16" />
+              <div>Send email</div>
+            </a>
+            <a
+              className="flex flex-col items-center space-y-1"
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURI(
+                `${SERVE_URL}/fundraiser/${id}`
+              )}`}
+              target="_blank"
+            >
+              <FaFacebook className="text-blue-500 w-16 h-16" />
+              <div>Facebook</div>
+            </a>
+            <a
+              className="flex flex-col items-center space-y-1"
+              href={`https://x.com/intent/tweet?url=${encodeURI(
+                `${SERVE_URL}/fundraiser/${id}`
+              )}`}
+              target="_blank"
+            >
+              <FaXTwitter className="text-zinc-800 w-16 h-16" />
+              <div>X</div>
+            </a>
+            <div
+              className="flex flex-col items-center space-y-1 cursor-pointer"
+              onClick={() => {
+                navigator.clipboard.writeText(`${SERVE_URL}/fundraiser/${id}`);
+              }}
+            >
+              <IoMdCopy className=" w-16 h-16" />
+              <div>Copy link</div>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
 
 DonateBox.propTypes = {
   id: PropTypes.string,
-  currentAmount: PropTypes.number,
-  goalAmount: PropTypes.number,
+  totalFund: PropTypes.number,
+  fundGoal: PropTypes.number,
   backings: PropTypes.array,
+  status: PropTypes.string,
 };
 
 export default DonateBox;

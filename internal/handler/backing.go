@@ -3,16 +3,19 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/kanowfy/donorbox/internal/dto"
 	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/kanowfy/donorbox/pkg/httperror"
 	"github.com/kanowfy/donorbox/pkg/json"
+	"github.com/stripe/stripe-go/v81"
+	"github.com/stripe/stripe-go/v81/paymentintent"
 )
 
 type Backing interface {
+	CreatePaymentIntent(w http.ResponseWriter, r *http.Request)
 	GetBackingsForProject(w http.ResponseWriter, r *http.Request)
 	CreateProjectBacking(w http.ResponseWriter, r *http.Request)
 	GetProjectBackingStats(w http.ResponseWriter, r *http.Request)
@@ -31,7 +34,7 @@ func NewBacking(service service.Backing, validator *validator.Validate) Backing 
 }
 
 func (b *backing) GetBackingsForProject(w http.ResponseWriter, r *http.Request) {
-	id, err := uuid.Parse(r.PathValue("id"))
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -54,8 +57,39 @@ func (b *backing) GetBackingsForProject(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+func (b *backing) CreatePaymentIntent(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Amount int64 `json:"amount"`
+	}
+
+	if err := json.ReadJSON(w, r, &req); err != nil {
+		httperror.BadRequestResponse(w, r, err)
+		return
+	}
+
+	params := &stripe.PaymentIntentParams{
+		Amount:   stripe.Int64(req.Amount),
+		Currency: stripe.String(string(stripe.CurrencyVND)),
+		AutomaticPaymentMethods: &stripe.PaymentIntentAutomaticPaymentMethodsParams{
+			Enabled: stripe.Bool(true),
+		},
+	}
+
+	pi, err := paymentintent.New(params)
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"client_secret": pi.ClientSecret,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
+}
+
 func (b *backing) CreateProjectBacking(w http.ResponseWriter, r *http.Request) {
-	pid, err := uuid.Parse(r.PathValue("id"))
+	pid, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
@@ -74,36 +108,36 @@ func (b *backing) CreateProjectBacking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := b.service.AcceptBacking(r.Context(), pid, req); err != nil {
+	if err := b.service.CreateBacking(r.Context(), pid, req); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}
 
-	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"message": "fund accepted",
+	if err := json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
+		"message": "backing created",
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}
 }
 
 func (b *backing) GetProjectBackingStats(w http.ResponseWriter, r *http.Request) {
-	pid, err := uuid.Parse(r.PathValue("id"))
+	pid, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		httperror.NotFoundResponse(w, r)
 		return
 	}
 
-	backingAggregation, err := b.service.GetProjectBackingAggregation(r.Context(), pid)
+	mostBacking, firstBacking, recentBacking, backingCount, err := b.service.GetProjectBackingStats(r.Context(), pid)
 	if err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 		return
 	}
 
 	if err := json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"most_backing":   backingAggregation.MostAmountBacking,
-		"first_backing":  backingAggregation.FirstBacking,
-		"recent_backing": backingAggregation.RecentBacking,
-		"backing_count":  backingAggregation.TotalBacking,
+		"most_backing":   mostBacking,
+		"first_backing":  firstBacking,
+		"recent_backing": recentBacking,
+		"backing_count":  backingCount,
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

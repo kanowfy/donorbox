@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/convert"
 	"github.com/kanowfy/donorbox/internal/db"
@@ -12,24 +12,24 @@ import (
 )
 
 type Backing interface {
-	AcceptBacking(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest) error
-	GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Backing, error)
-	GetProjectBackingAggregation(ctx context.Context, projectID uuid.UUID) (*BackingAggregation, error)
+	CreateBacking(ctx context.Context, projectID int64, req dto.BackingRequest) error
+	GetBackingsForProject(ctx context.Context, projectID int64) ([]model.Backing, error)
+	GetProjectBackingStats(ctx context.Context, projectID int64) (*model.Backing, *model.Backing, *model.Backing, int64, error)
 }
 
 type backing struct {
-	repository  db.Querier
-	cardService Card
+	repository db.Querier
+	auditSvc   AuditTrail
 }
 
-func NewBacking(repository db.Querier, cardService Card) Backing {
+func NewBacking(repository db.Querier, auditSvc AuditTrail) Backing {
 	return &backing{
 		repository,
-		cardService,
+		auditSvc,
 	}
 }
 
-func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, request dto.BackingRequest) error {
+func (b *backing) CreateBacking(ctx context.Context, projectID int64, req dto.BackingRequest) error {
 	queries := b.repository.(*db.Queries)
 	q, tx, err := queries.BeginTX(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -37,24 +37,18 @@ func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, reques
 	}
 	defer tx.Rollback(ctx)
 
-	card, err := b.cardService.RequestCardToken(ctx, request.CardInformation)
-	if err != nil {
-		return err
-	}
-
-	escrow, err := q.GetEscrowUser(ctx)
-	if err != nil {
-		return err
-	}
-
+	// Create db backing
 	backingParams := db.CreateBackingParams{
-		ProjectID:     projectID,
-		Amount:        convert.MustStringToInt64(request.Amount),
-		WordOfSupport: request.WordOfSupport,
+		ProjectID: projectID,
+		Amount:    req.Amount,
 	}
 
-	if request.UserID != nil {
-		backingParams.BackerID = uuid.MustParse(*request.UserID)
+	if req.WordOfSupport != nil && *req.WordOfSupport != "" {
+		backingParams.WordOfSupport = req.WordOfSupport
+	}
+
+	if req.UserID != nil {
+		backingParams.UserID = req.UserID
 	}
 
 	backing, err := q.CreateBacking(ctx, backingParams)
@@ -62,28 +56,58 @@ func (b *backing) AcceptBacking(ctx context.Context, projectID uuid.UUID, reques
 		return err
 	}
 
-	if err = q.UpdateProjectFund(ctx, db.UpdateProjectFundParams{
-		ID:            backing.ProjectID,
-		BackingAmount: backing.Amount,
+	if err := b.auditSvc.LogAction(ctx, LogActionParams{
+		UserID:        backingParams.UserID,
+		EntityType:    "backing",
+		EntityID:      &backing.ID,
+		OperationType: "CREATE",
+		NewValue:      backing,
 	}); err != nil {
 		return err
 	}
 
-	_, err = q.CreateTransaction(ctx, db.CreateTransactionParams{
-		ProjectID:       backing.ProjectID,
-		TransactionType: db.TransactionTypeBacking,
-		Amount:          backing.Amount,
-		InitiatorCardID: card.ID,
-		RecipientCardID: escrow.CardID,
-	})
+	// assuming the milestones are sorted
+	milestones, err := q.GetMilestoneForProject(ctx, projectID)
 	if err != nil {
 		return err
+	}
+
+	remainingAmount := req.Amount
+	for _, m := range milestones {
+		backAmount := remainingAmount
+		if m.CurrentFund < m.FundGoal {
+			gap := m.FundGoal - m.CurrentFund
+			if gap < backAmount {
+				backAmount = gap
+			}
+			remainingAmount -= backAmount
+			if err := q.UpdateMilestoneFund(ctx, db.UpdateMilestoneFundParams{
+				ID:     m.ID,
+				Amount: backAmount,
+			}); err != nil {
+				return err
+			}
+
+			if remainingAmount == 0 {
+				break
+			}
+		}
+	}
+
+	// any remaining fund will go to the last milestone
+	if remainingAmount > 0 {
+		if err := q.UpdateMilestoneFund(ctx, db.UpdateMilestoneFundParams{
+			ID:     milestones[len(milestones)-1].ID,
+			Amount: remainingAmount,
+		}); err != nil {
+			return err
+		}
 	}
 
 	return tx.Commit(ctx)
 }
 
-func (b *backing) GetBackingsForProject(ctx context.Context, projectID uuid.UUID) ([]model.Backing, error) {
+func (b *backing) GetBackingsForProject(ctx context.Context, projectID int64) ([]model.Backing, error) {
 	_, err := b.repository.GetProjectByID(ctx, projectID)
 	if err != nil {
 		return nil, ErrProjectNotFound
@@ -97,15 +121,16 @@ func (b *backing) GetBackingsForProject(ctx context.Context, projectID uuid.UUID
 	var backings []model.Backing
 	for _, b := range dbBackings {
 		backings = append(backings, model.Backing{
-			ID:              b.ID,
-			ProjectID:       b.ProjectID,
-			Amount:          b.Amount,
-			WordOfSupport:   b.WordOfSupport,
-			Status:          convertBackingStatus(b.Status),
-			CreatedAt:       b.CreatedAt,
-			BackerFirstName: b.FirstName,
-			BackerLastName:  b.LastName,
-			ProfilePicture:  b.ProfilePicture,
+			ID:            b.ID,
+			ProjectID:     b.ProjectID,
+			Amount:        b.Amount,
+			WordOfSupport: b.WordOfSupport,
+			CreatedAt:     convert.MustPgTimestampToTime(b.CreatedAt),
+			Backer: &model.Backer{
+				FirstName:      b.FirstName,
+				LastName:       b.LastName,
+				ProfilePicture: b.ProfilePicture,
+			},
 		})
 	}
 
@@ -119,76 +144,68 @@ type BackingAggregation struct {
 	TotalBacking      int64
 }
 
-func (b *backing) GetProjectBackingAggregation(ctx context.Context, projectID uuid.UUID) (*BackingAggregation, error) {
+func (b *backing) GetProjectBackingStats(ctx context.Context, projectID int64) (*model.Backing, *model.Backing, *model.Backing, int64, error) {
 	mostBacking, err := b.repository.GetMostBackingDonor(ctx, projectID)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, nil, 0, nil
+		}
+		return nil, nil, nil, 0, err
 	}
 
 	firstBacking, err := b.repository.GetFirstBackingDonor(ctx, projectID)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, nil, 0, nil
+		}
+		return nil, nil, nil, 0, err
 	}
 
 	recentBacking, err := b.repository.GetMostRecentBackingDonor(ctx, projectID)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, nil, 0, nil
+		}
+		return nil, nil, nil, 0, err
 	}
 
 	count, err := b.repository.GetBackingCountForProject(ctx, projectID)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, 0, err
 	}
 
-	backingAgg := &BackingAggregation{
-		MostAmountBacking: model.Backing{
-			ID:              mostBacking.ID,
-			ProjectID:       mostBacking.ProjectID,
-			Amount:          mostBacking.Amount,
-			WordOfSupport:   mostBacking.WordOfSupport,
-			Status:          convertBackingStatus(mostBacking.Status),
-			CreatedAt:       mostBacking.CreatedAt,
-			BackerFirstName: mostBacking.FirstName,
-			BackerLastName:  mostBacking.LastName,
-			ProfilePicture:  mostBacking.ProfilePicture,
-		},
-		FirstBacking: model.Backing{
-			ID:              firstBacking.ID,
-			ProjectID:       firstBacking.ProjectID,
-			Amount:          firstBacking.Amount,
-			WordOfSupport:   firstBacking.WordOfSupport,
-			Status:          convertBackingStatus(firstBacking.Status),
-			CreatedAt:       firstBacking.CreatedAt,
-			BackerFirstName: firstBacking.FirstName,
-			BackerLastName:  firstBacking.LastName,
-			ProfilePicture:  firstBacking.ProfilePicture,
-		},
-		RecentBacking: model.Backing{
-			ID:              recentBacking.ID,
-			ProjectID:       recentBacking.ProjectID,
-			Amount:          recentBacking.Amount,
-			WordOfSupport:   recentBacking.WordOfSupport,
-			Status:          convertBackingStatus(recentBacking.Status),
-			CreatedAt:       recentBacking.CreatedAt,
-			BackerFirstName: recentBacking.FirstName,
-			BackerLastName:  recentBacking.LastName,
-			ProfilePicture:  recentBacking.ProfilePicture,
-		},
-		TotalBacking: count,
-	}
-
-	return backingAgg, nil
-}
-
-func convertBackingStatus(dbStatus db.BackingStatus) model.BackingStatus {
-	var status model.BackingStatus
-	switch dbStatus {
-	case db.BackingStatusPending:
-		status = model.BackingStatusPending
-	case db.BackingStatusRefunded:
-		status = model.BackingStatusRefunded
-	case db.BackingStatusReleased:
-		status = model.BackingStatusReleased
-	}
-	return status
+	return &model.Backing{
+			ID:            mostBacking.ID,
+			ProjectID:     mostBacking.ProjectID,
+			Amount:        mostBacking.Amount,
+			WordOfSupport: mostBacking.WordOfSupport,
+			CreatedAt:     convert.MustPgTimestampToTime(mostBacking.CreatedAt),
+			Backer: &model.Backer{
+				FirstName:      mostBacking.FirstName,
+				LastName:       mostBacking.LastName,
+				ProfilePicture: mostBacking.ProfilePicture,
+			},
+		}, &model.Backing{
+			ID:            firstBacking.ID,
+			ProjectID:     firstBacking.ProjectID,
+			Amount:        firstBacking.Amount,
+			WordOfSupport: firstBacking.WordOfSupport,
+			CreatedAt:     convert.MustPgTimestampToTime(firstBacking.CreatedAt),
+			Backer: &model.Backer{
+				FirstName:      firstBacking.FirstName,
+				LastName:       firstBacking.LastName,
+				ProfilePicture: firstBacking.ProfilePicture,
+			},
+		}, &model.Backing{
+			ID:            recentBacking.ID,
+			ProjectID:     recentBacking.ProjectID,
+			Amount:        recentBacking.Amount,
+			WordOfSupport: recentBacking.WordOfSupport,
+			CreatedAt:     convert.MustPgTimestampToTime(recentBacking.CreatedAt),
+			Backer: &model.Backer{
+				FirstName:      recentBacking.FirstName,
+				LastName:       recentBacking.LastName,
+				ProfilePicture: recentBacking.ProfilePicture,
+			},
+		}, count, nil
 }

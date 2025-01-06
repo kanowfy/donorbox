@@ -5,6 +5,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Config holds application wide configurations.
 type Config struct {
 	Host string `env:"HOST" envDefault:"localhost"`
 	Port int    `env:"PORT" envDefault:"4000"`
@@ -12,7 +13,7 @@ type Config struct {
 	DBDsn          string `env:"DB_DSN"`
 	DBUser         string `env:"DB_USER"`
 	DBPassword     string `env:"DB_PASSWORD"`
-	DBHost         string `env:"DB_HOST"`
+	DBHost         string `env:"DB_HOST" envDefault:"localhost"`
 	DBPort         int    `env:"DB_PORT" envDefault:"5432"`
 	DBName         string `env:"DB_NAME"`
 	DBSslMode      string `env:"DB_SSLMODE" envDefault:"disable"`
@@ -33,8 +34,20 @@ type Config struct {
 	GoogleClientSecret string `env:"GOOGLE_CLIENT_SECRET"`
 
 	CloudinaryAPIUrl string `env:"CLOUDINARY_API_URL"`
+
+	StripeSecretKey string `env:"STRIPE_SK"`
+
+	DropboxAccessToken  string `env:"DROPBOX_ACCESS_TOKEN"`
+	DropboxRefreshToken string `env:"DROPBOX_REFRESH_TOKEN"`
+	DropboxAppKey       string `env:"DROPBOX_APP_KEY"`
+	DropboxAppSecret    string `env:"DROPBOX_APP_SECRET"`
+
+	WeaviateHost string `env:"WEAVIATE_HOST" envDefault:"localhost"`
+	WeaviatePort string `env:"WEAVIATE_PORT" envDetault:"9000"`
+	GeminiApiKey string `env:"GEMINI_API_KEY"`
 }
 
+// Load loads configuration values from .env file.
 func Load() (Config, error) {
 	godotenv.Load(".env")
 	var cfg Config

@@ -19,8 +19,8 @@ const getOne = async (id) => {
     return response.data;
 }
 
-const search = async (query, page, pageSize) => {
-    const response = await axios.post(`${BASE_URL}/projects/search?page=${page}&page_size=${pageSize}`, {
+const search = async (query) => {
+    const response = await axios.post(`${BASE_URL}/projects/search`, {
         "query": query
     }
     )
@@ -36,17 +36,29 @@ const create = async (token, data) => {
     return response.data;
 }
 
-const createUpdate = async (token, data) => {
-    const response = await axios.post(`${BASE_URL}/projects/updates`, data, {
+const getCategoryByName = async (name) => {
+    const response = await axios.get(`${BASE_URL}/categories/${name}`);
+    return response.data;
+}
+
+const getByCategoryID = async (id) => {
+    const response = await axios.get(`${BASE_URL}/projects?category=${id}`);
+    return response.data;
+}
+
+const createProof = async (token, data) => {
+    const response = await axios.post(`${BASE_URL}/milestones/proofs`, data, {
         headers: { Authorization: `Bearer ${token}` }
     })
 
     return response.data;
 }
 
-const getUpdates = async (projectID) => {
-    const response = await axios.get(`${BASE_URL}/projects/${projectID}/updates`)
+const createReport = async (id, data) => {
+    const response = await axios.post(`${BASE_URL}/projects/${id}/reports`, data)
     return response.data;
 }
 
-export default { getAll, getForUser, search, getOne, create, createUpdate, getUpdates }
+
+
+export default { getAll, getForUser, search, getOne, create, getCategoryByName, getByCategoryID, createProof, createReport }
