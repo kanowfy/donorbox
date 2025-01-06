@@ -1,7 +1,7 @@
 const About = () => {
     return (
         <div>
-            LUL
+            To be implemented...
         </div>
     )
 }

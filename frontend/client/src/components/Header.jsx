@@ -44,6 +44,9 @@ const Header = () => {
           <Navbar.Link as={Link} to="/" className="text-lg">
             Home
           </Navbar.Link>
+          <Navbar.Link as={Link} to="/search" className="text-lg">
+            Search
+          </Navbar.Link>
           <Navbar.Link>
             <MegaMenu.Dropdown
               toggle={<span className="text-lg">Category</span>}
@@ -112,12 +115,9 @@ const Header = () => {
               </ul>
             </MegaMenu.Dropdown>
           </Navbar.Link>
-          <Navbar.Link as={Link} to="/search" className="text-lg">
-            Search
-          </Navbar.Link>
-          <Navbar.Link as={Link} to="/about" className="text-lg">
+          {/*<Navbar.Link as={Link} to="/about" className="text-lg">
             About
-          </Navbar.Link>
+          </Navbar.Link>*/}
         </Navbar.Collapse>
         <div className="flex md:order-2 flex-grow basis-0 justify-end">
           {user ? (
