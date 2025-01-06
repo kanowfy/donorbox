@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -108,8 +107,6 @@ func (b *backing) CreateProjectBacking(w http.ResponseWriter, r *http.Request) {
 		httperror.FailedValidationResponse(w, r, err)
 		return
 	}
-
-	log.Printf("%+v\n", req)
 
 	if err := b.service.CreateBacking(r.Context(), pid, req); err != nil {
 		httperror.ServerErrorResponse(w, r, err)

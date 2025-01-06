@@ -66,24 +66,7 @@ const Project = () => {
 
   return (
     <div className="mb-10">
-      {project?.status === "disputed" && (
-        <Banner>
-          <div className="flex w-full justify-between border-b border-gray-200 bg-gray-50 p-4">
-            <div className="mx-auto flex items-center">
-              <p className="flex items-center text-sm font-semibold text-red-700">
-                This fundraiser is under investigation due to violation of the
-                platform policy.
-              </p>
-            </div>
-            <Banner.CollapseButton
-              color="gray"
-              className="border-0 bg-transparent text-gray-500 dark:text-gray-400"
-            >
-              <HiX className="h-4 w-4" />
-            </Banner.CollapseButton>
-          </div>
-        </Banner>
-      )}
+      <StatusBanner status={project?.status} />
       <div className="grid grid-cols-3 gap-7 max-w-7xl min-w-1/2 mx-auto">
         <div className="col-span-2">
           <div className="text-3xl font-bold m-5">{project.title}</div>
@@ -155,24 +138,25 @@ const Project = () => {
                   {proofs?.map((p) => (
                     <div key={p.id}>
                       <div className="flex justify-between">
-                      <div className="font-medium text-sm text-gray-600">
-                        On{" "}
-                        {utils.formatDate(
-                          new Date(utils.parseDateFromRFC3339(p.created_at))
-                        )}
-                      </div>
-                      <div>
-              { p.transaction_hash && (<a className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
-              target="_blank"
-              href={`https://sepolia.etherscan.io/tx/${p?.transaction_hash}`}
-              >
-                <Tooltip content="View on blockchain explorer">
-                  Txn: {p?.transaction_hash.substring(0, 20)}
-                </Tooltip>
-              </a>)}
-
-                      </div>
-
+                        <div className="font-medium text-sm text-gray-600">
+                          On{" "}
+                          {utils.formatDate(
+                            new Date(utils.parseDateFromRFC3339(p.created_at))
+                          )}
+                        </div>
+                        <div>
+                          {p.transaction_hash && (
+                            <a
+                              className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
+                              target="_blank"
+                              href={`https://sepolia.etherscan.io/tx/${p?.transaction_hash}`}
+                            >
+                              <Tooltip content="View on blockchain explorer">
+                                Txn: {p?.transaction_hash.substring(0, 20)}
+                              </Tooltip>
+                            </a>
+                          )}
+                        </div>
                       </div>
                       <div className="tracking-tight">{p.description}</div>
                       <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
@@ -230,6 +214,7 @@ const Project = () => {
               totalFund={project.total_fund}
               fundGoal={project.fund_goal}
               backings={backings}
+              status={project.status}
             />
           </div>
           <div className="p-4">
@@ -271,9 +256,10 @@ const Project = () => {
           {milestoneReview?.milestone_completion?.transaction_hash && (
             <div className="flex flex-col items-center font-semibold space-y-1">
               Blockchain Hash:{" "}
-              <a className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
-              target="_blank"
-              href={`https://sepolia.etherscan.io/tx/${milestoneReview?.milestone_completion?.transaction_hash}`}
+              <a
+                className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
+                target="_blank"
+                href={`https://sepolia.etherscan.io/tx/${milestoneReview?.milestone_completion?.transaction_hash}`}
               >
                 <Tooltip content="View on blockchain explorer">
                   {milestoneReview?.milestone_completion?.transaction_hash}
@@ -291,6 +277,49 @@ const Project = () => {
         </Modal.Body>
       </Modal>
     </div>
+  );
+};
+
+const StatusBanner = ({status}) => {
+  const statusList = {
+    pending: {
+      text: "This fundraiser is currently under review",
+      color: "text-green-600"
+    },
+    disputed: {
+      text: "This fundraiser is under investigation due to violation of the platform policy",
+      color: "text-yellow-600"
+    },
+    stopped: {
+      text: "This fundraiser is archived due to violation of platform policy",
+      color: "text-red-700"
+    },
+    rejected: {
+      text: "This fundraiser is not eligible for launch",
+      color: "text-yellow-600"
+    },
+  }
+
+  if (!statusList.hasOwnProperty(status)) {
+    return <></>
+  }
+
+  return (
+    <Banner>
+      <div className="flex w-full justify-between border-b border-gray-200 bg-gray-50 p-4">
+        <div className="mx-auto flex items-center">
+          <p className={`flex items-center text-sm font-semibold ${statusList[status].color}`}>
+            {statusList[status].text}
+          </p>
+        </div>
+        <Banner.CollapseButton
+          color="gray"
+          className="border-0 bg-transparent text-gray-500 dark:text-gray-400"
+        >
+          <HiX className="h-4 w-4" />
+        </Banner.CollapseButton>
+      </div>
+    </Banner>
   );
 };
 

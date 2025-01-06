@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
@@ -160,45 +162,53 @@ func (u *user) UploadDocument(w http.ResponseWriter, r *http.Request) {
 
 	file, header, err := r.FormFile("file")
 	if err != nil {
-		httperror.BadRequestResponse(w, r, err)
+		httperror.BadRequestResponse(w, r, fmt.Errorf("error parsing file from request: %w", err))
 		return
 	}
 	defer file.Close()
-
-	config := dropbox.Config{
-		Token: u.dropboxToken,
-	}
-
-	dbx := files.New(config)
 
 	fileNameParts := strings.Split(header.Filename, ".")
 	ext := fileNameParts[len(fileNameParts)-1]
 
 	// upload file
-	dest := fmt.Sprintf("/verification_docs/userdoc_%d.%s", user.ID, ext)
+	dest := fmt.Sprintf("/verification_docs/userdoc_%d_%d.%s", user.ID, time.Now().Unix(), ext)
 	commitInfo := files.NewCommitInfo(dest)
 	commitInfo.Mode.Tag = "overwrite"
+
+	dbx := files.New(dropbox.Config{
+		Token: u.dropboxToken,
+	})
+
 	_, err = dbx.Upload(&files.UploadArg{
 		CommitInfo: *commitInfo,
 	}, file)
 	if err != nil {
 		if strings.Contains(err.Error(), "expired_access_token") {
-			u.requestDropboxAccessToken()
+			slog.Info("requesting new dropbox access token...")
+			if err = u.requestDropboxAccessToken(); err != nil {
+				httperror.ServerErrorResponse(w, r, fmt.Errorf("failed to request new access token: %w", err))
+			}
+
+			dbx = files.New(dropbox.Config{
+				Token: u.dropboxToken,
+			})
 			_, err = dbx.Upload(&files.UploadArg{
 				CommitInfo: *commitInfo,
 			}, file)
 
 			if err != nil {
-				httperror.ServerErrorResponse(w, r, err)
+				httperror.ServerErrorResponse(w, r, fmt.Errorf("error uploading document from expired token: %w", err))
 			}
 		} else {
-			httperror.ServerErrorResponse(w, r, err)
+			httperror.ServerErrorResponse(w, r, fmt.Errorf("error uploading document: %w", err))
 			return
 		}
 	}
 
 	// create share link
-	shareClient := sharing.New(config)
+	shareClient := sharing.New(dropbox.Config{
+		Token: u.dropboxToken,
+	})
 	sharedLink, err := shareClient.CreateSharedLinkWithSettings(&sharing.CreateSharedLinkWithSettingsArg{
 		Path: dest,
 	})

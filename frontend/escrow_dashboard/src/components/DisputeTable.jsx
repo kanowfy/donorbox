@@ -1,8 +1,5 @@
 import { Card } from "@tremor/react";
 import PropTypes from "prop-types";
-import { useState } from "react";
-import utils from "../utils/utils";
-import { IoOpenOutline } from "react-icons/io5";
 import escrowService from "../services/escrow";
 import { useNavigate } from "react-router-dom";
 import { Badge, Table, Dropdown } from "flowbite-react";
@@ -173,89 +170,6 @@ const DisputeTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
           </Table.Body>
         </Table>
       </Card>
-      {/*
-      <Modal
-        show={isOpenReview}
-        onClose={() => setIsOpenReview(false)}
-        size="2xl"
-      >
-        <Modal.Header>Review Project Report</Modal.Header>
-        <Modal.Body>
-          <div className="space-y-2 grid-cols-2 md:grid-cols-1 w-full">
-            <div className="border rounded-lg p-5 space-y-2">
-              <div className="flex space-x-2 items-baseline">
-                <h3 className="text-xl font-semibold text-blue-700 underline">
-                  Report description
-                </h3>
-              </div>
-
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">Reason: </div>
-                <h3 className="text-red-700">{review?.reason}</h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">
-                  Reporter relation with fundraiser:{" "}
-                </div>
-                <h3 className="text-blue-700">
-                  {review?.relation ? review.relation : "None"}
-                </h3>
-              </div>
-              <div>
-                <div className="font-semibold text-black text-sm">
-                  Details:{" "}
-                  <span className="text-gray-700 text-base font-normal">{review?.details}</span>
-                </div>
-              </div>
-            </div>
-            <div className="border rounded-lg p-5 space-y-2">
-              <div className="flex space-x-2 items-baseline">
-                <h3 className="text-xl font-semibold text-blue-700 underline">
-                  Reporter Contacts
-                </h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">
-                  Full Name:{" "}
-                </div>
-                <h3 className="text-gray-700">{review?.full_name}</h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">Email: </div>
-                <h3 className="text-gray-700">{review?.email}</h3>
-              </div>
-              <div className="flex space-x-2 items-baseline">
-                <div className="font-semibold text-black text-sm">
-                  Phone Number:{" "}
-                </div>
-                <h3 className="text-gray-700">{review?.phone_number}</h3>
-              </div>
-            </div>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full flex justify-center">
-            <div className="w-1/2 flex space-x-1">
-              <Button
-                className="w-1/2 font-semibold"
-                onClick={handleApprove}
-                color="blue"
-                disabled={review?.status !== "pending"}
-              >
-                Dismiss
-              </Button>
-              <Button
-                className="w-1/2 font-semibold"
-                color="failure"
-                onClick={handleReject}
-                disabled={review?.status !== "pending"}
-              >
-                Mark Disputed
-              </Button>
-            </div>
-          </div>
-        </Modal.Footer>
-      </Modal>*/}
     </div>
   );
 };

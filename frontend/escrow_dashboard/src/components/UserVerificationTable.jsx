@@ -129,7 +129,6 @@ const UserVerificationTable = ({
                         className="text-red-500 font-semibold"
                         onClick={() => {
                           setIsOpenReject(true);
-                          setReview(item);
                           setReviewID(item.id);
                         }}
                       >
@@ -161,7 +160,7 @@ const UserVerificationTable = ({
             <div className="block">
               <Label
                 htmlFor="reason"
-                value="Provide reason why this fundraiser is ineligible:"
+                value="Provide reason why this document is invalid:"
               />
             </div>
             <Textarea

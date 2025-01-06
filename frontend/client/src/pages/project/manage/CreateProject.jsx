@@ -96,7 +96,6 @@ const CreateProject = () => {
         title: data.title,
         description: desc,
         cover_picture: imageUrl,
-        fund_goal: data.fund_goal,
         receiver_name: data.receiver_name,
         receiver_number: data.receiver_number,
         address: data.address,
@@ -115,6 +114,7 @@ const CreateProject = () => {
         navigate(`/manage/${response.result.project.id}`);
       }, 3000);
     } catch (err) {
+      console.error(err);
       //modal
       setFailedReason(err.response.data.error);
       setIsFailed(true);
@@ -255,7 +255,7 @@ const CreateProject = () => {
                     height={400}
                     required
                   />
-                  <div className="block mb-2 font-normal text-[0.1em] text-gray-600">
+                  <div className="block mb-2 font-normal text-base text-gray-600">
                     Describe your situation, who is the beneficiary, the goal of this fundraiser and how the fund will be used,...
                   </div>
                   {errors.description?.type === "required" && (
@@ -284,8 +284,8 @@ const CreateProject = () => {
                   <div className="font-semibold">Beneficiary Information <span className="text-red-700">*</span></div>
                   <div className="flex space-x-4">
                     <div className="flex items-end space-x-3">
-                      <label className="block mb-2 text-lg font-medium text-gray-900">
-                        Name
+                      <label className="block text-lg font-medium text-gray-900">
+                        Full Name
                       </label>
                       <input
                         {...register("receiver_name", {

@@ -12,7 +12,7 @@ import { IoMdCopy } from "react-icons/io";
 import Donor from "./Donor";
 import { SERVE_URL } from "../constants";
 
-const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
+const DonateBox = ({ id, totalFund, fundGoal, backings, status }) => {
   const [recentBacking, setRecentBacking] = useState({});
   const [mostBacking, setMostBacking] = useState({});
   const [firstBacking, setFirstBacking] = useState({});
@@ -40,6 +40,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
   return (
     <div className="w-full shadow-xl p-6 rounded-lg">
       <div className="space-y-2">
+        {status === "ongoing" && 
+        (<>
         <Link to={`/fundraiser/${id}/donate`}>
           <div className="py-3 px-10 bg-gradient-to-b from-yellow-300 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 flex items-center justify-center font-semibold text-lg rounded-xl">
             Donate
@@ -51,6 +53,7 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
         >
           Share
         </div>
+        </>)}
       </div>
       <div className="flex flex-col my-5 space-y-1 justify-center items-center">
         <div className="block text-4xl font-bold text-yellow-400">
@@ -214,7 +217,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
           </Modal>
         </div>
       ) : (
-        <div className="flex items-center justify-center space-x-1 mt-5">
+        <>
+        {status === "ongoing" && (<div className="flex items-center justify-center space-x-1 mt-5">
           <div>Be the first to help!</div>
           <Link
             to={`/fundraiser/${id}/donate`}
@@ -222,7 +226,8 @@ const DonateBox = ({ id, totalFund, fundGoal, backings }) => {
           >
             Donate now
           </Link>
-        </div>
+        </div>)}
+        </>
       )}
       <Modal show={isOpenShare} onClose={() => setIsOpenShare(false)} size="xl">
         <Modal.Header>
@@ -284,6 +289,7 @@ DonateBox.propTypes = {
   totalFund: PropTypes.number,
   fundGoal: PropTypes.number,
   backings: PropTypes.array,
+  status: PropTypes.string,
 };
 
 export default DonateBox;

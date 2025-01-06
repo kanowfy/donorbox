@@ -17,7 +17,7 @@ const Category = () => {
         const projectResponse = await projectService.getByCategoryID(
           response.category.id
         );
-        setProjects(projectResponse.projects);
+        setProjects(projectResponse.projects.filter(p => ["ongoing", "finished"].includes(p.status)));
 
         console.log(projectResponse.projects);
       } catch (err) {
