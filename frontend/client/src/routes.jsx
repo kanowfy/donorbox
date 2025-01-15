@@ -8,10 +8,9 @@ import ViewProject from "./pages/project/ViewProject";
 import Register from "./pages/auth/Register";
 import SocialLogin from "./pages/auth/SocialLogin";
 import RegisterSuccess from "./pages/auth/RegisterSuccess";
-import Verify from "./pages/auth/Verify";
+import Activate from "./pages/auth/Activate";
 import CreateProject from "./pages/project/manage/CreateProject";
 import Donate from "./pages/project/donation/Donate";
-import AccountSettings from "./pages/AccountSettings";
 import ProjectList from "./pages/project/manage/ProjectList";
 import ManageDashboard from "./pages/project/manage/ManageDashboard";
 import ManageDonations from "./pages/project/manage/ManageDonations";
@@ -23,10 +22,11 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import ReportProject from "./pages/project/ReportProject";
 import Payment from "./pages/project/donation/Payment";
 import CheckoutForm from "./pages/project/donation/CheckoutForm";
-import VerifyAccount from "./pages/VerifyAccount";
 import Category from "./pages/project/Category";
 import ManageProofs from "./pages/project/manage/ManageProofs";
 import About from "./pages/About";
+import Contributions from "./pages/account/Contributions";
+import Settings from "./pages/account/Settings";
 
 const AppRoutes = () => {
   return (
@@ -36,8 +36,9 @@ const AppRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/search" element={<Search />} />
         <Route path="/category/:name" element={<Category />} />
-        <Route path="/account/settings" element={<AccountSettings />} />
-        <Route path="/account/verify" element={<VerifyAccount />} />
+        <Route path="/account/settings" element={<Settings />} />
+        <Route path="/account/activate" element={<Activate />} />
+        <Route path="/account/contributions" element={<Contributions />} />
         <Route path="/fundraiser/:id" element={<ViewProject />} />
         <Route path="/start-fundraiser" element={<CreateProject />} />
         <Route path="/fundraisers" element={<ProjectList />} />
@@ -62,7 +63,7 @@ const AppRoutes = () => {
       <Route path="/logout" element={<Logout />} />
       <Route path="/password/forgot" element={<ForgotPassword />} />
       <Route path="/password/reset" element={<ResetPassword />} />
-      <Route path="/verify" element={<Verify />} />
+      <Route path="/verify" element={<Activate />} />
     </Routes>
   );
 };

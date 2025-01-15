@@ -16,4 +16,11 @@ const fetchPaymentIntent = async(amount) => {
     return response.data;
 }
 
-export default { getProjectStats, createBacking, fetchPaymentIntent }
+const getBackingsForUser = async(token) => {
+    const response = await axios.get(`${BASE_URL}/users/backings`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data;
+}
+
+export default { getProjectStats, createBacking, fetchPaymentIntent, getBackingsForUser }

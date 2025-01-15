@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, FileInput, Modal } from "flowbite-react";
-import { useAuthContext } from "../context/AuthContext";
-import uploadService from "../services/upload";
+import { useAuthContext } from "../../context/AuthContext";
+import uploadService from "../../services/upload";
 
-const VerifyAccount = () => {
+const Verify = () => {
   const navigate = useNavigate();
   const { user, token } = useAuthContext();
   const [document, setDocument] = useState();
@@ -161,4 +161,4 @@ const VerifyAccount = () => {
   );
 };
 
-export default VerifyAccount;
+export default Verify;

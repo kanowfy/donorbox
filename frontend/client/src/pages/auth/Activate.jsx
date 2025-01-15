@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import userService from "../../services/user";
 import { Button } from "flowbite-react";
 
-const Verify = () => {
+const Activate = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -33,7 +33,7 @@ const Verify = () => {
               <img src="/fail.svg" height={72} width={72} />
             </div>
             <div className="font-bold text-2xl mt-5 mb-3">
-              Verification failed!
+              Activation failed!
             </div>
             <div className="tracking-tight mb-5">{errorMessage}</div>
             <Link to="/login">
@@ -46,7 +46,7 @@ const Verify = () => {
               <img src="/success.svg" height={72} width={72} />
             </div>
             <div className="font-bold text-2xl mt-5 mb-3">
-              Verification successful!
+              Activation successful!
             </div>
             <div className="tracking-tight mb-5">
               You will be navigated to the login page...
@@ -58,4 +58,4 @@ const Verify = () => {
   );
 };
 
-export default Verify;
+export default Activate;

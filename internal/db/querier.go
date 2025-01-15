@@ -31,7 +31,7 @@ type Querier interface {
 	GetBackingByID(ctx context.Context, id int64) (Backing, error)
 	GetBackingCountForProject(ctx context.Context, projectID int64) (int64, error)
 	GetBackingsForProject(ctx context.Context, projectID int64) ([]GetBackingsForProjectRow, error)
-	GetBackingsForUser(ctx context.Context, userID *int64) ([]Backing, error)
+	GetBackingsForUser(ctx context.Context, userID *int64) ([]GetBackingsForUserRow, error)
 	GetCategoriesCount(ctx context.Context) ([]GetCategoriesCountRow, error)
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
 	GetDisputedProjects(ctx context.Context) ([]GetDisputedProjectsRow, error)

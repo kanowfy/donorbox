@@ -130,19 +130,32 @@ func (q *Queries) GetBackingsForProject(ctx context.Context, projectID int64) ([
 }
 
 const getBackingsForUser = `-- name: GetBackingsForUser :many
-SELECT id, user_id, project_id, amount, word_of_support, created_at FROM backings
-WHERE user_id = $1
+SELECT b.id, b.user_id, b.project_id, b.amount, b.word_of_support, b.created_at, p.title, p.cover_picture FROM backings b
+JOIN projects p ON b.project_id = p.id
+WHERE b.user_id = $1
+ORDER BY b.created_at DESC
 `
 
-func (q *Queries) GetBackingsForUser(ctx context.Context, userID *int64) ([]Backing, error) {
+type GetBackingsForUserRow struct {
+	ID            int64
+	UserID        *int64
+	ProjectID     int64
+	Amount        int64
+	WordOfSupport *string
+	CreatedAt     pgtype.Timestamptz
+	Title         string
+	CoverPicture  string
+}
+
+func (q *Queries) GetBackingsForUser(ctx context.Context, userID *int64) ([]GetBackingsForUserRow, error) {
 	rows, err := q.db.Query(ctx, getBackingsForUser, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Backing
+	var items []GetBackingsForUserRow
 	for rows.Next() {
-		var i Backing
+		var i GetBackingsForUserRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -150,6 +163,8 @@ func (q *Queries) GetBackingsForUser(ctx context.Context, userID *int64) ([]Back
 			&i.Amount,
 			&i.WordOfSupport,
 			&i.CreatedAt,
+			&i.Title,
+			&i.CoverPicture,
 		); err != nil {
 			return nil, err
 		}

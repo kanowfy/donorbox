@@ -1,12 +1,12 @@
 import { Avatar, Button, FileInput, Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAuthContext } from "../context/AuthContext";
-import userService from "../services/user";
-import uploadService from "../services/upload";
+import { useAuthContext } from "../../context/AuthContext";
+import userService from "../../services/user";
+import uploadService from "../../services/upload";
 import { useNavigate } from "react-router-dom";
 
-const AccountSettings = () => {
+const Settings = () => {
   const { token, user } = useAuthContext();
   const navigate = useNavigate();
   const [img, setImg] = useState();
@@ -511,4 +511,4 @@ const AccountSettings = () => {
   );
 };
 
-export default AccountSettings;
+export default Settings;

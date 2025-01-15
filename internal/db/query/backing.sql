@@ -10,10 +10,6 @@ ORDER BY backings.created_at DESC;
 SELECT * FROM backings
 WHERE id = $1;
 
--- name: GetBackingsForUser :many
-SELECT * FROM backings
-WHERE user_id = $1;
-
 -- name: GetMostBackingDonor :one
 SELECT backings.*, users.first_name, users.last_name, users.profile_picture
 FROM backings
@@ -68,3 +64,9 @@ FROM months
 LEFT JOIN backings ON date_trunc('month', backings.created_at) = months.month
 GROUP BY months.month
 ORDER BY months.month;
+
+-- name: GetBackingsForUser :many
+SELECT b.*, p.title, p.cover_picture FROM backings b
+JOIN projects p ON b.project_id = p.id
+WHERE b.user_id = $1
+ORDER BY b.created_at DESC;

@@ -144,19 +144,6 @@ const Project = () => {
                             new Date(utils.parseDateFromRFC3339(p.created_at))
                           )}
                         </div>
-                        <div>
-                          {p.transaction_hash && (
-                            <a
-                              className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
-                              target="_blank"
-                              href={`https://sepolia.etherscan.io/tx/${p?.transaction_hash}`}
-                            >
-                              <Tooltip content="View on blockchain explorer">
-                                Txn: {p?.transaction_hash.substring(0, 20)}
-                              </Tooltip>
-                            </a>
-                          )}
-                        </div>
                       </div>
                       <div className="tracking-tight">{p.description}</div>
                       <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
