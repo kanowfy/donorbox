@@ -1,3 +1,5 @@
+import uploadService from "../services/upload";
+
 const formatNumber = (num) => {
     return num.toLocaleString();
 }
@@ -45,4 +47,23 @@ const parseExpiry = (date) => {
     }
 }
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate, formatDateTime, parseExpiry }
+const uploadImage = async (images) => {
+    if (!images) {
+      throw new Error("Missing image");
+    }
+
+    const formData = new FormData();
+    for (const image of images) {
+        formData.append("file", image);
+    }
+    console.log(formData);
+
+    const response = await uploadService.uploadImage(formData);
+    return response.url;
+};
+
+const parseImageUrl = (images) => {
+    return images.split(',');
+}
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getDaySince, formatDate, formatDateTime, parseExpiry, uploadImage, parseImageUrl }

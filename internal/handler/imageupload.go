@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
@@ -28,12 +29,11 @@ func NewImageUploader(cfg config.Config) ImageUploader {
 func (i *imageUploader) UploadImage(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20) // 10MB limit
 
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		httperror.BadRequestResponse(w, r, err)
+	files := r.MultipartForm.File["file"]
+	if len(files) == 0 {
+		httperror.BadRequestResponse(w, r, fmt.Errorf("no file uploaded"))
 		return
 	}
-	defer file.Close()
 
 	cld, err := cloudinary.NewFromURL(i.cfg.CloudinaryAPIUrl)
 	if err != nil {
@@ -41,14 +41,20 @@ func (i *imageUploader) UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := cld.Upload.Upload(r.Context(), file, uploader.UploadParams{})
-	if err != nil {
-		httperror.ServerErrorResponse(w, r, fmt.Errorf("failed to upload image: %v", err))
-		return
+	uris := make([]string, len(files))
+
+	for i, f := range files {
+		res, err := cld.Upload.Upload(r.Context(), f, uploader.UploadParams{})
+		if err != nil {
+			httperror.ServerErrorResponse(w, r, fmt.Errorf("failed to upload image: %v", err))
+			return
+		}
+
+		uris[i] = res.SecureURL
 	}
 
 	if err = json.WriteJSON(w, http.StatusOK, map[string]interface{}{
-		"url": res.SecureURL,
+		"url": strings.Join(uris, ","),
 	}, nil); err != nil {
 		httperror.ServerErrorResponse(w, r, err)
 	}

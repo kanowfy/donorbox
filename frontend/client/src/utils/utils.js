@@ -52,16 +52,23 @@ const getCategoryNameByID = (id) => {
     );
 }
 
-const uploadImage = async (image) => {
-    if (!image) {
+const uploadImage = async (images) => {
+    if (!images) {
       throw new Error("Missing image");
     }
 
     const formData = new FormData();
-    formData.append("file", image);
+    for (const image of images) {
+        formData.append("file", image);
+    }
+    console.log(formData);
 
     const response = await uploadService.uploadImage(formData);
     return response.url;
-  };
+};
 
-export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry, getCategoryNameByID, uploadImage }
+const parseImageUrl = (images) => {
+    return images.split(',');
+}
+
+export default { formatNumber, calculateProgress, calculateDayDifference, parseDateFromRFC3339, getRFC3339DateString, getDaySince, formatDate, parseExpiry, getCitiesByCountry, getCategoryNameByID, uploadImage, parseImageUrl }

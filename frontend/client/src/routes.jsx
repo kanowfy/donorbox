@@ -14,7 +14,6 @@ import Donate from "./pages/project/donation/Donate";
 import ProjectList from "./pages/project/manage/ProjectList";
 import ManageDashboard from "./pages/project/manage/ManageDashboard";
 import ManageDonations from "./pages/project/manage/ManageDonations";
-import ManageUpdates from "./pages/project/manage/ManageUpdates";
 import ManageLayout from "./pages/project/manage/ManageLayout";
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -48,7 +47,6 @@ const AppRoutes = () => {
         <Route path="/manage/:id" element={<ManageLayout />}>
           <Route index element={<ManageDashboard />} />
           <Route path="donations" element={<ManageDonations />} />
-          <Route path="updates" element={<ManageUpdates />} />
           <Route path="proofs" element={<ManageProofs />} />
         </Route>
         <Route path="/fundraiser/:id/donate" element={<Donate />} />

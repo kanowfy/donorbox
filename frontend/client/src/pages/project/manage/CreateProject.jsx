@@ -84,13 +84,13 @@ const CreateProject = () => {
     }
 
     setImg(e.target.files[0]);
-    setValue("img", e.target.files[0]);
+    setValue("img", e.target.files);
   }
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      const imageUrl = await uploadImage(data.img);
+      const imageUrl = await utils.uploadImage(data.img);
       const payload = {
         category_id: Number(data.category),
         title: data.title,
@@ -119,18 +119,6 @@ const CreateProject = () => {
       setFailedReason(err.response.data.error);
       setIsFailed(true);
     }
-  };
-
-  const uploadImage = async (image) => {
-    if (!image) {
-      throw new Error("Missing image");
-    }
-
-    const formData = new FormData();
-    formData.append("file", image);
-
-    const response = await uploadService.uploadImage(formData);
-    return response.url;
   };
 
   const handleSelectCountry = (e) => {

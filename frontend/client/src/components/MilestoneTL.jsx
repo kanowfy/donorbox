@@ -7,7 +7,7 @@ import utils from "../utils/utils";
 const MilestoneStatusMap = {
   fund_released: {
     color: "info",
-    text: "fund released"
+    text: "fund_released"
   },
   completed: {
     color: "success",

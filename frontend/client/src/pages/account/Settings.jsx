@@ -5,6 +5,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import userService from "../../services/user";
 import uploadService from "../../services/upload";
 import { useNavigate } from "react-router-dom";
+import utils from "../../utils/utils";
 
 const Settings = () => {
   const { token, user } = useAuthContext();
@@ -97,7 +98,7 @@ const Settings = () => {
 
   const handleUpdateAvatar = async () => {
     try {
-      const imageUrl = await uploadImage(img);
+      const imageUrl = await utils.uploadImage(img);
       await userService.update(token, {
         profile_picture: imageUrl,
       });
@@ -110,18 +111,6 @@ const Settings = () => {
       setIsFailed({ status: true, field: "avatar" });
       console.error(err);
     }
-  };
-
-  const uploadImage = async (image) => {
-    if (!image) {
-      throw new Error("Missing image");
-    }
-
-    const formData = new FormData();
-    formData.append("file", image);
-
-    const response = await uploadService.uploadImage(formData);
-    return response.url;
   };
 
   useEffect(() => {
@@ -142,7 +131,7 @@ const Settings = () => {
       return;
     }
 
-    setImg(e.target.files[0]);
+    setImg(e.target.files);
   }
 
   return (
