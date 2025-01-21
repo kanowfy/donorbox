@@ -26,6 +26,7 @@ import ManageProofs from "./pages/project/manage/ManageProofs";
 import About from "./pages/About";
 import Contributions from "./pages/account/Contributions";
 import Settings from "./pages/account/Settings";
+import Verify from "./pages/account/Verify";
 
 const AppRoutes = () => {
   return (
@@ -36,7 +37,7 @@ const AppRoutes = () => {
         <Route path="/search" element={<Search />} />
         <Route path="/category/:name" element={<Category />} />
         <Route path="/account/settings" element={<Settings />} />
-        <Route path="/account/activate" element={<Activate />} />
+        <Route path="/account/verify" element={<Verify />} />
         <Route path="/account/contributions" element={<Contributions />} />
         <Route path="/fundraiser/:id" element={<ViewProject />} />
         <Route path="/start-fundraiser" element={<CreateProject />} />

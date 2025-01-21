@@ -114,15 +114,15 @@ const Settings = () => {
   };
 
   useEffect(() => {
-    if (!img) {
+    if (!img || img?.length == 0) {
       setPreview(undefined);
       return;
     }
 
-    const objectUrl = URL.createObjectURL(img);
+    const objectUrl = URL.createObjectURL(img[0]);
     setPreview(objectUrl);
 
-    return () => URL.revokeObjectURL(img);
+    return () => URL.revokeObjectURL(img[0]);
   }, [img]);
 
   function onSelectImage(e) {
