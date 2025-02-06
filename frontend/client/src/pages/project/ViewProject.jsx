@@ -9,6 +9,7 @@ import { IoFlag } from "react-icons/io5";
 import MilestoneTL from "../../components/MilestoneTL";
 import MDEditor from "@uiw/react-md-editor";
 import { HiX } from "react-icons/hi";
+import { IoReceipt } from "react-icons/io5";
 
 const Project = () => {
   const params = useParams();
@@ -17,11 +18,11 @@ const Project = () => {
   const [milestones, setMilestones] = useState([]);
   const [owner, setOwner] = useState({});
   const [backings, setBackings] = useState();
-  //const [updates, setUpdates] = useState();
   const [proofs, setProofs] = useState();
   const [wosList, setWosList] = useState();
   const [isOpenMilestone, setIsOpenMilestone] = useState(false);
   const [milestoneReview, setMilestoneReview] = useState();
+  const [displayImages, setDisplayImages] = useState();
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -31,7 +32,6 @@ const Project = () => {
         setProject(projectResponse.project);
         setMilestones(projectResponse.milestones);
         setBackings(projectResponse.backings);
-        //setUpdates(projectResponse.updates);
         setOwner(projectResponse.user);
 
         setProofs(
@@ -45,8 +45,6 @@ const Project = () => {
             )
             .filter((p) => p.status === "approved")
         );
-
-        console.log("updates ", projectResponse.updates);
 
         if (projectResponse.backings) {
           setWosList(
@@ -132,39 +130,31 @@ const Project = () => {
             <>
               <div className="my-5">
                 <div className="text-xl font-semibold tracking-tight mb-5">
-                  Updates ({proofs.length})
+                  Proof of expenditure ({proofs.length})
                 </div>
                 <div className="space-y-4">
                   {proofs?.map((p) => (
-                    <div key={p.id}>
+                    <div key={p.id} className="p-5 rounded-lg border space-y-3">
                       <div className="flex justify-between">
+                        <div>Milestone: <span className="font-semibold">{p.milestone_title}</span></div>
                         <div className="font-medium text-sm text-gray-600">
-                          On{" "}
                           {utils.formatDate(
                             new Date(utils.parseDateFromRFC3339(p.created_at))
                           )}
                         </div>
-                        <div>
-                          {p.transaction_hash && (
-                            <a
-                              className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
-                              target="_blank"
-                              href={`https://sepolia.etherscan.io/tx/${p?.transaction_hash}`}
-                            >
-                              <Tooltip content="View on blockchain explorer">
-                                Txn: {p?.transaction_hash.substring(0, 20)}
-                              </Tooltip>
-                            </a>
-                          )}
-                        </div>
                       </div>
-                      <div className="tracking-tight">{p.description}</div>
-                      <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover my-2">
+
+                      <Button size="sm" color="light" onClick={() => setDisplayImages(p.transfer_image)}>
+                        <IoReceipt className="w-5 h-5 mr-2" />
+                        View transfer receipts
+                      </Button>
+                      <div className="rounded-lg border border-gray-300 overflow-hidden h-96 object-cover my-2 mx-auto" onClick={() => setDisplayImages(p.proof_media)}>
                         <img
                           src={p.proof_media}
-                          className="w-full h-full m-auto object-cover"
+                          className="w-full h-full m-auto object-cover filter hover:brightness-75 cursor-pointer"
                         />
                       </div>
+                      <div className="tracking-tight"><span>Note: </span>{p.description}</div>
                     </div>
                   ))}
                 </div>
@@ -230,7 +220,7 @@ const Project = () => {
       <Modal
         show={isOpenMilestone}
         onClose={() => setIsOpenMilestone(false)}
-        size="xl"
+        size="3xl"
       >
         <Modal.Header>Milestone Fund Release Receipt</Modal.Header>
         <Modal.Body>
@@ -248,25 +238,12 @@ const Project = () => {
             </div>
           </div>
           <div className="flex justify-center my-7">
-            <img
-              src={milestoneReview?.milestone_completion.transfer_image}
-              className="aspect-auto h-72"
-            ></img>
+          <div className="space-y-3">
+          {milestoneReview?.milestone_completion.transfer_image && utils.parseImageUrl(milestoneReview?.milestone_completion.transfer_image).map(i => (
+            <img src={i} alt={i}/>
+          ))}
           </div>
-          {milestoneReview?.milestone_completion?.transaction_hash && (
-            <div className="flex flex-col items-center font-semibold space-y-1">
-              Blockchain Hash:{" "}
-              <a
-                className="font-normal hover:underline hover:text-blue-700 text-sm cursor-pointer text-gray-700"
-                target="_blank"
-                href={`https://sepolia.etherscan.io/tx/${milestoneReview?.milestone_completion?.transaction_hash}`}
-              >
-                <Tooltip content="View on blockchain explorer">
-                  {milestoneReview?.milestone_completion?.transaction_hash}
-                </Tooltip>
-              </a>
-            </div>
-          )}
+          </div>
           {milestoneReview?.milestone_completion.transfer_note && (
             <div className="flex space-x-1 mx-4">
               <div className="text-gray-900">
@@ -276,39 +253,58 @@ const Project = () => {
           )}
         </Modal.Body>
       </Modal>
+      <Modal
+        show={displayImages != null}
+        onClose={() => setDisplayImages(null)}
+        size="7xl"
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="space-y-3">
+          {displayImages && utils.parseImageUrl(displayImages).map(i => (
+            <img src={i} alt={i}/>
+          ))}
+
+          </div>
+        </Modal.Body>
+
+      </Modal>
     </div>
   );
 };
 
-const StatusBanner = ({status}) => {
+const StatusBanner = ({ status }) => {
   const statusList = {
     pending: {
       text: "This fundraiser is currently under review",
-      color: "text-green-600"
+      color: "text-green-600",
     },
     disputed: {
       text: "This fundraiser is under investigation due to violation of the platform policy",
-      color: "text-yellow-600"
+      color: "text-yellow-600",
     },
     stopped: {
       text: "This fundraiser is archived due to violation of platform policy",
-      color: "text-red-700"
+      color: "text-red-700",
     },
     rejected: {
       text: "This fundraiser is not eligible for launch",
-      color: "text-yellow-600"
+      color: "text-yellow-600",
     },
-  }
+  };
 
   if (!statusList.hasOwnProperty(status)) {
-    return <></>
+    return <></>;
   }
 
   return (
     <Banner>
       <div className="flex w-full justify-between border-b border-gray-200 bg-gray-50 p-4">
         <div className="mx-auto flex items-center">
-          <p className={`flex items-center text-sm font-semibold ${statusList[status].color}`}>
+          <p
+            className={`flex items-center text-sm font-semibold ${statusList[status].color}`}
+          >
             {statusList[status].text}
           </p>
         </div>

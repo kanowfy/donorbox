@@ -11,11 +11,13 @@ import {
 } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import uploadService from "../../../services/upload";
 import projectService from "../../../services/project";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useAuthContext } from "../../../context/AuthContext";
 import utils from "../../../utils/utils";
+import { IoReceipt } from "react-icons/io5";
+import { MdPermMedia } from "react-icons/md";
+
 
 const ProofStatusMap = {
   pending: {
@@ -38,13 +40,13 @@ const ManageProofs = () => {
   const navigate = useNavigate();
   const [receipt, setReceipt] = useState();
   const [media, setMedia] = useState();
-  const [preview, setPreview] = useState();
   const [releasedMilestones, setReleasedMilestones] = useState();
   const [proofedMilestones, setProofedMilestones] = useState();
   const [writeOpen, setWriteOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [isFailed, setIsFailed] = useState(false);
+  const [displayImages, setDisplayImages] = useState();
 
   const {
     register,
@@ -74,25 +76,13 @@ const ManageProofs = () => {
     setProofedMilestones(ms);
   }, [milestones]);
 
-  useEffect(() => {
-    if (!receipt) {
-      setPreview(undefined);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(receipt);
-    setPreview(objectUrl);
-
-    return () => URL.revokeObjectURL(receipt);
-  }, [receipt]);
-
   const onSelectReceipt = (e) => {
     if (!e.target.files || e.target.files.length == 0) {
       setReceipt(undefined);
       return;
     }
     console.log(e.target.files);
-    setReceipt(e.target.files[0]);
+    setReceipt(e.target.files);
   };
 
   const onSelectMedia = (e) => {
@@ -101,7 +91,7 @@ const ManageProofs = () => {
       return;
     }
     console.log(e.target.files);
-    setMedia(e.target.files[0]);
+    setMedia(e.target.files);
   };
 
   const onSubmit = async (data) => {
@@ -112,8 +102,8 @@ const ManageProofs = () => {
         description: data.description,
       };
 
-      payload.receipt = await uploadFile(receipt);
-      payload.media = await uploadFile(media);
+      payload.receipt = await utils.uploadImage(receipt);
+      payload.media = await utils.uploadImage(media);
 
       await projectService.createProof(token, payload);
       setIsLoading(false);
@@ -125,18 +115,6 @@ const ManageProofs = () => {
       setIsFailed(true);
       console.error(err);
     }
-  };
-
-  const uploadFile = async (file) => {
-    if (!file) {
-      throw new Error("Missing file");
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await uploadService.uploadImage(formData);
-    return response.url;
   };
 
   const validMilestoneToSubmit = (m) => {
@@ -217,29 +195,30 @@ const ManageProofs = () => {
         <div className="flex gap-4">
           <div>
             <Label className="block text-sm font-bold mb-2">
-              Payment receipt <span className="text-red-700">*</span>
+              Payment receipt(s) <span className="text-red-700">*</span>
             </Label>
             <div className="flex flex-col items-start space-y-4">
               <FileInput
                 accept="image/png, image/jpeg"
                 color="gray"
                 sizing="lg"
+                multiple
                 onChange={onSelectReceipt}
               />
-              {receipt && (
+              {/*receipt && (
                 <div className="rounded-xl overflow-hidden h-40 aspect-[4/3] object-cover">
                   <img
                     src={preview}
                     className="w-full h-full m-auto object-cover"
                   />
                 </div>
-              )}
+              )*/}
             </div>
           </div>
 
           <div>
             <Label className="block text-sm font-bold mb-2">
-              Photo or Video proof <span className="text-red-700">*</span>
+              Photo proof <span className="text-red-700">*</span>
             </Label>
             <div className="flex flex-col items-start space-y-4">
               <FileInput
@@ -304,26 +283,18 @@ const ManageProofs = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-3 px-5 gap-5">
-                  <div className="col-span-1">
-                    <div>Transfer receipt: </div>
-                    <div className="rounded-xl overflow-hidden aspect-[3/5] object-cover my-4">
-                      <img
-                        src={p.transfer_image}
-                        className="w-full h-full m-auto object-cover"
-                      />
-                    </div>
+                <div className="flex space-x-20">
+                  <div className="space-y-3">
+                    <div>Transfer receipts: </div>
+                    <Button onClick={() => setDisplayImages(p.transfer_image)} color="light">
+                      <IoReceipt className="w-5 h-5 mr-2"/>
+                      View</Button>
                   </div>
-                  <div className="col-span-2">
+                  <div className="space-y-3">
                     <div>Media proof: </div>
-                    <div className="flex h-full justify-center items-center">
-                      <div className="rounded-xl overflow-hidden aspect-[16/9] object-cover my-4">
-                        <img
-                          src={p.proof_media}
-                          className="w-full h-full m-auto object-cover"
-                        />
-                      </div>
-                    </div>
+                    <Button onClick={() => setDisplayImages(p.proof_media)} color="light">
+                      <MdPermMedia className="w-5 h-5 mr-2"/>
+                      View</Button>
                   </div>
                 </div>
                 <div>
@@ -371,6 +342,24 @@ const ManageProofs = () => {
             </h3>
           </div>
         </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={displayImages != null}
+        onClose={() => setDisplayImages(null)}
+        size="7xl"
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="space-y-3">
+          {displayImages && utils.parseImageUrl(displayImages).map(i => (
+            <img src={i} alt={i}/>
+          ))}
+
+          </div>
+        </Modal.Body>
+
       </Modal>
     </div>
   );

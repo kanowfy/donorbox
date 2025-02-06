@@ -1,12 +1,13 @@
 import { Avatar, Button, FileInput, Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAuthContext } from "../context/AuthContext";
-import userService from "../services/user";
-import uploadService from "../services/upload";
+import { useAuthContext } from "../../context/AuthContext";
+import userService from "../../services/user";
+import uploadService from "../../services/upload";
 import { useNavigate } from "react-router-dom";
+import utils from "../../utils/utils";
 
-const AccountSettings = () => {
+const Settings = () => {
   const { token, user } = useAuthContext();
   const navigate = useNavigate();
   const [img, setImg] = useState();
@@ -97,7 +98,7 @@ const AccountSettings = () => {
 
   const handleUpdateAvatar = async () => {
     try {
-      const imageUrl = await uploadImage(img);
+      const imageUrl = await utils.uploadImage(img);
       await userService.update(token, {
         profile_picture: imageUrl,
       });
@@ -112,28 +113,16 @@ const AccountSettings = () => {
     }
   };
 
-  const uploadImage = async (image) => {
-    if (!image) {
-      throw new Error("Missing image");
-    }
-
-    const formData = new FormData();
-    formData.append("file", image);
-
-    const response = await uploadService.uploadImage(formData);
-    return response.url;
-  };
-
   useEffect(() => {
-    if (!img) {
+    if (!img || img?.length == 0) {
       setPreview(undefined);
       return;
     }
 
-    const objectUrl = URL.createObjectURL(img);
+    const objectUrl = URL.createObjectURL(img[0]);
     setPreview(objectUrl);
 
-    return () => URL.revokeObjectURL(img);
+    return () => URL.revokeObjectURL(img[0]);
   }, [img]);
 
   function onSelectImage(e) {
@@ -142,7 +131,7 @@ const AccountSettings = () => {
       return;
     }
 
-    setImg(e.target.files[0]);
+    setImg(e.target.files);
   }
 
   return (
@@ -511,4 +500,4 @@ const AccountSettings = () => {
   );
 };
 
-export default AccountSettings;
+export default Settings;

@@ -24,7 +24,7 @@ type FundedMilestoneDto struct {
 
 type ResolveMilestoneRequest struct {
 	Amount      int64   `json:"amount" validate:"required,number"`
-	Description *string `json:"description" validate:"required"`
+	Description *string `json:"description,omitempty" validate:"omitnil"`
 	Image       *string `json:"image,omitempty" validate:"omitnil"`
 }
 

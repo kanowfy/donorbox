@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/kanowfy/donorbox/internal/dto"
+	"github.com/kanowfy/donorbox/internal/rcontext"
 	"github.com/kanowfy/donorbox/internal/service"
 	"github.com/kanowfy/donorbox/pkg/httperror"
 	"github.com/kanowfy/donorbox/pkg/json"
@@ -19,6 +20,7 @@ type Backing interface {
 	GetBackingsForProject(w http.ResponseWriter, r *http.Request)
 	CreateProjectBacking(w http.ResponseWriter, r *http.Request)
 	GetProjectBackingStats(w http.ResponseWriter, r *http.Request)
+	GetBackingsForUser(w http.ResponseWriter, r *http.Request)
 }
 
 type backing struct {
@@ -142,4 +144,20 @@ func (b *backing) GetProjectBackingStats(w http.ResponseWriter, r *http.Request)
 		httperror.ServerErrorResponse(w, r, err)
 	}
 
+}
+
+func (b *backing) GetBackingsForUser(w http.ResponseWriter, r *http.Request) {
+	user := rcontext.GetUser(r)
+
+	backings, err := b.service.GetBackingsForUser(r.Context(), user.ID)
+	if err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := json.WriteJSON(w, http.StatusCreated, map[string]interface{}{
+		"backings": backings,
+	}, nil); err != nil {
+		httperror.ServerErrorResponse(w, r, err)
+	}
 }

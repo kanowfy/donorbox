@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/kanowfy/donorbox/internal/convert"
@@ -15,6 +16,7 @@ type Backing interface {
 	CreateBacking(ctx context.Context, projectID int64, req dto.BackingRequest) error
 	GetBackingsForProject(ctx context.Context, projectID int64) ([]model.Backing, error)
 	GetProjectBackingStats(ctx context.Context, projectID int64) (*model.Backing, *model.Backing, *model.Backing, int64, error)
+	GetBackingsForUser(ctx context.Context, userID int64) ([]dto.UserBackingResponse, error)
 }
 
 type backing struct {
@@ -208,4 +210,26 @@ func (b *backing) GetProjectBackingStats(ctx context.Context, projectID int64) (
 				ProfilePicture: recentBacking.ProfilePicture,
 			},
 		}, count, nil
+}
+
+func (b *backing) GetBackingsForUser(ctx context.Context, userID int64) ([]dto.UserBackingResponse, error) {
+	dbBackings, err := b.repository.GetBackingsForUser(ctx, &userID)
+	if err != nil {
+		return nil, fmt.Errorf("get backings for user: %w", err)
+	}
+
+	backings := make([]dto.UserBackingResponse, len(dbBackings))
+	for i, b := range dbBackings {
+		backings[i] = dto.UserBackingResponse{
+			BackingID:           b.ID,
+			ProjectID:           b.ProjectID,
+			Amount:              b.Amount,
+			WordOfSupport:       b.WordOfSupport,
+			CreatedAt:           convert.MustPgTimestampToTime(b.CreatedAt),
+			ProjectTitle:        b.Title,
+			ProjectCoverPicture: b.CoverPicture,
+		}
+	}
+
+	return backings, nil
 }

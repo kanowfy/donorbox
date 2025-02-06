@@ -7,6 +7,8 @@ import { Button, Modal, Table, Label, Textarea } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { CLIENT_URL } from "../constants";
+import { IoReceipt } from "react-icons/io5";
+import { MdPermMedia } from "react-icons/md";
 
 const MilestoneProofTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ const MilestoneProofTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
   const [isOpenReject, setIsOpenReject] = useState(false);
   const [review, setReview] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [displayImages, setDisplayImages] = useState();
 
   const {
     register,
@@ -157,32 +160,18 @@ const MilestoneProofTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
                     Spending Proof
                   </h3>
                 </div>
-                <div className="flex justify-center">
-                  <div className="grid grid-cols-5 gap-12 px-5">
-                    <div className="col-span-2">
-                      <div className="font-semibold text-black text-sm">
-                        Transfer Receipt:{" "}
-                      </div>
-                      <div className="rounded-xl overflow-hidden h-96 aspect-[3/5] object-cover">
-                        <img
-                          src={getPendingProof(review?.milestone.spending_proofs)["transfer_image"]}
-                          className="w-full h-full m-auto object-cover"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-span-3 h-full">
-                      <div className="font-semibold text-black text-sm">
-                        Media Proof:{" "}
-                      </div>
-                      <div className="flex justify-center flex-col h-full">
-                        <div className="rounded-xl overflow-hidden h-52 aspect-[16/9] object-cover">
-                          <img
-                          src={getPendingProof(review?.milestone.spending_proofs)["proof_media"]}
-                            className="w-full h-full m-auto object-cover"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex space-x-8">
+                  <div className="flex space-x-2">
+                    <div className="mt-3 font-semibold text-sm">Transfer receipts: </div>
+                    <Button size="sm" onClick={() => setDisplayImages(getPendingProof(review?.milestone.spending_proofs)["transfer_image"])} color="light">
+                      <IoReceipt className="w-5 h-5 mr-2"/>
+                      View</Button>
+                  </div>
+                  <div className="flex space-x-2">
+                    <div className="mt-3 font-semibold text-sm">Media proof: </div>
+                    <Button size="sm" onClick={() => setDisplayImages(getPendingProof(review?.milestone.spending_proofs)["proof_media"])} color="light">
+                      <MdPermMedia className="w-5 h-5 mr-2"/>
+                      View</Button>
                   </div>
                 </div>
                 <div className="flex space-x-2 items-baseline">
@@ -268,6 +257,23 @@ const MilestoneProofTable = ({ token, data, setIsSuccessful, setIsFailed }) => {
             </Button>
           </form>
         </Modal.Body>
+      </Modal>
+      <Modal
+        show={displayImages != null}
+        onClose={() => setDisplayImages(null)}
+        size="5xl"
+        popup
+      >
+        <Modal.Header />
+        <Modal.Body>
+          <div className="space-y-3">
+          {displayImages && utils.parseImageUrl(displayImages).map(i => (
+            <img src={i} alt={i}/>
+          ))}
+
+          </div>
+        </Modal.Body>
+
       </Modal>
     </div>
   );

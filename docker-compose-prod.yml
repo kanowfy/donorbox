@@ -19,25 +19,38 @@ services:
     restart: on-failure:0
 
   backend:
-    image: dungnt07/donorbox-backend
+    image: dungnt07/donorbox-backend:prod
     container_name: donorbox-backend
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
     env_file:
-      - ./.env
+      - ./.env.prod
     depends_on:
       - postgres
       - weaviate
     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/api"]
 
   client:
-    image: dungnt07/donorbox-client
+    image: dungnt07/donorbox-client:prod
     container_name: donorbox-client
-    ports:
-      - "4001:80"
+    expose:
+      - "80"
 
   dashboard:
-    image: dungnt07/donorbox-dashboard
+    image: dungnt07/donorbox-dashboard:prod
     container_name: donorbox-dashboard
+    expose:
+      - "80"
+
+  nginx:
+    image: nginx:latest
+    container_name: donorbox-nginx
     ports:
-      - "4002:80"
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - client
+      - dashboard
